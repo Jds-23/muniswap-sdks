@@ -28,10 +28,7 @@ export const computePairAddress = ({
   tokenB: Token
 }): Address.Address => {
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
-  const packed = AbiParameters.encodePacked(
-    ['address', 'address'],
-    [token0.address as Address.Address, token1.address as Address.Address]
-  )
+  const packed = AbiParameters.encodePacked(['address', 'address'], [token0.address, token1.address])
   const salt = Hash.keccak256(packed)
   const address = ContractAddress.fromCreate2({
     from: factoryAddress,
@@ -45,7 +42,7 @@ export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
 
-  public static getAddress(tokenA: Token, tokenB: Token): string {
+  public static getAddress(tokenA: Token, tokenB: Token): Address.Address {
     const factoryAddress = FACTORY_ADDRESS_MAP[tokenA.chainId] ?? FACTORY_ADDRESS
     return computePairAddress({ factoryAddress, tokenA, tokenB })
   }

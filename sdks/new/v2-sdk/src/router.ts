@@ -6,7 +6,7 @@ import {
   TradeType,
   validateAndParseAddress,
 } from '@uniswap/sdk-core-next'
-import type { Hex } from 'ox'
+import type { Address, Hex } from 'ox'
 import invariant from 'tiny-invariant'
 
 import type { Trade } from './entities'
@@ -91,10 +91,10 @@ export abstract class Router {
     invariant(!(etherIn && etherOut), 'ETHER_IN_OUT')
     invariant(!('ttl' in options) || options.ttl > 0, 'TTL')
 
-    const to: string = validateAndParseAddress(options.recipient)
+    const to: Address.Address = validateAndParseAddress(options.recipient)
     const amountIn: string = toHex(trade.maximumAmountIn(options.allowedSlippage))
     const amountOut: string = toHex(trade.minimumAmountOut(options.allowedSlippage))
-    const path: string[] = trade.route.path.map((token: Token) => token.address)
+    const path: Address.Address[] = trade.route.path.map((token: Token) => token.address)
     const deadline =
       'ttl' in options
         ? `0x${(Math.floor(new Date().getTime() / 1000) + options.ttl).toString(16)}`

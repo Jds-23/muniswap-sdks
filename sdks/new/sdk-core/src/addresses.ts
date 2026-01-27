@@ -1,28 +1,29 @@
+import type { Address } from 'ox'
 import { ChainId, SUPPORTED_CHAINS, type SupportedChainsType } from './chains'
 
-type AddressMap = { [chainId: number]: string }
+type AddressMap = { [chainId: number]: Address.Address }
 
 type ChainAddresses = {
-  v3CoreFactoryAddress: string
-  multicallAddress: string
-  quoterAddress: string
-  v3MigratorAddress?: string
-  nonfungiblePositionManagerAddress?: string
-  tickLensAddress?: string
-  swapRouter02Address?: string
-  mixedRouteQuoterV1Address?: string
-  mixedRouteQuoterV2Address?: string
+  v3CoreFactoryAddress: Address.Address
+  multicallAddress: Address.Address
+  quoterAddress: Address.Address
+  v3MigratorAddress?: Address.Address
+  nonfungiblePositionManagerAddress?: Address.Address
+  tickLensAddress?: Address.Address
+  swapRouter02Address?: Address.Address
+  mixedRouteQuoterV1Address?: Address.Address
+  mixedRouteQuoterV2Address?: Address.Address
 
   // v4
-  v4PoolManagerAddress?: string
-  v4PositionManagerAddress?: string
-  v4StateView?: string
-  v4QuoterAddress?: string
+  v4PoolManagerAddress?: Address.Address
+  v4PositionManagerAddress?: Address.Address
+  v4StateView?: Address.Address
+  v4QuoterAddress?: Address.Address
 }
 
 const DEFAULT_NETWORKS = [ChainId.MAINNET, ChainId.GOERLI, ChainId.SEPOLIA]
 
-function constructSameAddressMap(address: string, additionalNetworks: ChainId[] = []): AddressMap {
+function constructSameAddressMap(address: Address.Address, additionalNetworks: ChainId[] = []): AddressMap {
   return DEFAULT_NETWORKS.concat(additionalNetworks).reduce<AddressMap>((memo, chainId) => {
     memo[chainId] = address
     return memo
@@ -591,7 +592,7 @@ export const MIXED_ROUTE_QUOTER_V1_ADDRESSES: AddressMap = SUPPORTED_CHAINS.redu
   return memo
 }, {})
 
-export const SWAP_ROUTER_02_ADDRESSES = (chainId: number): string => {
+export const SWAP_ROUTER_02_ADDRESSES = (chainId: number): Address.Address | '' => {
   if (SUPPORTED_CHAINS.includes(chainId as SupportedChainsType)) {
     const id = chainId as SupportedChainsType
     return CHAIN_TO_ADDRESSES_MAP[id].swapRouter02Address ?? '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45'

@@ -4,7 +4,7 @@ import { Address } from 'ox'
  * Validates an address and returns the parsed (checksummed) version of that address
  * @param address the unchecksummed hex address
  */
-export function validateAndParseAddress(address: string): string {
+export function validateAndParseAddress(address: string): Address.Address {
   try {
     return Address.checksum(address)
   } catch {
@@ -19,9 +19,9 @@ const startsWith0xLen42HexRegex = /^0x[0-9a-fA-F]{40}$/i
  * Checks if an address is valid by checking 0x prefix, length === 42 and hex encoding.
  * @param address the unchecksummed hex address
  */
-export function checkValidAddress(address: string): string {
+export function checkValidAddress(address: string): Address.Address {
   if (startsWith0xLen42HexRegex.test(address)) {
-    return address
+    return address as Address.Address
   }
 
   throw new Error(`${address} is not a valid address.`)

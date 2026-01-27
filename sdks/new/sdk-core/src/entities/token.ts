@@ -1,3 +1,4 @@
+import type { Address } from 'ox'
 import invariant from 'tiny-invariant'
 import { checkValidAddress, validateAndParseAddress } from '../utils/validateAndParseAddress'
 import { BaseCurrency } from './baseCurrency'
@@ -13,7 +14,7 @@ export class Token extends BaseCurrency {
   /**
    * The contract address on the chain on which this token lives
    */
-  public readonly address: string
+  public readonly address: Address.Address
 
   /**
    * Relevant for fee-on-transfer (FOT) token taxes,
