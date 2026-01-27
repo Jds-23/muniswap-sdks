@@ -33,6 +33,7 @@
   },
   "workspaces": [
     "sdks/*",
+    "sdks/new/*",
     "sdks/uniswapx-sdk/integration"
   ],
   "resolutions": {
