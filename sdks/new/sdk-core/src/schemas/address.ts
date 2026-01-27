@@ -7,7 +7,7 @@ import { z } from 'zod'
 export const addressSchema = z
   .string()
   .refine((addr) => Address.validate(addr), { message: 'Invalid Ethereum address' })
-  .transform((addr) => Address.checksum(addr as `0x${string}`))
+  .transform((addr) => Address.checksum(addr))
 
 /**
  * Type-safe Ethereum address type derived from the schema

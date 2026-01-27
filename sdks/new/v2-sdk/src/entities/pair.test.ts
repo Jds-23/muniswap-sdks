@@ -1,4 +1,5 @@
 import { ChainId, CurrencyAmount, Price, Token, V2_FACTORY_ADDRESSES, WETH9 } from '@uniswap/sdk-core-next'
+import type { Address } from 'ox'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { InsufficientInputAmountError } from '../errors'
 import { Pair, computePairAddress } from './pair'
@@ -61,7 +62,7 @@ describe('Pair', () => {
     it('returns the default address for a testnet not in the map', () => {
       expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(
         computePairAddress({
-          factoryAddress: V2_FACTORY_ADDRESSES[ChainId.SEPOLIA]! as `0x${string}`,
+          factoryAddress: V2_FACTORY_ADDRESSES[ChainId.SEPOLIA]! as Address.Address,
           tokenA: USDC_SEPOLIA,
           tokenB: DAI_SEPOLIA,
         })

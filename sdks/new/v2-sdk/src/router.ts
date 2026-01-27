@@ -6,6 +6,7 @@ import {
   TradeType,
   validateAndParseAddress,
 } from '@uniswap/sdk-core-next'
+import type { Hex } from 'ox'
 import invariant from 'tiny-invariant'
 
 import type { Trade } from './entities'
@@ -61,7 +62,7 @@ export interface SwapParameters {
   value: string
 }
 
-function toHex(currencyAmount: CurrencyAmount<Currency>): `0x${string}` {
+function toHex(currencyAmount: CurrencyAmount<Currency>): Hex.Hex {
   return `0x${currencyAmount.quotient.toString(16)}`
 }
 

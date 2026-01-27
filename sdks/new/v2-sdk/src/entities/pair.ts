@@ -18,26 +18,27 @@ import {
 } from '../constants'
 import { InsufficientInputAmountError, InsufficientReservesError } from '../errors'
 
-type Hex = `0x${string}`
-
 export const computePairAddress = ({
   factoryAddress,
   tokenA,
   tokenB,
 }: {
-  factoryAddress: Hex
+  factoryAddress: Address.Address
   tokenA: Token
   tokenB: Token
-}): Hex => {
+}): Address.Address => {
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
-  const packed = AbiParameters.encodePacked(['address', 'address'], [token0.address as Hex, token1.address as Hex])
+  const packed = AbiParameters.encodePacked(
+    ['address', 'address'],
+    [token0.address as Address.Address, token1.address as Address.Address]
+  )
   const salt = Hash.keccak256(packed)
   const address = ContractAddress.fromCreate2({
     from: factoryAddress,
     salt,
-    bytecodeHash: INIT_CODE_HASH as Hex,
+    bytecodeHash: INIT_CODE_HASH,
   })
-  return Address.checksum(address) as Hex
+  return Address.checksum(address) as Address.Address
 }
 
 export class Pair {
@@ -45,7 +46,7 @@ export class Pair {
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
-    const factoryAddress = (FACTORY_ADDRESS_MAP[tokenA.chainId] ?? FACTORY_ADDRESS) as Hex
+    const factoryAddress = FACTORY_ADDRESS_MAP[tokenA.chainId] ?? FACTORY_ADDRESS
     return computePairAddress({ factoryAddress, tokenA, tokenB })
   }
 

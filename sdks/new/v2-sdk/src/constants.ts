@@ -1,13 +1,16 @@
 import { Percent, V2_FACTORY_ADDRESSES } from '@uniswap/sdk-core-next'
+import type { Address, Hex } from 'ox'
 
 /**
  * @deprecated use FACTORY_ADDRESS_MAP instead
  */
-export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+export const FACTORY_ADDRESS: Address.Address = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
 
-export const FACTORY_ADDRESS_MAP: { [chainId: number]: string } = V2_FACTORY_ADDRESSES
+export const FACTORY_ADDRESS_MAP: { [chainId: number]: Address.Address } = V2_FACTORY_ADDRESSES as {
+  [chainId: number]: Address.Address
+}
 
-export const INIT_CODE_HASH = '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
+export const INIT_CODE_HASH: Hex.Hex = '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
 
 export const MINIMUM_LIQUIDITY = 1000n
 
