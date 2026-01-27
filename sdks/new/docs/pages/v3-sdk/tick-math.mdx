@@ -1,0 +1,239 @@
+# Tick Math
+
+The tick math utilities provide functions for converting between ticks and sqrt prices in Uniswap V3.
+
+## Import
+
+```typescript
+import {
+  MIN_TICK,
+  MAX_TICK,
+  MIN_SQRT_RATIO,
+  MAX_SQRT_RATIO,
+  getSqrtRatioAtTick,
+  getTickAtSqrtRatio
+} from '@uniswap/v3-sdk'
+```
+
+## Constants
+
+### MIN_TICK
+
+The minimum tick that can be used on any pool.
+
+```typescript
+const MIN_TICK = -887272
+```
+
+### MAX_TICK
+
+The maximum tick that can be used on any pool.
+
+```typescript
+const MAX_TICK = 887272
+```
+
+### MIN_SQRT_RATIO
+
+The sqrt ratio corresponding to the minimum tick.
+
+```typescript
+const MIN_SQRT_RATIO = 4295128739n
+```
+
+### MAX_SQRT_RATIO
+
+The sqrt ratio corresponding to the maximum tick.
+
+```typescript
+const MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342n
+```
+
+## Functions
+
+### getSqrtRatioAtTick
+
+Returns the sqrt ratio as a Q64.96 value for a given tick.
+
+```typescript
+function getSqrtRatioAtTick(tick: number): bigint
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `tick` | `number` | The tick for which to compute the sqrt ratio |
+
+#### Returns
+
+Returns the sqrt ratio as a Q64.96 value (`bigint`).
+
+#### Formula
+
+The sqrt ratio at a tick is computed as:
+
+```
+sqrtRatio = sqrt(1.0001^tick) * 2^96
+```
+
+#### Example
+
+```typescript
+import { getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+// Tick 0 corresponds to price 1.0
+const sqrtRatioAtTick0 = getSqrtRatioAtTick(0)
+console.log(sqrtRatioAtTick0) // 79228162514264337593543950336n (2^96)
+
+// Tick 100 corresponds to price ~1.01
+const sqrtRatioAtTick100 = getSqrtRatioAtTick(100)
+console.log(sqrtRatioAtTick100) // ~79623317895830914510639640423n
+
+// Negative tick corresponds to price < 1
+const sqrtRatioAtTickMinus100 = getSqrtRatioAtTick(-100)
+console.log(sqrtRatioAtTickMinus100) // ~78833030112140176575862854579n
+```
+
+### getTickAtSqrtRatio
+
+Returns the tick corresponding to a given sqrt ratio.
+
+```typescript
+function getTickAtSqrtRatio(sqrtRatioX96: bigint): number
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtRatioX96` | `bigint` | The sqrt ratio as a Q64.96 value |
+
+#### Returns
+
+Returns the greatest tick for which the sqrt ratio is greater than or equal to the input.
+
+#### Example
+
+```typescript
+import { getTickAtSqrtRatio } from '@uniswap/v3-sdk'
+
+// 2^96 corresponds to tick 0
+const Q96 = 2n ** 96n
+const tick0 = getTickAtSqrtRatio(Q96)
+console.log(tick0) // 0
+
+// Higher sqrt ratio = higher tick
+const tick100 = getTickAtSqrtRatio(79623317895830914510639640423n)
+console.log(tick100) // 100
+```
+
+## Understanding Ticks
+
+### Price to Tick Relationship
+
+Each tick represents a 0.01% (1 basis point) change in price:
+
+```
+price = 1.0001^tick
+```
+
+| Tick | Price (approximate) |
+| --- | --- |
+| 0 | 1.0 |
+| 100 | 1.01 |
+| 1000 | 1.105 |
+| 10000 | 2.718 |
+| -100 | 0.99 |
+| -1000 | 0.905 |
+
+### Tick Spacing
+
+Pools only allow positions at certain ticks based on the fee tier:
+
+| Fee Tier | Tick Spacing |
+| --- | --- |
+| 0.01% (100) | 1 |
+| 0.05% (500) | 10 |
+| 0.3% (3000) | 60 |
+| 1% (10000) | 200 |
+
+## Usage Examples
+
+### Computing Pool Price Range
+
+```typescript
+import { getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+const tickLower = -60
+const tickUpper = 60
+
+const sqrtPriceLower = getSqrtRatioAtTick(tickLower)
+const sqrtPriceUpper = getSqrtRatioAtTick(tickUpper)
+
+// Price range for the position
+const priceLower = (sqrtPriceLower * sqrtPriceLower) / (2n ** 192n)
+const priceUpper = (sqrtPriceUpper * sqrtPriceUpper) / (2n ** 192n)
+```
+
+### Finding Current Tick from Pool State
+
+```typescript
+import { getTickAtSqrtRatio } from '@uniswap/v3-sdk'
+
+// Given a pool's current sqrtPriceX96
+const currentSqrtPrice = 79228162514264337593543950336n
+const currentTick = getTickAtSqrtRatio(currentSqrtPrice)
+```
+
+### Validating Tick Bounds
+
+```typescript
+import { MIN_TICK, MAX_TICK } from '@uniswap/v3-sdk'
+
+function isValidTick(tick: number): boolean {
+  return tick >= MIN_TICK && tick <= MAX_TICK && Number.isInteger(tick)
+}
+
+// Also check tick spacing for specific fee tier
+function isValidPositionTick(tick: number, tickSpacing: number): boolean {
+  return isValidTick(tick) && tick % tickSpacing === 0
+}
+```
+
+### Converting Between Price and Tick
+
+```typescript
+import { getSqrtRatioAtTick, getTickAtSqrtRatio, encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+
+// Price to tick (approximate)
+function priceToTick(price: number): number {
+  // tick = log(price) / log(1.0001)
+  return Math.floor(Math.log(price) / Math.log(1.0001))
+}
+
+// More precise: use encodeSqrtRatioX96 then getTickAtSqrtRatio
+function precisepriceToTick(priceNumerator: bigint, priceDenominator: bigint): number {
+  const sqrtPrice = encodeSqrtRatioX96(priceNumerator, priceDenominator)
+  return getTickAtSqrtRatio(sqrtPrice)
+}
+```
+
+## Implementation Details
+
+### getSqrtRatioAtTick Implementation
+
+The function uses a Taylor series expansion with pre-computed constants to efficiently compute `1.0001^(tick/2) * 2^96`. This is more gas-efficient than computing the actual exponential.
+
+Key implementation details:
+1. Takes absolute value of tick
+2. Multiplies pre-computed factors for each bit of the tick
+3. Inverts the ratio for positive ticks
+4. Shifts to Q64.96 format
+
+### getTickAtSqrtRatio Implementation
+
+The inverse function uses:
+1. Binary search on the log2 of the sqrt ratio
+2. Conversion from log base 2 to log base sqrt(1.0001)
+3. Verification that the result is correct

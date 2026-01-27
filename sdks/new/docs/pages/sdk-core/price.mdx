@@ -1,0 +1,200 @@
+# Price
+
+The `Price` class represents an exchange rate between two currencies.
+
+## Import
+
+```typescript
+import { Price } from '@uniswap/sdk-core-next'
+```
+
+## Constructor
+
+```typescript
+// Option 1: Direct values
+new Price(baseCurrency, quoteCurrency, denominator, numerator)
+
+// Option 2: From amounts
+new Price({ baseAmount, quoteAmount })
+```
+
+### Parameters (Option 1)
+
+| Name | Type | Description |
+|------|------|-------------|
+| `baseCurrency` | `TBase` | The base (input) currency |
+| `quoteCurrency` | `TQuote` | The quote (output) currency |
+| `denominator` | `BigintIsh` | The denominator of the price |
+| `numerator` | `BigintIsh` | The numerator of the price |
+
+### Parameters (Option 2)
+
+| Name | Type | Description |
+|------|------|-------------|
+| `baseAmount` | `CurrencyAmount<TBase>` | Amount of base currency |
+| `quoteAmount` | `CurrencyAmount<TQuote>` | Amount of quote currency |
+
+## Example
+
+```typescript
+import { Price, Token, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Create price: 1 ETH = 2000 USDC
+// Price is quote/base, so 2000 USDC per 1 ETH
+const ethPrice = new Price(
+  WETH,
+  USDC,
+  1n,    // denominator (1 WETH)
+  2000n  // numerator (2000 USDC)
+)
+
+console.log(ethPrice.toSignificant(6)) // "2000"
+
+// From amounts
+const wethAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+const usdcAmount = CurrencyAmount.fromRawAmount(USDC, 2000_000000n)          // 2000 USDC
+
+const priceFromAmounts = new Price({
+  baseAmount: wethAmount,
+  quoteAmount: usdcAmount,
+})
+
+console.log(priceFromAmounts.toSignificant(6)) // "2000"
+```
+
+## Properties
+
+### `baseCurrency`
+
+```typescript
+readonly baseCurrency: TBase
+```
+
+The input currency (denominator of the rate).
+
+### `quoteCurrency`
+
+```typescript
+readonly quoteCurrency: TQuote
+```
+
+The output currency (numerator of the rate).
+
+### `scalar`
+
+```typescript
+readonly scalar: Fraction
+```
+
+Internal scalar for decimal adjustment.
+
+## Methods
+
+### `invert()`
+
+```typescript
+invert(): Price<TQuote, TBase>
+```
+
+Returns the inverse price (swap base and quote).
+
+```typescript
+const ethUsdcPrice = new Price(WETH, USDC, 1n, 2000n)  // 2000 USDC/WETH
+const usdcEthPrice = ethUsdcPrice.invert()             // 0.0005 WETH/USDC
+
+console.log(usdcEthPrice.toSignificant(6)) // "0.0005"
+```
+
+### `multiply(other)`
+
+```typescript
+multiply<TOtherQuote extends Currency>(
+  other: Price<TQuote, TOtherQuote>
+): Price<TBase, TOtherQuote>
+```
+
+Multiply prices to get a derived price. The other price's base must match this price's quote.
+
+```typescript
+const ethUsdc = new Price(WETH, USDC, 1n, 2000n)  // ETH/USDC = 2000
+const usdcDai = new Price(USDC, DAI, 1n, 1n)      // USDC/DAI = 1
+
+const ethDai = ethUsdc.multiply(usdcDai)           // ETH/DAI = 2000
+```
+
+### `quote(currencyAmount)`
+
+```typescript
+quote(currencyAmount: CurrencyAmount<TBase>): CurrencyAmount<TQuote>
+```
+
+Convert an amount of base currency to quote currency using this price.
+
+```typescript
+const ethUsdcPrice = new Price(WETH, USDC, 1n, 2000n)
+const wethAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+
+const usdcAmount = ethUsdcPrice.quote(wethAmount)
+console.log(usdcAmount.toSignificant(6)) // "2000"
+```
+
+### `toSignificant(significantDigits?, format?, rounding?)`
+
+```typescript
+toSignificant(
+  significantDigits?: number,  // default: 6
+  format?: { groupSeparator?: string },
+  rounding?: Rounding
+): string
+```
+
+Format the price with significant digits, adjusted for decimal differences.
+
+```typescript
+const price = new Price(WETH, USDC, 1n, 2000n)
+price.toSignificant(4)  // "2000"
+price.toSignificant(2)  // "2.0e+3"
+```
+
+### `toFixed(decimalPlaces?, format?, rounding?)`
+
+```typescript
+toFixed(
+  decimalPlaces?: number,  // default: 4
+  format?: { groupSeparator?: string },
+  rounding?: Rounding
+): string
+```
+
+Format the price with fixed decimal places.
+
+```typescript
+const price = new Price(WETH, USDC, 1n, 2000n)
+price.toFixed(2)  // "2000.00"
+price.toFixed(0)  // "2000"
+```
+
+## Example: Price from Pool
+
+```typescript
+import { Price, Token, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+// Simulated pool reserves
+const wethReserve = CurrencyAmount.fromRawAmount(WETH, '100000000000000000000') // 100 WETH
+const usdcReserve = CurrencyAmount.fromRawAmount(USDC, 200000_000000n)           // 200,000 USDC
+
+// Price of WETH in terms of USDC
+const wethPrice = new Price({
+  baseAmount: wethReserve,
+  quoteAmount: usdcReserve,
+})
+
+console.log(`1 WETH = ${wethPrice.toSignificant(6)} USDC`) // "1 WETH = 2000 USDC"
+
+// Price of USDC in terms of WETH
+const usdcPrice = wethPrice.invert()
+console.log(`1 USDC = ${usdcPrice.toSignificant(6)} WETH`) // "1 USDC = 0.0005 WETH"
+```

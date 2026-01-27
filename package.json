@@ -29,7 +29,10 @@
     "g:test": "turbo run test",
     "g:typecheck": "turbo run typecheck",
     "sdk": "yarn workspace",
-    "postinstall": "husky"
+    "postinstall": "husky",
+    "docs:dev": "turbo run docs:dev --filter=@uniswap/sdk-docs",
+    "docs:build": "turbo run docs:build --filter=@uniswap/sdk-docs",
+    "docs:preview": "turbo run docs:preview --filter=@uniswap/sdk-docs"
   },
   "workspaces": [
     "sdks/*",

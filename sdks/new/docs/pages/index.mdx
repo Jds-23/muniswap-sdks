@@ -1,0 +1,84 @@
+# Uniswap SDK Documentation
+
+Build on top of Uniswap with our modern TypeScript SDKs featuring native BigInt support, type-safe addresses, and Zod validation.
+
+## SDKs
+
+### [SDK Core](/sdk-core)
+
+Foundation SDK providing core entities and utilities used across all Uniswap SDKs:
+
+- **Entities**: Token, Currency, Ether, NativeCurrency, WETH9
+- **Fractions**: Fraction, CurrencyAmount, Price, Percent
+- **Utilities**: Address validation, price impact calculation, math helpers
+
+```bash
+npm install @uniswap/sdk-core-next
+```
+
+### [V2 SDK](/v2-sdk)
+
+Build on Uniswap V2's constant-product AMM:
+
+- **Pair**: Represents a V2 liquidity pool
+- **Route**: Multi-hop trade paths
+- **Trade**: Execute swaps with slippage protection
+
+```bash
+npm install @uniswap/v2-sdk-next
+```
+
+### [V3 SDK](/v3-sdk)
+
+Build on Uniswap V3's concentrated liquidity:
+
+- **Pool**: V3 pools with tick-based pricing
+- **Position**: NFT-based LP positions
+- **Contract Interfaces**: SwapRouter, PositionManager, Quoter, Staker
+
+```bash
+npm install @uniswap/v3-sdk-next
+```
+
+### [V4 SDK](/v4-sdk)
+
+Build on Uniswap V4 with hook support:
+
+- **Pool**: V4 pools with native hook integration
+- **Hooks**: 14 hook permission types for custom logic
+- **Native ETH**: Direct ETH support without WETH wrapping
+
+```bash
+npm install @uniswap/v4-sdk-next
+```
+
+## Quick Comparison
+
+| Feature | V2 | V3 | V4 |
+|---------|----|----|-----|
+| Liquidity Model | Constant Product | Concentrated | Concentrated |
+| Position Type | Fungible LP Token | NFT | NFT |
+| Native ETH | No (WETH) | No (WETH) | Yes |
+| Hooks | No | No | Yes |
+| Fee Tiers | 0.3% | Multiple | Custom |
+
+## Architecture
+
+All SDKs share a common dependency hierarchy:
+
+```
+sdk-core
+   |
+   +-- v2-sdk
+   |
+   +-- v3-sdk
+          |
+          +-- v4-sdk
+```
+
+## Modern Features
+
+- **Native BigInt**: All numeric operations use native JavaScript BigInt
+- **Type-safe Addresses**: Addresses validated with `ox` library
+- **Zod Validation**: Schema validation for runtime safety
+- **ESM First**: Built for modern JavaScript environments

@@ -1,0 +1,283 @@
+# NonfungiblePositionManager
+
+The `NonfungiblePositionManager` module provides utilities for interacting with the Uniswap V3 NonfungiblePositionManager contract, which manages liquidity positions as NFTs.
+
+## Import
+
+```typescript
+import {
+  createCallParameters,
+  addCallParameters,
+  collectCallParameters,
+  removeCallParameters,
+  safeTransferFromParameters
+} from '@uniswap/v3-sdk'
+```
+
+## Functions
+
+### createCallParameters
+
+Produces the calldata for creating and initializing a new pool.
+
+```typescript
+function createCallParameters(pool: Pool): MethodParameters
+```
+
+#### Example
+
+```typescript
+import { createCallParameters, Pool, FeeAmount } from '@uniswap/v3-sdk'
+
+const pool = new Pool(
+  token0,
+  token1,
+  FeeAmount.MEDIUM,
+  sqrtRatioX96,
+  0n, // No liquidity yet
+  tick
+)
+
+const { calldata, value } = createCallParameters(pool)
+```
+
+### addCallParameters
+
+Produces the calldata for adding liquidity to a position.
+
+```typescript
+function addCallParameters(
+  position: Position,
+  options: AddLiquidityOptions
+): MethodParameters
+```
+
+#### MintOptions (for new positions)
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `slippageTolerance` | `Percent` | How much the pool price is allowed to move |
+| `deadline` | `bigint` | When the transaction expires |
+| `recipient` | `string` | Account that receives the minted NFT |
+| `createPool` | `boolean` | Whether to create the pool if not initialized |
+| `useNative` | `Currency` | Whether to use native ETH (must match a pool token) |
+| `token0Permit` | `PermitOptions` | Optional permit for token0 |
+| `token1Permit` | `PermitOptions` | Optional permit for token1 |
+
+#### IncreaseOptions (for existing positions)
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `slippageTolerance` | `Percent` | How much the pool price is allowed to move |
+| `deadline` | `bigint` | When the transaction expires |
+| `tokenId` | `BigintIsh` | The ID of the position to increase |
+| `useNative` | `Currency` | Whether to use native ETH |
+| `token0Permit` | `PermitOptions` | Optional permit for token0 |
+| `token1Permit` | `PermitOptions` | Optional permit for token1 |
+
+#### Example: Minting a New Position
+
+```typescript
+import { addCallParameters, Position, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Percent } from '@uniswap/sdk-core'
+
+const position = Position.fromAmounts({
+  pool,
+  tickLower: -60,
+  tickUpper: 60,
+  amount0: '1000000',
+  amount1: '1000000000000000000',
+  useFullPrecision: true
+})
+
+const { calldata, value } = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000), // 0.5%
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
+  recipient: '0x1234567890123456789012345678901234567890'
+})
+```
+
+#### Example: Increasing Liquidity
+
+```typescript
+const { calldata, value } = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
+  tokenId: 12345 // Existing position NFT ID
+})
+```
+
+#### Example: Using Native ETH
+
+```typescript
+import { Ether } from '@uniswap/sdk-core'
+
+const { calldata, value } = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(deadline),
+  recipient: recipientAddress,
+  useNative: Ether.onChain(1) // Use ETH instead of WETH
+})
+
+// value will contain the ETH amount to send
+```
+
+### collectCallParameters
+
+Produces the calldata for collecting fees from a position.
+
+```typescript
+function collectCallParameters(options: CollectOptions): MethodParameters
+```
+
+#### CollectOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `tokenId` | `BigintIsh` | The ID of the token to collect fees from |
+| `expectedCurrencyOwed0` | `CurrencyAmount<Currency>` | Expected token0 fees |
+| `expectedCurrencyOwed1` | `CurrencyAmount<Currency>` | Expected token1 fees |
+| `recipient` | `string` | Account that receives the fees |
+
+#### Example
+
+```typescript
+import { collectCallParameters } from '@uniswap/v3-sdk'
+import { CurrencyAmount } from '@uniswap/sdk-core'
+
+const { calldata, value } = collectCallParameters({
+  tokenId: 12345,
+  expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(token0, '1000000'),
+  expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(token1, '1000000000000000000'),
+  recipient: '0x1234567890123456789012345678901234567890'
+})
+```
+
+### removeCallParameters
+
+Produces the calldata for removing liquidity from a position.
+
+```typescript
+function removeCallParameters(
+  position: Position,
+  options: RemoveLiquidityOptions
+): MethodParameters
+```
+
+#### RemoveLiquidityOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `tokenId` | `BigintIsh` | The ID of the token to exit |
+| `liquidityPercentage` | `Percent` | Percentage of position liquidity to exit |
+| `slippageTolerance` | `Percent` | How much the pool price can move |
+| `deadline` | `bigint` | When the transaction expires |
+| `burnToken` | `boolean` | Whether to burn the NFT if fully exiting |
+| `permit` | `object` | Optional permit for the NFT |
+| `collectOptions` | `CollectOptions` | Parameters for collecting tokens |
+
+#### Example
+
+```typescript
+import { removeCallParameters, Position } from '@uniswap/v3-sdk'
+import { Percent, CurrencyAmount } from '@uniswap/sdk-core'
+
+const { calldata, value } = removeCallParameters(position, {
+  tokenId: 12345,
+  liquidityPercentage: new Percent(100, 100), // 100% = full exit
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
+  burnToken: true, // Burn NFT after full exit
+  collectOptions: {
+    tokenId: 12345,
+    expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(token0, '1000000'),
+    expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(token1, '1000000000000000000'),
+    recipient: recipientAddress
+  }
+})
+```
+
+### safeTransferFromParameters
+
+Produces the calldata for transferring a position NFT.
+
+```typescript
+function safeTransferFromParameters(options: SafeTransferOptions): MethodParameters
+```
+
+#### SafeTransferOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `sender` | `string` | The account sending the NFT |
+| `recipient` | `string` | The account receiving the NFT |
+| `tokenId` | `BigintIsh` | The ID of the token being sent |
+| `data` | `Hex.Hex` | Optional data for `onERC721Received` |
+
+#### Example
+
+```typescript
+import { safeTransferFromParameters } from '@uniswap/v3-sdk'
+
+const { calldata, value } = safeTransferFromParameters({
+  sender: '0xSenderAddress...',
+  recipient: '0xRecipientAddress...',
+  tokenId: 12345
+})
+```
+
+## Complete Workflow Example
+
+```typescript
+import {
+  Pool,
+  Position,
+  FeeAmount,
+  addCallParameters,
+  collectCallParameters,
+  removeCallParameters
+} from '@uniswap/v3-sdk'
+import { Percent, CurrencyAmount } from '@uniswap/sdk-core'
+
+// 1. Create a position
+const pool = new Pool(token0, token1, FeeAmount.MEDIUM, sqrtRatioX96, liquidity, tick)
+
+const position = Position.fromAmounts({
+  pool,
+  tickLower: -60,
+  tickUpper: 60,
+  amount0: '1000000',
+  amount1: '1000000000000000000',
+  useFullPrecision: true
+})
+
+// 2. Mint the position
+const mintParams = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
+  recipient: userAddress
+})
+
+// 3. Later, collect fees
+const collectParams = collectCallParameters({
+  tokenId: positionNftId,
+  expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(token0, fees0),
+  expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(token1, fees1),
+  recipient: userAddress
+})
+
+// 4. Finally, remove liquidity and burn
+const removeParams = removeCallParameters(position, {
+  tokenId: positionNftId,
+  liquidityPercentage: new Percent(100, 100),
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
+  burnToken: true,
+  collectOptions: {
+    tokenId: positionNftId,
+    expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(token0, 0),
+    expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(token1, 0),
+    recipient: userAddress
+  }
+})
+```

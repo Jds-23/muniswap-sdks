@@ -1,0 +1,338 @@
+# Constants
+
+The V4 SDK exports various constants for use with V4 pools, positions, and router operations.
+
+## Import
+
+```typescript
+import {
+  ADDRESS_ZERO,
+  EMPTY_BYTES,
+  MSG_SENDER,
+  DYNAMIC_FEE_FLAG,
+  FeeAmount,
+  TICK_SPACINGS,
+  Actions
+} from '@uniswap/v4-sdk-next'
+```
+
+## Action Constants
+
+### MSG_SENDER
+
+```typescript
+const MSG_SENDER = '0x0000000000000000000000000000000000000001'
+```
+
+A sentinel value indicating that `msg.sender` should be used as the recipient/payer for operations.
+
+```typescript
+import { V4PositionPlanner, MSG_SENDER } from '@uniswap/v4-sdk-next'
+
+const planner = new V4PositionPlanner()
+planner.addTakePair(currency0, currency1, MSG_SENDER) // Takes to msg.sender
+planner.addSweep(currency0, MSG_SENDER) // Sweeps to msg.sender
+```
+
+### Actions Enum
+
+The `Actions` enum defines all available V4 Router actions:
+
+```typescript
+enum Actions {
+  // Liquidity actions
+  INCREASE_LIQUIDITY = 0x00,
+  DECREASE_LIQUIDITY = 0x01,
+  MINT_POSITION = 0x02,
+  BURN_POSITION = 0x03,
+
+  // Swapping
+  SWAP_EXACT_IN_SINGLE = 0x06,
+  SWAP_EXACT_IN = 0x07,
+  SWAP_EXACT_OUT_SINGLE = 0x08,
+  SWAP_EXACT_OUT = 0x09,
+
+  // Settling (closing deltas on the pool manager)
+  SETTLE = 0x0b,
+  SETTLE_ALL = 0x0c,
+  SETTLE_PAIR = 0x0d,
+
+  // Taking
+  TAKE = 0x0e,
+  TAKE_ALL = 0x0f,
+  TAKE_PORTION = 0x10,
+  TAKE_PAIR = 0x11,
+
+  CLOSE_CURRENCY = 0x12,
+  SWEEP = 0x14,
+
+  // Wrapping/unwrapping native
+  UNWRAP = 0x16,
+}
+```
+
+## Address Constants
+
+### ADDRESS_ZERO
+
+```typescript
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
+```
+
+The zero address. Used for:
+- Representing native ETH in pool keys
+- Indicating no hook (hookless pool)
+
+```typescript
+import { Pool, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+// Pool with native ETH (not WETH)
+const pool = new Pool(
+  ETH,                // Native ether
+  USDC,
+  3000,
+  60,
+  ADDRESS_ZERO,       // No hooks
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+```
+
+### EMPTY_BYTES
+
+```typescript
+const EMPTY_BYTES = '0x'
+```
+
+Empty bytes. Used as default value for hook data.
+
+```typescript
+import { V4PositionPlanner, EMPTY_BYTES } from '@uniswap/v4-sdk-next'
+
+const planner = new V4PositionPlanner()
+planner.addMint(pool, tickLower, tickUpper, liquidity, amount0Max, amount1Max, owner, EMPTY_BYTES)
+```
+
+### EMPTY_HOOK
+
+```typescript
+const EMPTY_HOOK = '0x0000000000000000000000000000000000000000'
+```
+
+Alias for `ADDRESS_ZERO`, explicitly for hook addresses.
+
+## Fee Constants
+
+### DYNAMIC_FEE_FLAG
+
+```typescript
+const DYNAMIC_FEE_FLAG = 0x800000
+```
+
+The flag indicating a pool uses dynamic fees controlled by a hook. When this value is set as the fee, the pool's fee is determined by the hook at swap time.
+
+```typescript
+import { Pool, DYNAMIC_FEE_FLAG } from '@uniswap/v4-sdk-next'
+
+// Pool with dynamic fees (requires a hook)
+const dynamicFeePool = new Pool(
+  currency0,
+  currency1,
+  DYNAMIC_FEE_FLAG,   // 0x800000 - dynamic fees
+  60,
+  hookAddress,        // Hook must be set for dynamic fees
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+```
+
+### FeeAmount Enum
+
+```typescript
+enum FeeAmount {
+  LOWEST = 100,   // 0.01%
+  LOW = 500,      // 0.05%
+  MEDIUM = 3000,  // 0.30%
+  HIGH = 10000,   // 1.00%
+}
+```
+
+Standard fee tiers in hundredths of a basis point.
+
+```typescript
+import { Pool, FeeAmount, TICK_SPACINGS, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+const pool = new Pool(
+  ETH,
+  USDC,
+  FeeAmount.MEDIUM,                    // 3000 (0.3%)
+  TICK_SPACINGS[FeeAmount.MEDIUM],     // 60
+  ADDRESS_ZERO,
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+```
+
+### TICK_SPACINGS
+
+```typescript
+const TICK_SPACINGS: { [amount in FeeAmount]: number } = {
+  [FeeAmount.LOWEST]: 1,
+  [FeeAmount.LOW]: 10,
+  [FeeAmount.MEDIUM]: 60,
+  [FeeAmount.HIGH]: 200,
+}
+```
+
+The default tick spacings for each fee tier.
+
+| Fee Amount | Fee (%) | Tick Spacing |
+|------------|---------|--------------|
+| LOWEST (100) | 0.01% | 1 |
+| LOW (500) | 0.05% | 10 |
+| MEDIUM (3000) | 0.30% | 60 |
+| HIGH (10000) | 1.00% | 200 |
+
+## Numeric Constants
+
+### Q96 and Q192
+
+```typescript
+const Q96 = 2n ** 96n
+const Q192 = 2n ** 192n
+```
+
+Fixed-point math constants:
+- **Q96**: Used for sqrt price representation (Q64.96 format)
+- **Q192**: Used for price ratios (Q96 squared)
+
+### ONE_ETHER
+
+```typescript
+const ONE_ETHER = 10n ** 18n
+```
+
+One ether in wei (10^18).
+
+### OPEN_DELTA
+
+```typescript
+const OPEN_DELTA = 0n
+```
+
+Used when specifying "full delta" amounts in settle/take operations. A value of 0 means "use the full delta".
+
+### Default Price
+
+```typescript
+const SQRT_PRICE_1_1 = 79228162514264337593543950336n
+```
+
+The sqrt price representing a 1:1 ratio between tokens (`encodeSqrtRatioX96(1, 1)`).
+
+```typescript
+import { Pool, SQRT_PRICE_1_1, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+// Pool with 1:1 price
+const pool = new Pool(
+  currency0,
+  currency1,
+  3000,
+  60,
+  ADDRESS_ZERO,
+  SQRT_PRICE_1_1,  // 1:1 price
+  liquidity,
+  0                // Tick 0 for 1:1 price
+)
+```
+
+## Position Manager Constants
+
+### PositionFunctions Enum
+
+```typescript
+enum PositionFunctions {
+  INITIALIZE_POOL = 'initializePool',
+  MODIFY_LIQUIDITIES = 'modifyLiquidities',
+  PERMIT_BATCH = '0x002a3e3a',
+  ERC721PERMIT_PERMIT = '0x0f5730f1',
+}
+```
+
+Function identifiers for the V4 PositionManager contract.
+
+## Error Constants
+
+```typescript
+const NATIVE_NOT_SET = 'NATIVE_NOT_SET'
+const ZERO_LIQUIDITY = 'ZERO_LIQUIDITY'
+const NO_SQRT_PRICE = 'NO_SQRT_PRICE'
+const CANNOT_BURN = 'CANNOT_BURN'
+```
+
+Error message constants used by the SDK.
+
+## Common Fee/Tick Spacing Constants
+
+```typescript
+const FEE_AMOUNT_LOW = 100
+const FEE_AMOUNT_MEDIUM = 3000
+const FEE_AMOUNT_HIGHEST = 10_000
+const TICK_SPACING_TEN = 10
+const TICK_SPACING_SIXTY = 60
+```
+
+Additional convenience constants for common configurations.
+
+## Usage Examples
+
+### Creating a Standard Pool
+
+```typescript
+import {
+  Pool,
+  FeeAmount,
+  TICK_SPACINGS,
+  ADDRESS_ZERO,
+  SQRT_PRICE_1_1
+} from '@uniswap/v4-sdk-next'
+
+const pool = new Pool(
+  currency0,
+  currency1,
+  FeeAmount.MEDIUM,
+  TICK_SPACINGS[FeeAmount.MEDIUM],
+  ADDRESS_ZERO,
+  SQRT_PRICE_1_1,
+  0n,
+  0
+)
+```
+
+### Building a Swap with Actions
+
+```typescript
+import { V4Planner, Actions, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+const planner = new V4Planner()
+
+planner.addAction(Actions.SWAP_EXACT_IN, [swapParams])
+planner.addAction(Actions.SETTLE, [ADDRESS_ZERO, 0n, true])
+planner.addAction(Actions.TAKE, [outputCurrency, recipient, 0n])
+```
+
+### Handling Native ETH
+
+```typescript
+import { MSG_SENDER, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+// Check if currency is native
+const isNative = currency.isNative
+const currencyAddress = isNative ? ADDRESS_ZERO : currency.address
+
+// Sweep remaining ETH to sender
+planner.addSweep(nativeCurrency, MSG_SENDER)
+```

@@ -1,0 +1,262 @@
+# SelfPermit
+
+The `SelfPermit` module provides utilities for encoding EIP-2612 permit calls, allowing users to approve token spending in the same transaction as the action that requires the approval.
+
+## Import
+
+```typescript
+import { encodeSelfPermit, encodeSelfPermitIfNecessary } from '@uniswap/v3-sdk'
+```
+
+## Types
+
+### StandardPermitArguments
+
+Standard EIP-2612 permit arguments.
+
+```typescript
+interface StandardPermitArguments {
+  v: 0 | 1 | 27 | 28        // Signature recovery id
+  r: `0x${string}`          // Signature r value
+  s: `0x${string}`          // Signature s value
+  amount: BigintIsh         // Amount to approve
+  deadline: BigintIsh       // Permit deadline
+}
+```
+
+### AllowedPermitArguments
+
+DAI-style permit arguments (uses nonce and expiry instead of amount and deadline).
+
+```typescript
+interface AllowedPermitArguments {
+  v: 0 | 1 | 27 | 28        // Signature recovery id
+  r: `0x${string}`          // Signature r value
+  s: `0x${string}`          // Signature s value
+  nonce: BigintIsh          // Permit nonce
+  expiry: BigintIsh         // Permit expiry
+}
+```
+
+### PermitOptions
+
+Union type of both permit styles.
+
+```typescript
+type PermitOptions = StandardPermitArguments | AllowedPermitArguments
+```
+
+## Functions
+
+### encodeSelfPermit
+
+Encodes the calldata to self-permit a token.
+
+```typescript
+function encodeSelfPermit(
+  token: Token,
+  _owner: string,
+  permitOptions: PermitOptions
+): Hex.Hex
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `token` | `Token` | The token to permit |
+| `_owner` | `string` | Owner address (kept for API compatibility) |
+| `permitOptions` | `PermitOptions` | The permit signature and parameters |
+
+#### Example with Standard Permit
+
+```typescript
+import { encodeSelfPermit } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Standard EIP-2612 permit
+const permitOptions = {
+  v: 28,
+  r: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+  s: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+  amount: '1000000', // 1 USDC
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 3600)
+}
+
+const calldata = encodeSelfPermit(USDC, ownerAddress, permitOptions)
+```
+
+#### Example with DAI-style Permit
+
+```typescript
+import { encodeSelfPermit } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EescdeCB5', 18, 'DAI')
+
+// DAI-style permit (allowed)
+const permitOptions = {
+  v: 28,
+  r: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+  s: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+  nonce: 0n,
+  expiry: BigInt(Math.floor(Date.now() / 1000) + 3600)
+}
+
+const calldata = encodeSelfPermit(DAI, ownerAddress, permitOptions)
+```
+
+### encodeSelfPermitIfNecessary
+
+Encodes the calldata to self-permit a token only if the current allowance is insufficient.
+
+```typescript
+function encodeSelfPermitIfNecessary(
+  token: Token,
+  _owner: string,
+  permitOptions: PermitOptions
+): Hex.Hex
+```
+
+This variant will only execute the permit if the current allowance is less than the required amount.
+
+#### Example
+
+```typescript
+import { encodeSelfPermitIfNecessary } from '@uniswap/v3-sdk'
+
+const calldata = encodeSelfPermitIfNecessary(token, ownerAddress, permitOptions)
+```
+
+## Usage with SwapRouter
+
+The most common use case is combining permits with swaps:
+
+```typescript
+import { swapCallParameters, Trade, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { CurrencyAmount, Percent, TradeType, Token } from '@uniswap/sdk-core'
+
+// Create a trade
+const trade = await Trade.fromRoute(
+  route,
+  CurrencyAmount.fromRawAmount(inputToken, '1000000'),
+  TradeType.EXACT_INPUT
+)
+
+// Generate permit signature (using ethers or viem)
+const permitData = await signPermit(inputToken, spenderAddress, amount, deadline)
+
+// Generate swap calldata with permit
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: userAddress,
+  deadline: BigInt(deadline),
+  inputTokenPermit: {
+    v: permitData.v,
+    r: permitData.r,
+    s: permitData.s,
+    amount: amount,
+    deadline: BigInt(deadline)
+  }
+})
+```
+
+## Usage with NonfungiblePositionManager
+
+Permits can also be used when adding liquidity:
+
+```typescript
+import { addCallParameters, Position } from '@uniswap/v3-sdk'
+import { Percent } from '@uniswap/sdk-core'
+
+const { calldata, value } = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(deadline),
+  recipient: userAddress,
+  token0Permit: {
+    v: permitData0.v,
+    r: permitData0.r,
+    s: permitData0.s,
+    amount: amount0,
+    deadline: BigInt(deadline)
+  },
+  token1Permit: {
+    v: permitData1.v,
+    r: permitData1.r,
+    s: permitData1.s,
+    amount: amount1,
+    deadline: BigInt(deadline)
+  }
+})
+```
+
+## Generating Permit Signatures
+
+### Using ethers.js
+
+```typescript
+import { ethers } from 'ethers'
+
+async function signPermit(
+  token: Token,
+  spender: string,
+  value: bigint,
+  deadline: bigint,
+  signer: ethers.Signer
+) {
+  const ownerAddress = await signer.getAddress()
+  const nonce = await tokenContract.nonces(ownerAddress)
+
+  const domain = {
+    name: await tokenContract.name(),
+    version: '1',
+    chainId: token.chainId,
+    verifyingContract: token.address
+  }
+
+  const types = {
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  }
+
+  const message = {
+    owner: ownerAddress,
+    spender,
+    value,
+    nonce,
+    deadline
+  }
+
+  const signature = await signer._signTypedData(domain, types, message)
+  const { v, r, s } = ethers.utils.splitSignature(signature)
+
+  return { v, r, s, amount: value, deadline }
+}
+```
+
+## Contract Functions
+
+These functions encode calls to the `ISelfPermit` interface:
+
+| Function | Contract Method |
+| --- | --- |
+| `encodeSelfPermit` (standard) | `selfPermit(address token, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` |
+| `encodeSelfPermit` (allowed) | `selfPermitAllowed(address token, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)` |
+| `encodeSelfPermitIfNecessary` (standard) | `selfPermitIfNecessary(address token, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` |
+| `encodeSelfPermitIfNecessary` (allowed) | `selfPermitAllowedIfNecessary(address token, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)` |
+
+## Token Support
+
+Not all tokens support EIP-2612 permits. Notable tokens that do:
+- USDC (standard permit)
+- DAI (allowed permit style)
+- UNI (standard permit)
+
+Check if a token supports permit by calling `nonces(address)` on the token contract. If it reverts, the token doesn't support permits.

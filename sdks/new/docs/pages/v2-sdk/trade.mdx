@@ -1,0 +1,246 @@
+# Trade
+
+The `Trade` class represents a V2 swap, including the route, amounts, and price impact.
+
+## Import
+
+```typescript
+import { Trade } from '@uniswap/v2-sdk-next'
+```
+
+## Creating Trades
+
+### `Trade.exactIn(route, amountIn)`
+
+Create a trade with an exact input amount.
+
+```typescript
+import { Trade, Route, Pair } from '@uniswap/v2-sdk-next'
+import { CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core-next'
+
+const pair = new Pair(/* ... */)
+const route = new Route([pair], WETH, USDC)
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+
+const trade = Trade.exactIn(route, inputAmount)
+
+console.log(trade.tradeType)                    // TradeType.EXACT_INPUT
+console.log(trade.inputAmount.toSignificant(6)) // "1"
+console.log(trade.outputAmount.toSignificant(6)) // Calculated output
+```
+
+### `Trade.exactOut(route, amountOut)`
+
+Create a trade with an exact output amount.
+
+```typescript
+const outputAmount = CurrencyAmount.fromRawAmount(USDC, 2000_000000n) // 2000 USDC
+
+const trade = Trade.exactOut(route, outputAmount)
+
+console.log(trade.tradeType)                    // TradeType.EXACT_OUTPUT
+console.log(trade.inputAmount.toSignificant(6)) // Calculated input
+console.log(trade.outputAmount.toSignificant(6)) // "2000"
+```
+
+## Properties
+
+### `route`
+
+```typescript
+readonly route: Route<TInput, TOutput>
+```
+
+The route of the trade.
+
+### `tradeType`
+
+```typescript
+readonly tradeType: TTradeType
+```
+
+`TradeType.EXACT_INPUT` or `TradeType.EXACT_OUTPUT`.
+
+### `inputAmount`
+
+```typescript
+readonly inputAmount: CurrencyAmount<TInput>
+```
+
+The input amount (fixed for exact input trades).
+
+### `outputAmount`
+
+```typescript
+readonly outputAmount: CurrencyAmount<TOutput>
+```
+
+The output amount (fixed for exact output trades).
+
+### `executionPrice`
+
+```typescript
+readonly executionPrice: Price<TInput, TOutput>
+```
+
+The price at which the trade executes (output/input).
+
+```typescript
+console.log(trade.executionPrice.toSignificant(6)) // "1990" USDC/WETH
+```
+
+### `priceImpact`
+
+```typescript
+readonly priceImpact: Percent
+```
+
+The percent difference between mid price and execution price.
+
+```typescript
+console.log(trade.priceImpact.toSignificant(2)) // "0.5" (0.5% impact)
+```
+
+## Methods
+
+### `minimumAmountOut(slippageTolerance)`
+
+```typescript
+minimumAmountOut(slippageTolerance: Percent): CurrencyAmount<TOutput>
+```
+
+Returns the minimum output amount accounting for slippage.
+
+```typescript
+import { Percent } from '@uniswap/sdk-core-next'
+
+const slippage = new Percent(50, 10000) // 0.5%
+const minOutput = trade.minimumAmountOut(slippage)
+
+console.log(minOutput.toSignificant(6))
+// For exact output trades, returns the exact output amount
+```
+
+### `maximumAmountIn(slippageTolerance)`
+
+```typescript
+maximumAmountIn(slippageTolerance: Percent): CurrencyAmount<TInput>
+```
+
+Returns the maximum input amount accounting for slippage.
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const maxInput = trade.maximumAmountIn(slippage)
+
+console.log(maxInput.toSignificant(6))
+// For exact input trades, returns the exact input amount
+```
+
+### `worstExecutionPrice(slippageTolerance)`
+
+```typescript
+worstExecutionPrice(slippageTolerance: Percent): Price<TInput, TOutput>
+```
+
+The worst price the trade could execute at given slippage.
+
+```typescript
+const worstPrice = trade.worstExecutionPrice(slippage)
+console.log(worstPrice.toSignificant(6))
+```
+
+## Finding Best Trades
+
+### `Trade.bestTradeExactIn(pairs, amountIn, currencyOut, options?)`
+
+Finds the best trades for an exact input amount.
+
+```typescript
+import { Trade, Pair } from '@uniswap/v2-sdk-next'
+
+const pairs: Pair[] = [/* all available pairs */]
+const amountIn = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+
+const trades = Trade.bestTradeExactIn(
+  pairs,
+  amountIn,
+  USDC,
+  { maxNumResults: 3, maxHops: 3 }
+)
+
+// trades is sorted best to worst
+const bestTrade = trades[0]
+console.log(bestTrade.outputAmount.toSignificant(6))
+console.log(bestTrade.priceImpact.toSignificant(2))
+```
+
+### `Trade.bestTradeExactOut(pairs, currencyIn, amountOut, options?)`
+
+Finds the best trades for an exact output amount.
+
+```typescript
+const amountOut = CurrencyAmount.fromRawAmount(USDC, 2000_000000n)
+
+const trades = Trade.bestTradeExactOut(
+  pairs,
+  WETH,
+  amountOut,
+  { maxNumResults: 3, maxHops: 3 }
+)
+
+const bestTrade = trades[0]
+console.log(bestTrade.inputAmount.toSignificant(6))
+```
+
+### Options
+
+```typescript
+interface BestTradeOptions {
+  maxNumResults?: number  // default: 3
+  maxHops?: number        // default: 3
+}
+```
+
+## Trade Comparison
+
+Trades are compared by:
+1. Output amount (higher is better)
+2. Input amount (lower is better for same output)
+3. Price impact (lower is better)
+4. Number of hops (fewer is better)
+
+```typescript
+import { tradeComparator, inputOutputComparator } from '@uniswap/v2-sdk-next'
+
+// Sort trades by quality
+trades.sort(tradeComparator)
+```
+
+## Example: Complete Trade Flow
+
+```typescript
+import { Pair, Route, Trade } from '@uniswap/v2-sdk-next'
+import { Token, CurrencyAmount, Percent } from '@uniswap/sdk-core-next'
+
+// 1. Fetch pair data from chain
+const pair = new Pair(
+  CurrencyAmount.fromRawAmount(WETH, reserves.weth),
+  CurrencyAmount.fromRawAmount(USDC, reserves.usdc)
+)
+
+// 2. Create route and trade
+const route = new Route([pair], WETH, USDC)
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+const trade = Trade.exactIn(route, inputAmount)
+
+// 3. Check trade details
+console.log(`Input: ${trade.inputAmount.toSignificant(6)} WETH`)
+console.log(`Output: ${trade.outputAmount.toSignificant(6)} USDC`)
+console.log(`Price: ${trade.executionPrice.toSignificant(6)} USDC/WETH`)
+console.log(`Price Impact: ${trade.priceImpact.toSignificant(2)}%`)
+
+// 4. Calculate with slippage
+const slippage = new Percent(50, 10000) // 0.5%
+console.log(`Min Output: ${trade.minimumAmountOut(slippage).toSignificant(6)} USDC`)
+```

@@ -1,0 +1,167 @@
+# Router
+
+The `Router` class provides static methods to generate calldata for V2 Router contract interactions.
+
+## Import
+
+```typescript
+import { Router, type TradeOptions, type TradeOptionsDeadline, type SwapParameters } from '@uniswap/v2-sdk-next'
+```
+
+## Static Methods
+
+### `Router.swapCallParameters(trade, options)`
+
+Generates the method name and arguments for executing a swap.
+
+```typescript
+static swapCallParameters(
+  trade: Trade<Currency, Currency, TradeType>,
+  options: TradeOptions | TradeOptionsDeadline
+): SwapParameters
+```
+
+## Example
+
+```typescript
+import { Router, Trade, Route, Pair } from '@uniswap/v2-sdk-next'
+import { Percent, CurrencyAmount, Token } from '@uniswap/sdk-core-next'
+
+// Create a trade
+const trade = Trade.exactIn(route, inputAmount)
+
+// Generate call parameters
+const params = Router.swapCallParameters(trade, {
+  allowedSlippage: new Percent(50, 10000), // 0.5%
+  ttl: 60 * 20, // 20 minutes
+  recipient: '0xYourAddress...',
+})
+
+console.log(params.methodName) // 'swapExactTokensForTokens'
+console.log(params.args)       // [amountIn, amountOutMin, path, to, deadline]
+console.log(params.value)      // '0x0' (or ETH value if swapping ETH)
+```
+
+## Trade Options
+
+### `TradeOptions`
+
+```typescript
+interface TradeOptions {
+  allowedSlippage: Percent
+  ttl: number              // Time to live in seconds
+  recipient: string
+  feeOnTransfer?: boolean
+}
+```
+
+### `TradeOptionsDeadline`
+
+```typescript
+interface TradeOptionsDeadline {
+  allowedSlippage: Percent
+  deadline: number         // Unix timestamp
+  recipient: string
+  feeOnTransfer?: boolean
+}
+```
+
+## SwapParameters
+
+```typescript
+interface SwapParameters {
+  methodName: string
+  args: (string | string[])[]
+  value: string  // Wei amount in hex
+}
+```
+
+## Router Methods by Trade Type
+
+### Exact Input Trades
+
+| Input | Output | Method |
+|-------|--------|--------|
+| Token | Token | `swapExactTokensForTokens` |
+| Token | ETH | `swapExactTokensForETH` |
+| ETH | Token | `swapExactETHForTokens` |
+
+### Exact Output Trades
+
+| Input | Output | Method |
+|-------|--------|--------|
+| Token | Token | `swapTokensForExactTokens` |
+| Token | ETH | `swapTokensForExactETH` |
+| ETH | Token | `swapETHForExactTokens` |
+
+### Fee-on-Transfer Tokens
+
+When `feeOnTransfer: true`:
+
+| Input | Output | Method |
+|-------|--------|--------|
+| Token | Token | `swapExactTokensForTokensSupportingFeeOnTransferTokens` |
+| Token | ETH | `swapExactTokensForETHSupportingFeeOnTransferTokens` |
+| ETH | Token | `swapExactETHForTokensSupportingFeeOnTransferTokens` |
+
+Note: FOT methods only support exact input trades.
+
+## Usage with ethers.js
+
+```typescript
+import { ethers } from 'ethers'
+import { Router, Trade } from '@uniswap/v2-sdk-next'
+import { Percent } from '@uniswap/sdk-core-next'
+
+// Create trade
+const trade = Trade.exactIn(route, inputAmount)
+
+// Get call parameters
+const params = Router.swapCallParameters(trade, {
+  allowedSlippage: new Percent(50, 10000),
+  ttl: 60 * 20,
+  recipient: wallet.address,
+})
+
+// V2 Router ABI (simplified)
+const routerAbi = [
+  'function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] path, address to, uint deadline) returns (uint[] amounts)',
+  'function swapExactETHForTokens(uint amountOutMin, address[] path, address to, uint deadline) payable returns (uint[] amounts)',
+  // ... other methods
+]
+
+const router = new ethers.Contract(ROUTER_ADDRESS, routerAbi, signer)
+
+// Execute the swap
+const tx = await router[params.methodName](...params.args, {
+  value: params.value,
+})
+```
+
+## Usage with viem
+
+```typescript
+import { createWalletClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { Router, Trade } from '@uniswap/v2-sdk-next'
+
+const params = Router.swapCallParameters(trade, {
+  allowedSlippage: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 1200,
+  recipient: account.address,
+})
+
+// Encode the function call
+const data = encodeFunctionData({
+  abi: routerAbi,
+  functionName: params.methodName,
+  args: params.args,
+})
+
+// Send transaction
+const hash = await walletClient.sendTransaction({
+  to: ROUTER_ADDRESS,
+  data,
+  value: BigInt(params.value),
+})
+```

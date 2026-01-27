@@ -1,0 +1,239 @@
+# Hook
+
+The `Hook` class provides utilities for working with V4 hook permissions. V4 hooks encode their permissions in the last 14 bits of the hook contract address.
+
+## Import
+
+```typescript
+import { Hook, HookOptions } from '@uniswap/v4-sdk-next'
+```
+
+## Overview
+
+In Uniswap V4, hooks are smart contracts that can execute custom logic at various points during pool operations. The permissions a hook has are encoded directly in its contract address, making it impossible to change permissions after deployment.
+
+The last 14 bits of a hook address indicate which hook functions are enabled:
+
+| Bit | Permission |
+|-----|------------|
+| 0 | afterRemoveLiquidityReturnsDelta |
+| 1 | afterAddLiquidityReturnsDelta |
+| 2 | afterSwapReturnsDelta |
+| 3 | beforeSwapReturnsDelta |
+| 4 | afterDonate |
+| 5 | beforeDonate |
+| 6 | afterSwap |
+| 7 | beforeSwap |
+| 8 | afterRemoveLiquidity |
+| 9 | beforeRemoveLiquidity |
+| 10 | afterAddLiquidity |
+| 11 | beforeAddLiquidity |
+| 12 | afterInitialize |
+| 13 | beforeInitialize |
+
+## Static Methods
+
+### `permissions(address)`
+
+```typescript
+static permissions(address: string): HookPermissions
+```
+
+Returns all permissions for a given hook address.
+
+```typescript
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+const perms = Hook.permissions(hookAddress)
+
+console.log(perms)
+// {
+//   beforeInitialize: false,
+//   afterInitialize: false,
+//   beforeAddLiquidity: false,
+//   afterAddLiquidity: false,
+//   beforeRemoveLiquidity: false,
+//   afterRemoveLiquidity: false,
+//   beforeSwap: true,
+//   afterSwap: true,
+//   beforeDonate: false,
+//   afterDonate: false,
+//   beforeSwapReturnsDelta: false,
+//   afterSwapReturnsDelta: false,
+//   afterAddLiquidityReturnsDelta: false,
+//   afterRemoveLiquidityReturnsDelta: false
+// }
+```
+
+### `hasPermission(address, hookOption)`
+
+```typescript
+static hasPermission(address: string, hookOption: HookOptions): boolean
+```
+
+Check if a hook has a specific permission.
+
+```typescript
+import { HookOptions } from '@uniswap/v4-sdk-next'
+
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+
+Hook.hasPermission(hookAddress, HookOptions.BeforeSwap)  // true
+Hook.hasPermission(hookAddress, HookOptions.AfterSwap)   // true
+Hook.hasPermission(hookAddress, HookOptions.BeforeDonate) // false
+```
+
+### `hasInitializePermissions(address)`
+
+```typescript
+static hasInitializePermissions(address: string): boolean
+```
+
+Check if a hook has any initialize permissions (beforeInitialize or afterInitialize).
+
+```typescript
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+Hook.hasInitializePermissions(hookAddress) // false
+```
+
+### `hasLiquidityPermissions(address)`
+
+```typescript
+static hasLiquidityPermissions(address: string): boolean
+```
+
+Check if a hook has any liquidity-related permissions. This includes:
+- beforeAddLiquidity
+- afterAddLiquidity
+- beforeRemoveLiquidity
+- afterRemoveLiquidity
+
+Note: This implicitly covers the delta permissions since they require the base permissions.
+
+```typescript
+const hookAddress = '0x0000000000000000000000000000000000000C00'
+Hook.hasLiquidityPermissions(hookAddress) // true (has beforeAddLiquidity)
+```
+
+### `hasSwapPermissions(address)`
+
+```typescript
+static hasSwapPermissions(address: string): boolean
+```
+
+Check if a hook has any swap-related permissions (beforeSwap or afterSwap).
+
+```typescript
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+Hook.hasSwapPermissions(hookAddress) // true
+```
+
+### `hasDonatePermissions(address)`
+
+```typescript
+static hasDonatePermissions(address: string): boolean
+```
+
+Check if a hook has any donate-related permissions (beforeDonate or afterDonate).
+
+```typescript
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+Hook.hasDonatePermissions(hookAddress) // false
+```
+
+## Example: Analyzing a Hook Address
+
+```typescript
+import { Hook, HookOptions } from '@uniswap/v4-sdk-next'
+
+function analyzeHook(hookAddress: string) {
+  console.log('Hook Analysis:', hookAddress)
+  console.log('---')
+
+  const perms = Hook.permissions(hookAddress)
+
+  // Group permissions by category
+  console.log('Initialize:',
+    perms.beforeInitialize ? 'before' : '',
+    perms.afterInitialize ? 'after' : ''
+  )
+
+  console.log('Add Liquidity:',
+    perms.beforeAddLiquidity ? 'before' : '',
+    perms.afterAddLiquidity ? 'after' : '',
+    perms.afterAddLiquidityReturnsDelta ? '(returns delta)' : ''
+  )
+
+  console.log('Remove Liquidity:',
+    perms.beforeRemoveLiquidity ? 'before' : '',
+    perms.afterRemoveLiquidity ? 'after' : '',
+    perms.afterRemoveLiquidityReturnsDelta ? '(returns delta)' : ''
+  )
+
+  console.log('Swap:',
+    perms.beforeSwap ? 'before' : '',
+    perms.afterSwap ? 'after' : '',
+    perms.beforeSwapReturnsDelta ? '(before returns delta)' : '',
+    perms.afterSwapReturnsDelta ? '(after returns delta)' : ''
+  )
+
+  console.log('Donate:',
+    perms.beforeDonate ? 'before' : '',
+    perms.afterDonate ? 'after' : ''
+  )
+}
+
+// Analyze a swap-only hook
+analyzeHook('0x000000000000000000000000000000000000C0C0')
+```
+
+## Example: Pool with Hook Validation
+
+```typescript
+import { Pool, Hook, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+function createPool(currencyA, currencyB, fee, tickSpacing, hookAddress, ...poolParams) {
+  // Validate hook if provided
+  if (hookAddress !== ADDRESS_ZERO) {
+    const perms = Hook.permissions(hookAddress)
+
+    // Log which hooks are active
+    console.log('Creating pool with hook permissions:', perms)
+
+    // Warn if hook affects swap calculations
+    if (Hook.hasSwapPermissions(hookAddress)) {
+      console.warn('Warning: Hook may affect swap calculations')
+    }
+  }
+
+  return new Pool(currencyA, currencyB, fee, tickSpacing, hookAddress, ...poolParams)
+}
+```
+
+## Address Validation
+
+All Hook methods validate that the provided address is a valid Ethereum address:
+
+```typescript
+// Valid addresses work
+Hook.permissions('0x000000000000000000000000000000000000C0C0') // OK
+
+// Invalid addresses throw
+Hook.permissions('invalid') // throws 'invalid address'
+Hook.permissions('0x123')   // throws 'invalid address'
+```
+
+## Common Hook Address Patterns
+
+```typescript
+// No hooks (zero address)
+const NO_HOOK = '0x0000000000000000000000000000000000000000'
+
+// Swap hooks only (bits 6-7)
+const SWAP_HOOK = '0x000000000000000000000000000000000000C0' // 0b11000000
+
+// Liquidity hooks only (bits 8-11)
+const LIQUIDITY_HOOK = '0x000000000000000000000000000000000000F00' // 0b111100000000
+
+// All hooks
+const ALL_HOOKS = '0x0000000000000000000000000000000000003FFF' // 0b11111111111111
+```

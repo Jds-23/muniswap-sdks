@@ -1,0 +1,238 @@
+# Pair
+
+The `Pair` class represents a Uniswap V2 liquidity pair.
+
+## Import
+
+```typescript
+import { Pair, computePairAddress } from '@uniswap/v2-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new Pair(
+  currencyAmountA: CurrencyAmount<Token>,
+  currencyAmountB: CurrencyAmount<Token>
+)
+```
+
+Creates a pair with the given reserve amounts. Tokens are automatically sorted.
+
+## Example
+
+```typescript
+import { Pair } from '@uniswap/v2-sdk-next'
+import { Token, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create pair with reserves (typically fetched from chain)
+const pair = new Pair(
+  CurrencyAmount.fromRawAmount(WETH, '2000000000000000000000'),  // 2000 WETH
+  CurrencyAmount.fromRawAmount(USDC, '4000000000000')            // 4M USDC
+)
+
+// Get pair information
+console.log(pair.token0.symbol)          // Token with lower address
+console.log(pair.token1.symbol)          // Token with higher address
+console.log(pair.reserve0.toSignificant(6))
+console.log(pair.reserve1.toSignificant(6))
+```
+
+## Static Methods
+
+### `Pair.getAddress(tokenA, tokenB)`
+
+Computes the pair address for two tokens.
+
+```typescript
+static getAddress(tokenA: Token, tokenB: Token): Address.Address
+```
+
+```typescript
+const pairAddress = Pair.getAddress(WETH, USDC)
+// Deterministic address based on factory and tokens
+```
+
+## Properties
+
+### `token0` / `token1`
+
+```typescript
+get token0(): Token
+get token1(): Token
+```
+
+The two tokens in the pair, sorted by address.
+
+### `reserve0` / `reserve1`
+
+```typescript
+get reserve0(): CurrencyAmount<Token>
+get reserve1(): CurrencyAmount<Token>
+```
+
+The reserve amounts for each token.
+
+### `liquidityToken`
+
+```typescript
+readonly liquidityToken: Token
+```
+
+The LP token representing liquidity in this pair.
+
+### `token0Price` / `token1Price`
+
+```typescript
+get token0Price(): Price<Token, Token>
+get token1Price(): Price<Token, Token>
+```
+
+Current mid prices of the pair.
+
+```typescript
+// Price of WETH in USDC
+console.log(pair.token0Price.toSignificant(6))
+
+// Price of USDC in WETH
+console.log(pair.token1Price.toSignificant(6))
+```
+
+### `chainId`
+
+```typescript
+get chainId(): number
+```
+
+The chain ID of the pair.
+
+## Methods
+
+### `involvesToken(token)`
+
+```typescript
+involvesToken(token: Token): boolean
+```
+
+Returns true if the token is one of the pair's tokens.
+
+### `priceOf(token)`
+
+```typescript
+priceOf(token: Token): Price<Token, Token>
+```
+
+Returns the price of the given token in terms of the other token.
+
+### `reserveOf(token)`
+
+```typescript
+reserveOf(token: Token): CurrencyAmount<Token>
+```
+
+Returns the reserve of the given token.
+
+### `getOutputAmount(inputAmount, calculateFotFees?)`
+
+```typescript
+getOutputAmount(
+  inputAmount: CurrencyAmount<Token>,
+  calculateFotFees?: boolean
+): [CurrencyAmount<Token>, Pair]
+```
+
+Given an input amount, returns the output amount and the pair with updated reserves.
+
+```typescript
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+const [outputAmount, newPair] = pair.getOutputAmount(inputAmount)
+
+console.log(outputAmount.toSignificant(6)) // Amount of USDC received
+```
+
+### `getInputAmount(outputAmount, calculateFotFees?)`
+
+```typescript
+getInputAmount(
+  outputAmount: CurrencyAmount<Token>,
+  calculateFotFees?: boolean
+): [CurrencyAmount<Token>, Pair]
+```
+
+Given a desired output amount, returns the required input amount.
+
+```typescript
+const outputAmount = CurrencyAmount.fromRawAmount(USDC, 2000_000000n) // 2000 USDC
+const [inputAmount, newPair] = pair.getInputAmount(outputAmount)
+
+console.log(inputAmount.toSignificant(6)) // Amount of WETH needed
+```
+
+### `getLiquidityMinted(totalSupply, tokenAmountA, tokenAmountB)`
+
+```typescript
+getLiquidityMinted(
+  totalSupply: CurrencyAmount<Token>,
+  tokenAmountA: CurrencyAmount<Token>,
+  tokenAmountB: CurrencyAmount<Token>
+): CurrencyAmount<Token>
+```
+
+Calculates LP tokens minted for depositing the given amounts.
+
+### `getLiquidityValue(token, totalSupply, liquidity, feeOn?, kLast?)`
+
+```typescript
+getLiquidityValue(
+  token: Token,
+  totalSupply: CurrencyAmount<Token>,
+  liquidity: CurrencyAmount<Token>,
+  feeOn?: boolean,
+  kLast?: BigintIsh
+): CurrencyAmount<Token>
+```
+
+Calculates the value of LP tokens in terms of a specific token.
+
+## Fee-on-Transfer Tokens
+
+The pair handles fee-on-transfer (FOT) tokens automatically when `calculateFotFees` is true:
+
+```typescript
+// Token with buy/sell fees
+const FOT_TOKEN = new Token(
+  1,
+  '0x...',
+  18,
+  'FOT',
+  'Fee Token',
+  false,
+  100n, // 1% buy fee
+  200n  // 2% sell fee
+)
+
+const pair = new Pair(
+  CurrencyAmount.fromRawAmount(FOT_TOKEN, '1000000000000000000000'),
+  CurrencyAmount.fromRawAmount(USDC, '1000000000000')
+)
+
+// FOT fees are calculated automatically
+const [output] = pair.getOutputAmount(inputAmount, true)
+```
+
+## computePairAddress
+
+Utility function to compute pair addresses:
+
+```typescript
+import { computePairAddress } from '@uniswap/v2-sdk-next'
+
+const address = computePairAddress({
+  factoryAddress: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+  tokenA: WETH,
+  tokenB: USDC,
+})
+```

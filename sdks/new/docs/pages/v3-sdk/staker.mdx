@@ -1,0 +1,263 @@
+# Staker
+
+The `Staker` module provides utilities for interacting with the Uniswap V3 Staker contract, which allows liquidity providers to earn additional rewards by staking their position NFTs.
+
+## Import
+
+```typescript
+import {
+  collectRewards,
+  withdrawToken,
+  encodeDeposit
+} from '@uniswap/v3-sdk'
+```
+
+## Types
+
+### IncentiveKey
+
+Represents a unique staking program.
+
+```typescript
+interface IncentiveKey {
+  rewardToken: Token      // The token rewarded for participating
+  pool: Pool              // The pool that staked positions must provide in
+  startTime: BigintIsh    // When the incentive program begins
+  endTime: BigintIsh      // When the incentive program ends
+  refundee: string        // Address that receives remaining rewards at endTime
+}
+```
+
+### ClaimOptions
+
+Options for claiming rewards.
+
+```typescript
+interface ClaimOptions {
+  tokenId: BigintIsh      // The NFT position ID
+  recipient: string       // Address to send rewards to
+  amount?: BigintIsh      // Amount to claim (0 = all)
+}
+```
+
+### WithdrawOptions
+
+Options for withdrawing a position.
+
+```typescript
+interface WithdrawOptions {
+  owner: string           // Position owner address
+  data?: Hex.Hex         // Optional data for safeTransferFrom
+}
+```
+
+### FullWithdrawOptions
+
+Combined options for withdrawing with claim.
+
+```typescript
+type FullWithdrawOptions = ClaimOptions & WithdrawOptions
+```
+
+## Functions
+
+### collectRewards
+
+Produces the calldata for collecting rewards and re-staking a position.
+
+```typescript
+function collectRewards(
+  incentiveKeysInput: IncentiveKey | IncentiveKey[],
+  options: ClaimOptions
+): MethodParameters
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `incentiveKeysInput` | `IncentiveKey \| IncentiveKey[]` | Incentive(s) that the position is staked in |
+| `options` | `ClaimOptions` | Options for claiming rewards |
+
+#### Example
+
+```typescript
+import { collectRewards, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const rewardToken = new Token(1, '0x...', 18, 'UNI')
+const pool = new Pool(token0, token1, FeeAmount.MEDIUM, sqrtRatioX96, liquidity, tick)
+
+const incentiveKey = {
+  rewardToken,
+  pool,
+  startTime: 1625097600n,
+  endTime: 1627776000n,
+  refundee: '0xRefundeeAddress...'
+}
+
+const { calldata, value } = collectRewards(incentiveKey, {
+  tokenId: 12345,
+  recipient: '0xRecipientAddress...',
+  amount: 0n // Claim all available rewards
+})
+```
+
+### withdrawToken
+
+Produces the calldata for withdrawing a staked position and claiming rewards.
+
+```typescript
+function withdrawToken(
+  incentiveKeysInput: IncentiveKey | IncentiveKey[],
+  withdrawOptions: FullWithdrawOptions
+): MethodParameters
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `incentiveKeysInput` | `IncentiveKey \| IncentiveKey[]` | Incentive(s) to unstake from |
+| `withdrawOptions` | `FullWithdrawOptions` | Options for withdrawing and claiming |
+
+#### Example
+
+```typescript
+import { withdrawToken } from '@uniswap/v3-sdk'
+
+const { calldata, value } = withdrawToken(incentiveKey, {
+  tokenId: 12345,
+  recipient: '0xRecipientAddress...', // Reward recipient
+  owner: '0xOwnerAddress...',         // NFT recipient
+  amount: 0n                          // Claim all rewards
+})
+```
+
+### encodeDeposit
+
+Encodes the data for depositing and staking a position. This is passed to `safeTransferFrom` when transferring the NFT to the staker contract.
+
+```typescript
+function encodeDeposit(
+  incentiveKeysInput: IncentiveKey | IncentiveKey[]
+): Hex.Hex
+```
+
+#### Example
+
+```typescript
+import { encodeDeposit, safeTransferFromParameters } from '@uniswap/v3-sdk'
+
+// Encode deposit data for staking in an incentive
+const depositData = encodeDeposit(incentiveKey)
+
+// Use with safeTransferFrom to deposit and stake in one transaction
+const { calldata } = safeTransferFromParameters({
+  sender: ownerAddress,
+  recipient: STAKER_CONTRACT_ADDRESS,
+  tokenId: 12345,
+  data: depositData
+})
+```
+
+## Complete Staking Workflow
+
+### 1. Deposit and Stake
+
+Transfer your position NFT to the staker contract with encoded incentive data:
+
+```typescript
+import { encodeDeposit, safeTransferFromParameters } from '@uniswap/v3-sdk'
+
+const incentiveKey = {
+  rewardToken,
+  pool,
+  startTime: 1625097600n,
+  endTime: 1627776000n,
+  refundee: refundeeAddress
+}
+
+// Encode the deposit data
+const depositData = encodeDeposit(incentiveKey)
+
+// Create the transfer calldata
+const { calldata } = safeTransferFromParameters({
+  sender: userAddress,
+  recipient: STAKER_ADDRESS,
+  tokenId: positionNftId,
+  data: depositData
+})
+
+// Execute the transaction to deposit and stake
+await nftManagerContract.safeTransferFrom(
+  userAddress,
+  STAKER_ADDRESS,
+  positionNftId,
+  depositData
+)
+```
+
+### 2. Collect Rewards (Stay Staked)
+
+Claim accumulated rewards while keeping the position staked:
+
+```typescript
+import { collectRewards } from '@uniswap/v3-sdk'
+
+const { calldata, value } = collectRewards(incentiveKey, {
+  tokenId: positionNftId,
+  recipient: userAddress,
+  amount: 0n // Claim all
+})
+
+// Execute on staker contract
+await stakerContract.multicall([calldata])
+```
+
+### 3. Withdraw and Claim
+
+Unstake the position, claim rewards, and get the NFT back:
+
+```typescript
+import { withdrawToken } from '@uniswap/v3-sdk'
+
+const { calldata, value } = withdrawToken(incentiveKey, {
+  tokenId: positionNftId,
+  recipient: userAddress, // Reward recipient
+  owner: userAddress,     // NFT recipient
+  amount: 0n
+})
+
+// Execute withdrawal
+await stakerContract.multicall([calldata])
+```
+
+## Staking in Multiple Incentives
+
+You can stake a position in multiple incentive programs:
+
+```typescript
+// Deposit with multiple incentives
+const depositData = encodeDeposit([incentiveKey1, incentiveKey2])
+
+// Collect from multiple incentives
+const { calldata } = collectRewards([incentiveKey1, incentiveKey2], {
+  tokenId: positionNftId,
+  recipient: userAddress,
+  amount: 0n
+})
+
+// Withdraw from multiple incentives
+const { calldata } = withdrawToken([incentiveKey1, incentiveKey2], {
+  tokenId: positionNftId,
+  recipient: userAddress,
+  owner: userAddress,
+  amount: 0n
+})
+```
+
+## Contract Address
+
+The Uniswap V3 Staker contract is deployed at:
+- Mainnet: `0xe34139463bA50bD61336E0c446Bd8C0867c6fE65`

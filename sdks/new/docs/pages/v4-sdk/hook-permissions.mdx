@@ -1,0 +1,258 @@
+# Hook Permissions
+
+Uniswap V4 hooks encode their permissions in the contract address. This page documents the `HookOptions` enum and all 14 hook permission types.
+
+## Import
+
+```typescript
+import { HookOptions, hookFlagIndex, type HookPermissions } from '@uniswap/v4-sdk-next'
+```
+
+## HookOptions Enum
+
+The `HookOptions` enum defines all available hook permissions:
+
+```typescript
+enum HookOptions {
+  AfterRemoveLiquidityReturnsDelta = 'afterRemoveLiquidityReturnsDelta',
+  AfterAddLiquidityReturnsDelta = 'afterAddLiquidityReturnsDelta',
+  AfterSwapReturnsDelta = 'afterSwapReturnsDelta',
+  BeforeSwapReturnsDelta = 'beforeSwapReturnsDelta',
+  AfterDonate = 'afterDonate',
+  BeforeDonate = 'beforeDonate',
+  AfterSwap = 'afterSwap',
+  BeforeSwap = 'beforeSwap',
+  AfterRemoveLiquidity = 'afterRemoveLiquidity',
+  BeforeRemoveLiquidity = 'beforeRemoveLiquidity',
+  AfterAddLiquidity = 'afterAddLiquidity',
+  BeforeAddLiquidity = 'beforeAddLiquidity',
+  AfterInitialize = 'afterInitialize',
+  BeforeInitialize = 'beforeInitialize',
+}
+```
+
+## HookPermissions Type
+
+The `HookPermissions` type represents all permissions as a boolean object:
+
+```typescript
+type HookPermissions = {
+  [key in HookOptions]: boolean
+}
+```
+
+## Hook Flag Index
+
+The `hookFlagIndex` constant maps each permission to its bit position in the hook address:
+
+```typescript
+const hookFlagIndex: { [key in HookOptions]: number } = {
+  afterRemoveLiquidityReturnsDelta: 0,
+  afterAddLiquidityReturnsDelta: 1,
+  afterSwapReturnsDelta: 2,
+  beforeSwapReturnsDelta: 3,
+  afterDonate: 4,
+  beforeDonate: 5,
+  afterSwap: 6,
+  beforeSwap: 7,
+  afterRemoveLiquidity: 8,
+  beforeRemoveLiquidity: 9,
+  afterAddLiquidity: 10,
+  beforeAddLiquidity: 11,
+  afterInitialize: 12,
+  beforeInitialize: 13,
+}
+```
+
+## Permission Categories
+
+### Initialize Permissions
+
+Called when a pool is initialized.
+
+| Permission | Bit | Description |
+|------------|-----|-------------|
+| `BeforeInitialize` | 13 | Called before pool initialization |
+| `AfterInitialize` | 12 | Called after pool initialization |
+
+```typescript
+import { Hook, HookOptions } from '@uniswap/v4-sdk-next'
+
+// Check initialize permissions
+Hook.hasPermission(hookAddress, HookOptions.BeforeInitialize)
+Hook.hasPermission(hookAddress, HookOptions.AfterInitialize)
+
+// Or use convenience method
+Hook.hasInitializePermissions(hookAddress)
+```
+
+### Liquidity Permissions
+
+Called during liquidity operations (mint, burn, modify).
+
+| Permission | Bit | Description |
+|------------|-----|-------------|
+| `BeforeAddLiquidity` | 11 | Called before adding liquidity |
+| `AfterAddLiquidity` | 10 | Called after adding liquidity |
+| `BeforeRemoveLiquidity` | 9 | Called before removing liquidity |
+| `AfterRemoveLiquidity` | 8 | Called after removing liquidity |
+
+```typescript
+// Check liquidity permissions
+Hook.hasPermission(hookAddress, HookOptions.BeforeAddLiquidity)
+Hook.hasPermission(hookAddress, HookOptions.AfterAddLiquidity)
+Hook.hasPermission(hookAddress, HookOptions.BeforeRemoveLiquidity)
+Hook.hasPermission(hookAddress, HookOptions.AfterRemoveLiquidity)
+
+// Or use convenience method
+Hook.hasLiquidityPermissions(hookAddress)
+```
+
+### Swap Permissions
+
+Called during swap operations.
+
+| Permission | Bit | Description |
+|------------|-----|-------------|
+| `BeforeSwap` | 7 | Called before a swap |
+| `AfterSwap` | 6 | Called after a swap |
+
+```typescript
+// Check swap permissions
+Hook.hasPermission(hookAddress, HookOptions.BeforeSwap)
+Hook.hasPermission(hookAddress, HookOptions.AfterSwap)
+
+// Or use convenience method
+Hook.hasSwapPermissions(hookAddress)
+```
+
+### Donate Permissions
+
+Called during donate operations (adding to pool fees without receiving LP tokens).
+
+| Permission | Bit | Description |
+|------------|-----|-------------|
+| `BeforeDonate` | 5 | Called before a donate |
+| `AfterDonate` | 4 | Called after a donate |
+
+```typescript
+// Check donate permissions
+Hook.hasPermission(hookAddress, HookOptions.BeforeDonate)
+Hook.hasPermission(hookAddress, HookOptions.AfterDonate)
+
+// Or use convenience method
+Hook.hasDonatePermissions(hookAddress)
+```
+
+### Delta Permissions
+
+These special permissions allow hooks to modify the token amounts in operations.
+
+| Permission | Bit | Description |
+|------------|-----|-------------|
+| `BeforeSwapReturnsDelta` | 3 | beforeSwap can modify swap amounts |
+| `AfterSwapReturnsDelta` | 2 | afterSwap can modify swap amounts |
+| `AfterAddLiquidityReturnsDelta` | 1 | afterAddLiquidity can modify token amounts |
+| `AfterRemoveLiquidityReturnsDelta` | 0 | afterRemoveLiquidity can modify token amounts |
+
+```typescript
+// Check delta permissions
+Hook.hasPermission(hookAddress, HookOptions.BeforeSwapReturnsDelta)
+Hook.hasPermission(hookAddress, HookOptions.AfterSwapReturnsDelta)
+Hook.hasPermission(hookAddress, HookOptions.AfterAddLiquidityReturnsDelta)
+Hook.hasPermission(hookAddress, HookOptions.AfterRemoveLiquidityReturnsDelta)
+```
+
+## Computing Hook Addresses
+
+Hook addresses must have specific bits set to enable permissions. Here's how to compute them:
+
+```typescript
+import { hookFlagIndex, HookOptions } from '@uniswap/v4-sdk-next'
+
+function computeHookFlags(permissions: HookOptions[]): number {
+  let flags = 0
+  for (const permission of permissions) {
+    flags |= (1 << hookFlagIndex[permission])
+  }
+  return flags
+}
+
+// Example: Hook with beforeSwap and afterSwap
+const swapHookFlags = computeHookFlags([
+  HookOptions.BeforeSwap,
+  HookOptions.AfterSwap
+])
+// Result: 0xC0 (bits 6 and 7 set)
+
+// The hook address must end with these flags
+// e.g., 0x000000000000000000000000000000000000C0C0
+```
+
+## Example: Creating Permission-Aware Code
+
+```typescript
+import { Pool, Hook, HookOptions, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+async function getSwapQuote(pool: Pool, inputAmount: CurrencyAmount) {
+  // Check if the hook affects swap calculations
+  if (pool.hooks !== ADDRESS_ZERO) {
+    const hasSwapHooks = Hook.hasSwapPermissions(pool.hooks)
+    const hasDeltaHooks =
+      Hook.hasPermission(pool.hooks, HookOptions.BeforeSwapReturnsDelta) ||
+      Hook.hasPermission(pool.hooks, HookOptions.AfterSwapReturnsDelta)
+
+    if (hasSwapHooks || hasDeltaHooks) {
+      throw new Error(
+        'Cannot compute quote for pools with swap hooks. ' +
+        'Use an on-chain quoter instead.'
+      )
+    }
+  }
+
+  // Safe to compute quote off-chain
+  return pool.getOutputAmount(inputAmount)
+}
+```
+
+## Permission Bit Layout
+
+The last 14 bits of a hook address determine its permissions:
+
+```
+Address: 0x...............XXXX
+                          ^^^^
+                          |||\- bits 0-3: Delta permissions
+                          ||\-- bits 4-5: Donate permissions
+                          |\--- bits 6-7: Swap permissions
+                          \---- bits 8-13: Liquidity & Initialize permissions
+```
+
+Visual representation of bits:
+
+```
+Bit 13: beforeInitialize
+Bit 12: afterInitialize
+Bit 11: beforeAddLiquidity
+Bit 10: afterAddLiquidity
+Bit 9:  beforeRemoveLiquidity
+Bit 8:  afterRemoveLiquidity
+Bit 7:  beforeSwap
+Bit 6:  afterSwap
+Bit 5:  beforeDonate
+Bit 4:  afterDonate
+Bit 3:  beforeSwapReturnsDelta
+Bit 2:  afterSwapReturnsDelta
+Bit 1:  afterAddLiquidityReturnsDelta
+Bit 0:  afterRemoveLiquidityReturnsDelta
+```
+
+## Common Permission Combinations
+
+| Use Case | Hex Suffix | Permissions |
+|----------|------------|-------------|
+| No hooks | `0x0000` | None |
+| Swap monitoring | `0x00C0` | beforeSwap, afterSwap |
+| Fee taking | `0x00C4` | beforeSwap, afterSwap, afterSwapReturnsDelta |
+| Liquidity management | `0x0F00` | All liquidity hooks |
+| Full control | `0x3FFF` | All permissions |

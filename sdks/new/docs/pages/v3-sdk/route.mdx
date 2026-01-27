@@ -1,0 +1,121 @@
+# Route
+
+The `Route` class represents a route through one or more Uniswap V3 pools for a swap.
+
+## Import
+
+```typescript
+import { Route } from '@uniswap/v3-sdk'
+```
+
+## Constructor
+
+Creates a new Route instance.
+
+```typescript
+new Route<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  input: TInput,
+  output: TOutput
+)
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `pools` | `Pool[]` | An array of interconnected Pool objects |
+| `input` | `TInput` | The input currency |
+| `output` | `TOutput` | The output currency |
+
+## Example
+
+```typescript
+import { Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token, Ether } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EescdeCB5', 18, 'DAI')
+
+// Single pool route
+const pool1 = new Pool(USDC, WETH, FeeAmount.MEDIUM, sqrtRatioX96, liquidity, tick)
+const singleRoute = new Route([pool1], USDC, WETH)
+
+// Multi-pool route (USDC -> WETH -> DAI)
+const pool2 = new Pool(WETH, DAI, FeeAmount.MEDIUM, sqrtRatioX96_2, liquidity_2, tick_2)
+const multiRoute = new Route([pool1, pool2], USDC, DAI)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `pools` | `Pool[]` | The pools that make up this route |
+| `tokenPath` | `Token[]` | The tokens in the route path (input to output) |
+| `input` | `TInput` | The input currency for this route |
+| `output` | `TOutput` | The output currency for this route |
+
+## Getters
+
+### chainId
+
+Returns the chain ID of the route.
+
+```typescript
+get chainId(): number
+```
+
+### midPrice
+
+Returns the mid price of the route. This is calculated by multiplying the prices of each pool in the route.
+
+```typescript
+get midPrice(): Price<TInput, TOutput>
+```
+
+#### Example
+
+```typescript
+const route = new Route([pool1, pool2], USDC, DAI)
+const price = route.midPrice
+console.log(`1 USDC = ${price.toSignificant(6)} DAI`)
+```
+
+## Usage Notes
+
+### Route Validation
+
+When constructing a route, the SDK validates:
+
+1. The pools array is not empty
+2. All pools are on the same chain
+3. The input currency is involved in the first pool
+4. The output currency is involved in the last pool
+5. Each pool in the sequence is connected (output of one pool is input of the next)
+
+### Multi-hop Routes
+
+Routes can contain multiple pools to enable swaps between tokens that don't have a direct pool:
+
+```typescript
+// USDC -> WETH -> DAI route
+const route = new Route(
+  [usdcWethPool, wethDaiPool],
+  USDC,
+  DAI
+)
+```
+
+### Native Currency Support
+
+Routes can start or end with native currency (ETH). The SDK will automatically handle wrapping/unwrapping:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core'
+
+const ETHER = Ether.onChain(1)
+
+// ETH -> USDC route
+const route = new Route([wethUsdcPool], ETHER, USDC)
+```

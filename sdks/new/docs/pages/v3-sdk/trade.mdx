@@ -1,0 +1,277 @@
+# Trade
+
+The `Trade` class represents a trade executed against a set of routes where some percentage of the input may be split across each route.
+
+## Import
+
+```typescript
+import { Trade } from '@uniswap/v3-sdk'
+```
+
+## Creating Trades
+
+Trades are created using static factory methods rather than the constructor directly.
+
+### fromRoute
+
+Constructs a trade from a single route.
+
+```typescript
+static async fromRoute<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(
+  route: Route<TInput, TOutput>,
+  amount: TTradeType extends TradeType.EXACT_INPUT ? CurrencyAmount<TInput> : CurrencyAmount<TOutput>,
+  tradeType: TTradeType
+): Promise<Trade<TInput, TOutput, TTradeType>>
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `route` | `Route<TInput, TOutput>` | The route of the trade |
+| `amount` | `CurrencyAmount` | The amount being passed in or expected out |
+| `tradeType` | `TTradeType` | The type of trade (EXACT_INPUT or EXACT_OUTPUT) |
+
+#### Example
+
+```typescript
+import { Trade, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { CurrencyAmount, TradeType } from '@uniswap/sdk-core'
+
+const route = new Route([pool], USDC, WETH)
+const inputAmount = CurrencyAmount.fromRawAmount(USDC, '1000000') // 1 USDC
+
+const trade = await Trade.fromRoute(
+  route,
+  inputAmount,
+  TradeType.EXACT_INPUT
+)
+```
+
+### fromRoutes
+
+Constructs a trade from multiple routes with split amounts.
+
+```typescript
+static async fromRoutes<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(
+  routes: {
+    amount: TTradeType extends TradeType.EXACT_INPUT ? CurrencyAmount<TInput> : CurrencyAmount<TOutput>
+    route: Route<TInput, TOutput>
+  }[],
+  tradeType: TTradeType
+): Promise<Trade<TInput, TOutput, TTradeType>>
+```
+
+#### Example
+
+```typescript
+const trade = await Trade.fromRoutes(
+  [
+    { route: route1, amount: amount1 },
+    { route: route2, amount: amount2 }
+  ],
+  TradeType.EXACT_INPUT
+)
+```
+
+### createUncheckedTrade
+
+Creates a trade without computing the amounts. Useful when amounts are already known.
+
+```typescript
+static createUncheckedTrade<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(args: {
+  route: Route<TInput, TOutput>
+  inputAmount: CurrencyAmount<TInput>
+  outputAmount: CurrencyAmount<TOutput>
+  tradeType: TTradeType
+}): Trade<TInput, TOutput, TTradeType>
+```
+
+### createUncheckedTradeWithMultipleRoutes
+
+Creates a trade with multiple routes without computing amounts.
+
+```typescript
+static createUncheckedTradeWithMultipleRoutes<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(args: {
+  routes: {
+    route: Route<TInput, TOutput>
+    inputAmount: CurrencyAmount<TInput>
+    outputAmount: CurrencyAmount<TOutput>
+  }[]
+  tradeType: TTradeType
+}): Trade<TInput, TOutput, TTradeType>
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `swaps` | `Array` | The swaps for this trade with route, inputAmount, and outputAmount |
+| `tradeType` | `TTradeType` | The type of trade (EXACT_INPUT or EXACT_OUTPUT) |
+
+## Getters
+
+### route
+
+Returns the route for a single-route trade. Throws if the trade has multiple routes.
+
+```typescript
+get route(): Route<TInput, TOutput>
+```
+
+### inputAmount
+
+Returns the total input amount for the trade.
+
+```typescript
+get inputAmount(): CurrencyAmount<TInput>
+```
+
+### outputAmount
+
+Returns the total output amount for the trade.
+
+```typescript
+get outputAmount(): CurrencyAmount<TOutput>
+```
+
+### executionPrice
+
+Returns the price expressed in terms of output amount / input amount.
+
+```typescript
+get executionPrice(): Price<TInput, TOutput>
+```
+
+### priceImpact
+
+Returns the percent difference between the route's mid price and the execution price.
+
+```typescript
+get priceImpact(): Percent
+```
+
+### inputTax
+
+Returns the sell tax for the input currency (if any).
+
+```typescript
+get inputTax(): Percent
+```
+
+### outputTax
+
+Returns the buy tax for the output currency (if any).
+
+```typescript
+get outputTax(): Percent
+```
+
+## Methods
+
+### minimumAmountOut
+
+Get the minimum amount that must be received for this trade, given a slippage tolerance.
+
+```typescript
+minimumAmountOut(slippageTolerance: Percent): CurrencyAmount<TOutput>
+```
+
+#### Example
+
+```typescript
+import { Percent } from '@uniswap/sdk-core'
+
+const slippage = new Percent(50, 10000) // 0.5%
+const minOut = trade.minimumAmountOut(slippage)
+```
+
+### maximumAmountIn
+
+Get the maximum amount that should be spent for this trade, given a slippage tolerance.
+
+```typescript
+maximumAmountIn(slippageTolerance: Percent): CurrencyAmount<TInput>
+```
+
+### worstExecutionPrice
+
+Return the execution price after accounting for slippage tolerance.
+
+```typescript
+worstExecutionPrice(slippageTolerance: Percent): Price<TInput, TOutput>
+```
+
+## Static Methods
+
+### bestTradeExactIn
+
+Given a list of pools, returns the top trades that go from an input token amount to an output token.
+
+```typescript
+static async bestTradeExactIn<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  currencyAmountIn: CurrencyAmount<TInput>,
+  currencyOut: TOutput,
+  options?: BestTradeOptions,
+  currentPools?: Pool[],
+  nextAmountIn?: CurrencyAmount<Currency>,
+  bestTrades?: Trade<TInput, TOutput, TradeType.EXACT_INPUT>[]
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_INPUT>[]>
+```
+
+#### BestTradeOptions
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `maxNumResults` | `number` | 3 | Maximum number of results to return |
+| `maxHops` | `number` | 3 | Maximum number of hops a trade can make |
+
+#### Example
+
+```typescript
+import { Trade, Pool } from '@uniswap/v3-sdk'
+import { CurrencyAmount } from '@uniswap/sdk-core'
+
+const pools = [pool1, pool2, pool3]
+const amountIn = CurrencyAmount.fromRawAmount(USDC, '1000000')
+
+const trades = await Trade.bestTradeExactIn(
+  pools,
+  amountIn,
+  WETH,
+  { maxNumResults: 3, maxHops: 3 }
+)
+
+// Get the best trade
+const bestTrade = trades[0]
+```
+
+### bestTradeExactOut
+
+Given a list of pools, returns the top trades that go from an input token to an output token amount.
+
+```typescript
+static async bestTradeExactOut<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  currencyIn: TInput,
+  currencyAmountOut: CurrencyAmount<TOutput>,
+  options?: BestTradeOptions,
+  currentPools?: Pool[],
+  nextAmountOut?: CurrencyAmount<Currency>,
+  bestTrades?: Trade<TInput, TOutput, TradeType.EXACT_OUTPUT>[]
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_OUTPUT>[]>
+```
+
+#### Example
+
+```typescript
+const amountOut = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+
+const trades = await Trade.bestTradeExactOut(
+  pools,
+  USDC,
+  amountOut,
+  { maxNumResults: 3, maxHops: 3 }
+)
+```

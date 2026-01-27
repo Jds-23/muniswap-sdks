@@ -1,0 +1,83 @@
+# WETH9
+
+The `WETH9` mapping provides the Wrapped Ether (WETH) token addresses for supported chains.
+
+## Import
+
+```typescript
+import { WETH9 } from '@uniswap/sdk-core-next'
+```
+
+## Type
+
+```typescript
+const WETH9: { [chainId: number]: Token }
+```
+
+## Usage
+
+```typescript
+import { WETH9 } from '@uniswap/sdk-core-next'
+
+// Get WETH on Ethereum mainnet
+const weth = WETH9[1]
+
+console.log(weth.address) // '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+console.log(weth.symbol)  // 'WETH'
+console.log(weth.name)    // 'Wrapped Ether'
+
+// Get WETH on Arbitrum
+const arbWeth = WETH9[42161]
+console.log(arbWeth.address) // '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+```
+
+## Supported Chains
+
+| Chain | Chain ID | Symbol | Address |
+|-------|----------|--------|---------|
+| Ethereum | 1 | WETH | `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2` |
+| Sepolia | 11155111 | WETH | `0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14` |
+| Optimism | 10 | WETH | `0x4200000000000000000000000000000000000006` |
+| Optimism Sepolia | 11155420 | WETH | `0x4200000000000000000000000000000000000006` |
+| Arbitrum | 42161 | WETH | `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1` |
+| Arbitrum Sepolia | 421614 | WETH | `0x980B62Da83eFf3D4576C647993b0c1D7faf17c73` |
+| Base | 8453 | WETH | `0x4200000000000000000000000000000000000006` |
+| Base Sepolia | 84532 | WETH | `0x4200000000000000000000000000000000000006` |
+| BNB Chain | 56 | WBNB | `0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c` |
+| Polygon | 137 | WMATIC | `0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270` |
+| Avalanche | 43114 | WAVAX | `0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7` |
+| Zora | 7777777 | WETH | `0x4200000000000000000000000000000000000006` |
+| Blast | 81457 | WETH | `0x4300000000000000000000000000000000000004` |
+| zkSync Era | 324 | WETH | `0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91` |
+| World Chain | 480 | WETH | `0x4200000000000000000000000000000000000006` |
+| Unichain | 130 | WETH | `0x4200000000000000000000000000000000000006` |
+
+## Usage with Ether
+
+The `WETH9` mapping is used internally by the [Ether](/sdk-core/ether) class:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+
+const eth = Ether.onChain(1)
+const weth = eth.wrapped // Uses WETH9[1] internally
+
+// This is equivalent to:
+import { WETH9 } from '@uniswap/sdk-core-next'
+const weth2 = WETH9[1]
+
+weth.equals(weth2) // true
+```
+
+## Checking Support
+
+```typescript
+import { WETH9 } from '@uniswap/sdk-core-next'
+
+function isChainSupported(chainId: number): boolean {
+  return WETH9[chainId] !== undefined
+}
+
+isChainSupported(1)     // true
+isChainSupported(12345) // false
+```

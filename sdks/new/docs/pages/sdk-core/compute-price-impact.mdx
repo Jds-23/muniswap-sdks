@@ -1,0 +1,120 @@
+# computePriceImpact
+
+Computes the percent difference between the mid price and the execution price of a trade.
+
+## Import
+
+```typescript
+import { computePriceImpact } from '@uniswap/sdk-core-next'
+```
+
+## Function Signature
+
+```typescript
+function computePriceImpact<TBase extends Currency, TQuote extends Currency>(
+  midPrice: Price<TBase, TQuote>,
+  inputAmount: CurrencyAmount<TBase>,
+  outputAmount: CurrencyAmount<TQuote>
+): Percent
+```
+
+## Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `midPrice` | `Price<TBase, TQuote>` | The mid price before the trade |
+| `inputAmount` | `CurrencyAmount<TBase>` | The input amount of the trade |
+| `outputAmount` | `CurrencyAmount<TQuote>` | The output amount of the trade |
+
+## Returns
+
+`Percent` - The price impact as a percentage (positive means worse execution than mid price).
+
+## Formula
+
+```
+priceImpact = (quotedOutput - actualOutput) / quotedOutput
+```
+
+Where:
+- `quotedOutput` = midPrice * inputAmount (expected output at mid price)
+- `actualOutput` = outputAmount (what you actually receive)
+
+## Example
+
+```typescript
+import {
+  computePriceImpact,
+  Price,
+  CurrencyAmount,
+  Token,
+} from '@uniswap/sdk-core-next'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Mid price: 1 WETH = 2000 USDC
+const midPrice = new Price(WETH, USDC, 1n, 2000n)
+
+// Trade: Swap 1 WETH
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+
+// Actual output: 1980 USDC (worse than mid price due to slippage)
+const outputAmount = CurrencyAmount.fromRawAmount(USDC, 1980_000000n)
+
+const priceImpact = computePriceImpact(midPrice, inputAmount, outputAmount)
+
+console.log(priceImpact.toSignificant(4)) // "1" (1% price impact)
+console.log(priceImpact.toFixed(2))       // "1.00"
+
+// Expected: 2000 USDC, Got: 1980 USDC
+// Impact = (2000 - 1980) / 2000 = 0.01 = 1%
+```
+
+## Use Cases
+
+### Trade Warning Thresholds
+
+```typescript
+import { Percent, computePriceImpact } from '@uniswap/sdk-core-next'
+
+const LOW_IMPACT = new Percent(1, 100)     // 1%
+const MEDIUM_IMPACT = new Percent(3, 100)  // 3%
+const HIGH_IMPACT = new Percent(5, 100)    // 5%
+
+function getImpactWarning(
+  midPrice: Price<Currency, Currency>,
+  inputAmount: CurrencyAmount<Currency>,
+  outputAmount: CurrencyAmount<Currency>
+): 'none' | 'low' | 'medium' | 'high' {
+  const impact = computePriceImpact(midPrice, inputAmount, outputAmount)
+
+  if (impact.lessThan(LOW_IMPACT)) return 'none'
+  if (impact.lessThan(MEDIUM_IMPACT)) return 'low'
+  if (impact.lessThan(HIGH_IMPACT)) return 'medium'
+  return 'high'
+}
+```
+
+### With Pool Data
+
+```typescript
+import { Pool } from '@uniswap/v3-sdk-next'
+
+async function getTradeImpact(pool: Pool, inputAmount: CurrencyAmount<Token>) {
+  // Get mid price from pool
+  const midPrice = pool.priceOf(inputAmount.currency)
+
+  // Simulate the trade
+  const [outputAmount] = await pool.getOutputAmount(inputAmount)
+
+  // Calculate impact
+  return computePriceImpact(midPrice, inputAmount, outputAmount)
+}
+```
+
+## Notes
+
+- A positive price impact means the execution price is worse than the mid price
+- Large trades in low liquidity pools will have higher price impact
+- Price impact is different from slippage tolerance (slippage is the maximum acceptable deviation)

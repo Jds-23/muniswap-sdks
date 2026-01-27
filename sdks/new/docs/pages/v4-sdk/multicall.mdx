@@ -1,0 +1,164 @@
+# Multicall
+
+The `Multicall` class provides utilities for batching multiple contract calls into a single transaction.
+
+## Import
+
+```typescript
+import { Multicall } from '@uniswap/v4-sdk-next'
+```
+
+## Overview
+
+Multicall allows you to combine multiple contract calls into a single transaction, reducing gas costs and ensuring atomic execution. This is commonly used with the V4 PositionManager to batch operations like permits and liquidity modifications.
+
+## Static Methods
+
+### `encodeMulticall(calldataList)`
+
+```typescript
+static encodeMulticall(calldataList: string | string[]): string
+```
+
+Encodes a list of calldatas into a single multicall calldata.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `calldataList` | `string \| string[]` | The calldata(s) to encode |
+
+#### Returns
+
+If a single calldata is provided, returns it unchanged. If multiple calldatas are provided, returns the encoded multicall.
+
+```typescript
+import { Multicall, V4PositionManager } from '@uniswap/v4-sdk-next'
+
+// Single call - returns unchanged
+const singleCalldata = Multicall.encodeMulticall(someCalldata)
+
+// Multiple calls - encodes as multicall
+const permitCalldata = V4PositionManager.encodePermitBatch(owner, permitBatch, signature)
+const mintCalldata = V4PositionManager.encodeModifyLiquidities(plannerData, deadline)
+
+const multicallData = Multicall.encodeMulticall([
+  permitCalldata,
+  mintCalldata
+])
+```
+
+### `decodeMulticall(encodedCalldata)`
+
+```typescript
+static decodeMulticall(encodedCalldata: string): string[]
+```
+
+Decodes a multicall calldata into its component calldatas.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `encodedCalldata` | `string` | The encoded multicall calldata |
+
+#### Returns
+
+An array of the individual calldatas.
+
+```typescript
+const calldatas = Multicall.decodeMulticall(multicallData)
+// Returns: ['0x...', '0x...']
+```
+
+## Example: Batch Position Operations
+
+```typescript
+import { Multicall, V4PositionManager, V4PositionPlanner } from '@uniswap/v4-sdk-next'
+import { Percent } from '@uniswap/sdk-core-next'
+
+// Build the calldata list
+const calldataList: string[] = []
+
+// 1. Add permit (if using Permit2)
+if (batchPermit) {
+  calldataList.push(
+    V4PositionManager.encodePermitBatch(
+      owner,
+      batchPermit.permitBatch,
+      batchPermit.signature
+    )
+  )
+}
+
+// 2. Add the position modification
+const planner = new V4PositionPlanner()
+planner.addMint(pool, tickLower, tickUpper, liquidity, amount0Max, amount1Max, recipient)
+planner.addSettlePair(pool.currency0, pool.currency1)
+
+calldataList.push(
+  V4PositionManager.encodeModifyLiquidities(planner.finalize(), deadline)
+)
+
+// 3. Encode as multicall
+const multicallData = Multicall.encodeMulticall(calldataList)
+
+// 4. Send transaction
+await positionManager.multicall(multicallData, { value: ethValue })
+```
+
+## Example: Initialize Pool and Mint Position
+
+```typescript
+import { Multicall, V4PositionManager, Pool } from '@uniswap/v4-sdk-next'
+
+const calldataList: string[] = []
+
+// 1. Initialize the pool
+const poolKey = Pool.getPoolKey(currency0, currency1, fee, tickSpacing, hooks)
+const initializeCalldata = V4PositionManager.createCallParameters(poolKey, sqrtPriceX96)
+calldataList.push(initializeCalldata.calldata)
+
+// 2. Add the mint calldata
+const { calldata: mintCalldata } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline,
+  recipient,
+  useNative: ETH
+})
+calldataList.push(mintCalldata)
+
+// 3. Encode and send
+const multicallData = Multicall.encodeMulticall(calldataList)
+```
+
+## ABI
+
+The Multicall function uses the following ABI:
+
+```typescript
+const MULTICALL_ABI = {
+  name: 'multicall',
+  type: 'function',
+  inputs: [{ name: 'data', type: 'bytes[]' }],
+  outputs: [{ name: 'results', type: 'bytes[]' }],
+  stateMutability: 'payable',
+}
+```
+
+## Optimization
+
+The `encodeMulticall` function automatically optimizes by returning the single calldata unchanged when only one call is provided:
+
+```typescript
+// These produce identical results
+const direct = someCalldata
+const wrapped = Multicall.encodeMulticall(someCalldata)
+// direct === wrapped (single call not wrapped)
+
+// This wraps in multicall
+const batched = Multicall.encodeMulticall([call1, call2])
+// batched !== call1 (multiple calls are wrapped)
+```
+
+This optimization saves gas when only a single operation is needed.

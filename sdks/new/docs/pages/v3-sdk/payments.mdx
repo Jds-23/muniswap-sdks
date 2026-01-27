@@ -1,0 +1,210 @@
+# Payments
+
+The `Payments` module provides utilities for encoding calldata related to ETH/WETH handling and token sweeping in Uniswap V3 periphery contracts.
+
+## Import
+
+```typescript
+import {
+  encodeUnwrapWETH9,
+  encodeSweepToken,
+  encodeRefundETH
+} from '@uniswap/v3-sdk'
+```
+
+## Functions
+
+### encodeUnwrapWETH9
+
+Encodes the calldata to unwrap WETH9 to native ETH.
+
+```typescript
+function encodeUnwrapWETH9(options: UnwrapWETH9Options): Hex.Hex
+```
+
+#### UnwrapWETH9Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `amountMinimum` | `BigintIsh` | The minimum amount of WETH9 to unwrap |
+| `recipient` | `string` | The recipient of the native ETH |
+| `feeOptions` | `{ fee: Percent; recipient: string }` | Optional fee to take |
+
+#### Example
+
+```typescript
+import { encodeUnwrapWETH9 } from '@uniswap/v3-sdk'
+
+// Basic unwrap
+const calldata = encodeUnwrapWETH9({
+  amountMinimum: '1000000000000000000', // 1 WETH minimum
+  recipient: '0x1234567890123456789012345678901234567890'
+})
+```
+
+#### Example with Fee
+
+```typescript
+import { encodeUnwrapWETH9 } from '@uniswap/v3-sdk'
+import { Percent } from '@uniswap/sdk-core'
+
+const calldata = encodeUnwrapWETH9({
+  amountMinimum: '1000000000000000000',
+  recipient: userAddress,
+  feeOptions: {
+    fee: new Percent(3, 1000), // 0.3% fee
+    recipient: feeRecipientAddress
+  }
+})
+```
+
+### encodeSweepToken
+
+Encodes the calldata to sweep ERC20 tokens from the contract to a recipient.
+
+```typescript
+function encodeSweepToken(options: SweepTokenOptions): Hex.Hex
+```
+
+#### SweepTokenOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `token` | `Token` | The token to sweep |
+| `amountMinimum` | `BigintIsh` | The minimum amount of token to sweep |
+| `recipient` | `string` | The recipient of the tokens |
+| `feeOptions` | `{ fee: Percent; recipient: string }` | Optional fee to take |
+
+#### Example
+
+```typescript
+import { encodeSweepToken } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+const calldata = encodeSweepToken({
+  token: USDC,
+  amountMinimum: '1000000', // 1 USDC minimum
+  recipient: '0x1234567890123456789012345678901234567890'
+})
+```
+
+#### Example with Fee
+
+```typescript
+import { encodeSweepToken } from '@uniswap/v3-sdk'
+import { Percent } from '@uniswap/sdk-core'
+
+const calldata = encodeSweepToken({
+  token: USDC,
+  amountMinimum: '1000000',
+  recipient: userAddress,
+  feeOptions: {
+    fee: new Percent(3, 1000), // 0.3% fee
+    recipient: feeRecipientAddress
+  }
+})
+```
+
+### encodeRefundETH
+
+Encodes the calldata to refund any excess ETH sent to the contract back to the sender.
+
+```typescript
+function encodeRefundETH(): Hex.Hex
+```
+
+#### Example
+
+```typescript
+import { encodeRefundETH } from '@uniswap/v3-sdk'
+
+const calldata = encodeRefundETH()
+```
+
+## Usage Scenarios
+
+### Swap Output to Native ETH
+
+When a swap outputs WETH but the user wants native ETH:
+
+```typescript
+import { encodeMulticall, encodeUnwrapWETH9 } from '@uniswap/v3-sdk'
+
+// After the swap calldata, add unwrap
+const calldatas = [
+  swapCalldata,
+  encodeUnwrapWETH9({
+    amountMinimum: minimumOutputAmount,
+    recipient: userAddress
+  })
+]
+
+const multicallData = encodeMulticall(calldatas)
+```
+
+### Refund Excess ETH on Exact Output Swaps
+
+When doing an exact output swap with native ETH input, excess ETH should be refunded:
+
+```typescript
+import { encodeMulticall, encodeRefundETH } from '@uniswap/v3-sdk'
+
+// For exact output swaps with ETH input
+const calldatas = [
+  exactOutputSwapCalldata,
+  encodeRefundETH()
+]
+
+const multicallData = encodeMulticall(calldatas)
+```
+
+### Sweep Tokens with Fee
+
+When collecting tokens and taking a fee:
+
+```typescript
+import { encodeSweepToken, encodeMulticall } from '@uniswap/v3-sdk'
+import { Percent } from '@uniswap/sdk-core'
+
+const sweepCalldata = encodeSweepToken({
+  token: outputToken,
+  amountMinimum: minOutputAmount,
+  recipient: userAddress,
+  feeOptions: {
+    fee: new Percent(30, 10000), // 0.3%
+    recipient: protocolFeeRecipient
+  }
+})
+```
+
+## Internal SDK Usage
+
+These functions are used internally by the SDK in various places:
+
+### SwapRouter
+
+The `swapCallParameters` function uses these utilities when:
+- Output is native ETH (uses `encodeUnwrapWETH9`)
+- A fee is being taken on the output (uses `encodeSweepToken`)
+- Input is native ETH with exact output (uses `encodeRefundETH`)
+
+### NonfungiblePositionManager
+
+The `addCallParameters` and `removeCallParameters` functions use these utilities when:
+- Using native ETH instead of WETH (uses `encodeRefundETH`)
+- Collecting fees that include ETH (uses `encodeUnwrapWETH9`)
+- Collecting ERC20 tokens (uses `encodeSweepToken`)
+
+## Contract Functions
+
+These functions encode calls to the `IPeripheryPaymentsWithFee` interface:
+
+| Function | Contract Method |
+| --- | --- |
+| `encodeUnwrapWETH9` | `unwrapWETH9(uint256 amountMinimum, address recipient)` |
+| `encodeUnwrapWETH9` (with fee) | `unwrapWETH9WithFee(uint256 amountMinimum, address recipient, uint256 feeBips, address feeRecipient)` |
+| `encodeSweepToken` | `sweepToken(address token, uint256 amountMinimum, address recipient)` |
+| `encodeSweepToken` (with fee) | `sweepTokenWithFee(address token, uint256 amountMinimum, address recipient, uint256 feeBips, address feeRecipient)` |
+| `encodeRefundETH` | `refundETH()` |

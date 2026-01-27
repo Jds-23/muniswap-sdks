@@ -1,0 +1,131 @@
+# NativeCurrency
+
+The `NativeCurrency` abstract class is the base for chain-native currencies like ETH, MATIC, or AVAX.
+
+## Import
+
+```typescript
+import { NativeCurrency } from '@uniswap/sdk-core-next'
+```
+
+## Class Definition
+
+```typescript
+abstract class NativeCurrency extends BaseCurrency {
+  public readonly isNative = true
+  public readonly isToken = false
+}
+```
+
+`NativeCurrency` is abstract and cannot be instantiated directly. Use concrete implementations like [Ether](/sdk-core/ether) or create your own for other chains.
+
+## Creating a Custom Native Currency
+
+```typescript
+import { NativeCurrency, Token, type Currency } from '@uniswap/sdk-core-next'
+
+class Matic extends NativeCurrency {
+  private static _cache: { [chainId: number]: Matic } = {}
+
+  protected constructor(chainId: number) {
+    super(chainId, 18, 'MATIC', 'Polygon')
+  }
+
+  public get wrapped(): Token {
+    // WMATIC on Polygon
+    return new Token(
+      this.chainId,
+      '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+      18,
+      'WMATIC',
+      'Wrapped MATIC'
+    )
+  }
+
+  public static onChain(chainId: number): Matic {
+    if (!Matic._cache[chainId]) {
+      Matic._cache[chainId] = new Matic(chainId)
+    }
+    return Matic._cache[chainId]
+  }
+
+  public equals(other: Currency): boolean {
+    return other.isNative && other.chainId === this.chainId
+  }
+}
+
+// Usage
+const matic = Matic.onChain(137)
+console.log(matic.symbol)        // 'MATIC'
+console.log(matic.wrapped.symbol) // 'WMATIC'
+```
+
+## Properties
+
+### `isNative`
+
+```typescript
+readonly isNative: true
+```
+
+Always `true` for native currencies.
+
+### `isToken`
+
+```typescript
+readonly isToken: false
+```
+
+Always `false` for native currencies.
+
+## Inherited from BaseCurrency
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `chainId` | `number` | The chain ID |
+| `decimals` | `number` | Decimal places (usually 18) |
+| `symbol` | `string \| undefined` | Currency symbol |
+| `name` | `string \| undefined` | Currency name |
+
+## Abstract Methods
+
+Implementations must provide:
+
+### `equals(other)`
+
+```typescript
+abstract equals(other: Currency): boolean
+```
+
+Check if two currencies are equivalent.
+
+### `wrapped`
+
+```typescript
+abstract get wrapped(): Token
+```
+
+Return the wrapped version of the native currency (e.g., WETH for ETH).
+
+## Use Cases
+
+Native currencies are used when:
+
+1. **V4 Pools**: V4 supports native ETH directly in pools
+2. **Gas Payments**: Native currency for transaction fees
+3. **Wrapping**: Converting native to wrapped for V2/V3 pools
+
+```typescript
+import { Ether, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+const eth = Ether.onChain(1)
+
+// Create an ETH amount
+const amount = CurrencyAmount.fromRawAmount(eth, '1000000000000000000')
+
+// Check if native before contract interactions
+if (amount.currency.isNative) {
+  // Use wrapped version for V2/V3
+  const wrappedAmount = amount.wrapped
+}
+```

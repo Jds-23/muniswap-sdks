@@ -1,0 +1,204 @@
+# SwapRouter
+
+The `SwapRouter` module provides utilities for generating calldata to execute swaps on the Uniswap V3 SwapRouter contract.
+
+## Import
+
+```typescript
+import { swapCallParameters } from '@uniswap/v3-sdk'
+```
+
+## swapCallParameters
+
+Produces the calldata for executing a trade on the router.
+
+```typescript
+function swapCallParameters<TInput extends Currency, TOutput extends Currency>(
+  trades: Trade<TInput, TOutput, TradeType> | Trade<TInput, TOutput, TradeType>[],
+  options: SwapOptions
+): MethodParameters
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `trades` | `Trade \| Trade[]` | The trade(s) to execute |
+| `options` | `SwapOptions` | Options for the call parameters |
+
+### SwapOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `slippageTolerance` | `Percent` | How much the execution price is allowed to move unfavorably |
+| `recipient` | `string` | The account that should receive the output |
+| `deadline` | `bigint` | When the transaction expires, in epoch seconds |
+| `inputTokenPermit` | `PermitOptions` | Optional permit for the input token (EIP-2612) |
+| `sqrtPriceLimitX96` | `bigint` | Optional price limit for the trade |
+| `fee` | `{ fee: Percent; recipient: string }` | Optional fee to take on the output |
+
+### Returns
+
+Returns a `MethodParameters` object:
+
+```typescript
+interface MethodParameters {
+  calldata: Hex.Hex
+  value: Hex.Hex
+}
+```
+
+## Example
+
+```typescript
+import { swapCallParameters, Trade, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+
+// Create a trade
+const route = new Route([pool], USDC, WETH)
+const inputAmount = CurrencyAmount.fromRawAmount(USDC, '1000000')
+const trade = await Trade.fromRoute(route, inputAmount, TradeType.EXACT_INPUT)
+
+// Generate swap calldata
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000), // 0.5%
+  recipient: '0x1234567890123456789012345678901234567890',
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 1800) // 30 minutes
+})
+
+// Use with ethers or viem to send transaction
+const tx = {
+  to: SWAP_ROUTER_ADDRESS,
+  data: calldata,
+  value: value
+}
+```
+
+## Swap Types
+
+### Exact Input Single Hop
+
+Swap an exact amount of input tokens for as many output tokens as possible through a single pool.
+
+```typescript
+const trade = await Trade.fromRoute(
+  new Route([pool], tokenIn, tokenOut),
+  CurrencyAmount.fromRawAmount(tokenIn, '1000000'),
+  TradeType.EXACT_INPUT
+)
+
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline)
+})
+```
+
+### Exact Output Single Hop
+
+Swap as few input tokens as possible for an exact amount of output tokens.
+
+```typescript
+const trade = await Trade.fromRoute(
+  new Route([pool], tokenIn, tokenOut),
+  CurrencyAmount.fromRawAmount(tokenOut, '1000000000000000000'),
+  TradeType.EXACT_OUTPUT
+)
+
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline)
+})
+```
+
+### Multi-Hop Swaps
+
+Swaps can route through multiple pools:
+
+```typescript
+// USDC -> WETH -> DAI (two hops)
+const route = new Route([usdcWethPool, wethDaiPool], USDC, DAI)
+const trade = await Trade.fromRoute(
+  route,
+  CurrencyAmount.fromRawAmount(USDC, '1000000'),
+  TradeType.EXACT_INPUT
+)
+```
+
+### Native Currency Swaps
+
+When swapping with native ETH, the SDK automatically handles wrapping/unwrapping:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core'
+
+const ETHER = Ether.onChain(1)
+
+// ETH -> USDC swap
+const trade = await Trade.fromRoute(
+  new Route([wethUsdcPool], ETHER, USDC),
+  CurrencyAmount.fromRawAmount(ETHER, '1000000000000000000'),
+  TradeType.EXACT_INPUT
+)
+
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline)
+})
+
+// Note: value will be non-zero for ETH input swaps
+```
+
+## Using Permits
+
+You can use EIP-2612 permits to avoid a separate approval transaction:
+
+```typescript
+const permitOptions = {
+  v: 28,
+  r: '0x...',
+  s: '0x...',
+  amount: '1000000',
+  deadline: BigInt(deadline)
+}
+
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline),
+  inputTokenPermit: permitOptions
+})
+```
+
+## Taking Fees
+
+You can take a fee on the output:
+
+```typescript
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline),
+  fee: {
+    fee: new Percent(3, 1000), // 0.3% fee
+    recipient: feeRecipientAddress
+  }
+})
+```
+
+## Price Limits
+
+For single-hop swaps, you can set a price limit:
+
+```typescript
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: recipientAddress,
+  deadline: BigInt(deadline),
+  sqrtPriceLimitX96: 1234567890123456789012345678n // Price limit
+})
+```
+
+Note: `sqrtPriceLimitX96` cannot be used with multi-hop swaps.

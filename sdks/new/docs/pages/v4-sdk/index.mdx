@@ -1,0 +1,130 @@
+# V4 SDK
+
+The V4 SDK (`@uniswap/v4-sdk-next`) provides tools for building on Uniswap V4, the most powerful and flexible version of the protocol. V4 introduces hooks for custom pool logic and native ETH support.
+
+## Features
+
+- **Hooks**: Customize pool behavior with 14 different hook permissions
+- **Native ETH**: Trade ETH directly without WETH wrapping
+- **Singleton Design**: All pools in a single contract for gas efficiency
+- **Dynamic Fees**: Hooks can implement custom fee logic
+
+## Installation
+
+```bash
+npm install @uniswap/v4-sdk-next
+```
+
+```bash
+pnpm add @uniswap/v4-sdk-next
+```
+
+```bash
+yarn add @uniswap/v4-sdk-next
+```
+
+## Quick Start
+
+```typescript
+import { Pool, Position, Hook, HookOptions } from '@uniswap/v4-sdk-next'
+import { Token, Ether, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+// V4 supports native ETH directly
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Hook address (address encodes permissions in last 14 bits)
+const hookAddress = '0x0000000000000000000000000000000000000000'
+
+// Create a V4 pool with hook
+const pool = new Pool(
+  ETH,
+  USDC,
+  3000,                   // fee (0.3%)
+  60,                     // tickSpacing
+  hookAddress,            // hooks address
+  '1234567890123456789',  // sqrtPriceX96
+  '1000000000000000000',  // liquidity
+  -58000                  // tickCurrent
+)
+
+// Get pool identifiers
+console.log(pool.poolId)    // keccak256 hash of pool key
+console.log(pool.poolKey)   // { currency0, currency1, fee, tickSpacing, hooks }
+
+// Check hook permissions
+const permissions = Hook.permissions(hookAddress)
+console.log(permissions.beforeSwap)  // true/false
+console.log(permissions.afterSwap)   // true/false
+```
+
+## What's New in V4
+
+### Hooks
+
+Hooks allow custom code to run at key points in a pool's lifecycle:
+
+- **Initialize**: `beforeInitialize`, `afterInitialize`
+- **Liquidity**: `beforeAddLiquidity`, `afterAddLiquidity`, `beforeRemoveLiquidity`, `afterRemoveLiquidity`
+- **Swap**: `beforeSwap`, `afterSwap`
+- **Donate**: `beforeDonate`, `afterDonate`
+- **Delta Returns**: Hooks can return deltas to modify amounts
+
+Hook permissions are encoded in the last 14 bits of the hook contract address.
+
+### Native ETH
+
+V4 pools can use native ETH directly:
+
+```typescript
+// V4: Native ETH
+const pool = new Pool(Ether.onChain(1), USDC, ...)
+
+// V2/V3: Required WETH
+const pool = new Pool(WETH, USDC, ...)
+```
+
+### Pool Keys and IDs
+
+Pools are identified by a `PoolKey` struct:
+
+```typescript
+type PoolKey = {
+  currency0: string   // Lower address
+  currency1: string   // Higher address
+  fee: number         // Fee in bips
+  tickSpacing: number // Tick spacing
+  hooks: string       // Hook address
+}
+```
+
+The `poolId` is the keccak256 hash of the encoded pool key.
+
+## Modules
+
+### Entities
+
+- [Pool](/v4-sdk/pool) - V4 pool with hook support and native ETH
+- [Position](/v4-sdk/position) - LP position in a V4 pool
+- [Route](/v4-sdk/route) - Trade path through V4 pools
+- [Trade](/v4-sdk/trade) - Swap execution
+
+### Hooks
+
+- [Hook](/v4-sdk/hook) - Hook permission utilities
+- [Hook Permissions](/v4-sdk/hook-permissions) - All 14 permission types
+
+### Contracts
+
+- [PositionManager](/v4-sdk/position-manager) - V4 position management
+- [Multicall](/v4-sdk/multicall) - Batch multiple calls
+
+### Utilities
+
+- [V4Planner](/v4-sdk/v4-planner) - Plan V4 actions for execution
+- [V4PositionPlanner](/v4-sdk/v4-position-planner) - Position-specific planning
+- [encodeRouteToPath](/v4-sdk/encode-route-to-path) - Encode routes for contracts
+
+### Reference
+
+- [Constants](/v4-sdk/constants) - Action constants and sentinels

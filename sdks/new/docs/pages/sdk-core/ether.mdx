@@ -1,0 +1,138 @@
+# Ether
+
+The `Ether` class represents the native ETH currency on Ethereum mainnet and testnets.
+
+## Import
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+```
+
+## Creating Ether
+
+Use the static `onChain` method to get an Ether instance:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+
+// Ethereum mainnet
+const eth = Ether.onChain(1)
+
+// Sepolia testnet
+const sepoliaEth = Ether.onChain(11155111)
+
+// Instances are cached - same chain returns same instance
+Ether.onChain(1) === Ether.onChain(1) // true
+```
+
+## Properties
+
+### `isNative`
+
+```typescript
+readonly isNative: true
+```
+
+Always `true` for Ether.
+
+### `isToken`
+
+```typescript
+readonly isToken: false
+```
+
+Always `false` for Ether.
+
+### `chainId`
+
+```typescript
+readonly chainId: number
+```
+
+The chain ID (1 for mainnet).
+
+### `decimals`
+
+```typescript
+readonly decimals: 18
+```
+
+Always 18 for ETH.
+
+### `symbol`
+
+```typescript
+readonly symbol: 'ETH'
+```
+
+Always 'ETH'.
+
+### `name`
+
+```typescript
+readonly name: 'Ether'
+```
+
+Always 'Ether'.
+
+### `wrapped`
+
+```typescript
+get wrapped(): Token
+```
+
+Returns the WETH9 token for the chain.
+
+```typescript
+const eth = Ether.onChain(1)
+const weth = eth.wrapped
+
+console.log(weth.address) // '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+console.log(weth.symbol)  // 'WETH'
+```
+
+**Throws**: If WETH9 is not defined for the chain.
+
+## Methods
+
+### `equals(other)`
+
+```typescript
+equals(other: Currency): boolean
+```
+
+Returns `true` if the other currency is also a native currency on the same chain.
+
+```typescript
+const eth1 = Ether.onChain(1)
+const eth2 = Ether.onChain(1)
+const sepoliaEth = Ether.onChain(11155111)
+
+eth1.equals(eth2)       // true
+eth1.equals(sepoliaEth) // false (different chain)
+```
+
+## Example Usage
+
+```typescript
+import { Ether, CurrencyAmount, Token } from '@uniswap/sdk-core-next'
+
+const eth = Ether.onChain(1)
+const weth = eth.wrapped
+
+// Create an ETH amount (1 ETH)
+const ethAmount = CurrencyAmount.fromRawAmount(eth, '1000000000000000000')
+
+console.log(ethAmount.toSignificant(6)) // "1"
+console.log(ethAmount.currency.symbol)  // "ETH"
+
+// Convert to wrapped amount for contract interactions
+const wrappedAmount = ethAmount.wrapped
+
+console.log(wrappedAmount.currency.symbol)  // "WETH"
+console.log(wrappedAmount.currency.address) // WETH address
+```
+
+## Supported Chains
+
+Ether can be created for any chain, but the `wrapped` property requires a WETH9 entry in the [WETH9](/sdk-core/weth9) mapping.

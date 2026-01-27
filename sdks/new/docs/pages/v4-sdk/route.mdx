@@ -1,0 +1,225 @@
+# Route
+
+The `Route` class represents a list of V4 pools through which a swap can occur. It handles the path calculation including native ETH and wrapped token conversions.
+
+## Import
+
+```typescript
+import { Route } from '@uniswap/v4-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new Route<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  input: TInput,
+  output: TOutput
+)
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `pools` | `Pool[]` | An array of Pool objects, ordered by the route the swap will take |
+| `input` | `TInput` | The input currency |
+| `output` | `TOutput` | The output currency |
+
+## Example
+
+```typescript
+import { Pool, Route, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Token, Ether, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+// Define currencies
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EescdeCB5BE3830', 18, 'DAI')
+
+// Create pools
+const ethUsdcPool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96_1, liquidity1, tick1)
+const usdcDaiPool = new Pool(USDC, DAI, 500, 10, ADDRESS_ZERO, sqrtPriceX96_2, liquidity2, tick2)
+
+// Single pool route: ETH -> USDC
+const directRoute = new Route([ethUsdcPool], ETH, USDC)
+
+// Multi-hop route: ETH -> USDC -> DAI
+const multiHopRoute = new Route([ethUsdcPool, usdcDaiPool], ETH, DAI)
+
+// Access route properties
+console.log(directRoute.midPrice.toSignificant(6))
+console.log(multiHopRoute.currencyPath.map(c => c.symbol))
+```
+
+## Properties
+
+### `pools`
+
+```typescript
+readonly pools: Pool[]
+```
+
+The ordered array of pools through which the swap occurs.
+
+### `input`
+
+```typescript
+readonly input: TInput
+```
+
+The input currency of the route.
+
+### `output`
+
+```typescript
+readonly output: TOutput
+```
+
+The output currency of the route.
+
+### `pathInput`
+
+```typescript
+readonly pathInput: Currency
+```
+
+The equivalent or wrapped/unwrapped input currency that matches the first pool. This handles cases where the input is native ETH but the pool uses a wrapped representation.
+
+### `pathOutput`
+
+```typescript
+readonly pathOutput: Currency
+```
+
+The equivalent or wrapped/unwrapped output currency that matches the last pool.
+
+### `currencyPath`
+
+```typescript
+readonly currencyPath: Currency[]
+```
+
+An array of all currencies in the route, starting with the input and ending with the output.
+
+```typescript
+const route = new Route([ethUsdcPool, usdcDaiPool], ETH, DAI)
+console.log(route.currencyPath.map(c => c.symbol))
+// ['ETH', 'USDC', 'DAI']
+```
+
+### `chainId`
+
+```typescript
+get chainId(): number
+```
+
+The chain ID of the route (derived from the first pool).
+
+### `midPrice`
+
+```typescript
+get midPrice(): Price<TInput, TOutput>
+```
+
+The mid price of the route, calculated by multiplying the prices of each pool along the path. The price is cached after first calculation.
+
+```typescript
+const route = new Route([ethUsdcPool], ETH, USDC)
+console.log(route.midPrice.toSignificant(6))  // e.g., "1800.00"
+console.log(route.midPrice.invert().toSignificant(6))  // e.g., "0.000556"
+```
+
+## Validation
+
+The constructor validates:
+
+1. **Non-empty pools**: At least one pool must be provided
+2. **Same chain**: All pools must be on the same chain
+3. **Path connectivity**: Each pool must involve the output currency of the previous pool
+4. **Input/Output validation**: The input must be in the first pool and output must be in the last pool
+
+```typescript
+// Valid - pools connect properly
+const validRoute = new Route([ethUsdcPool, usdcDaiPool], ETH, DAI)
+
+// Invalid - pools don't connect (will throw 'PATH' error)
+const invalidRoute = new Route([ethUsdcPool, wbtcDaiPool], ETH, DAI)
+
+// Invalid - different chains (will throw 'CHAIN_IDS' error)
+const wrongChainRoute = new Route([mainnetPool, arbitrumPool], ETH, USDC)
+```
+
+## V4-Specific Features
+
+### Native ETH Routes
+
+V4 routes can include native ETH directly without wrapping:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, ...)
+
+// Route with native ETH input
+const route = new Route([pool], ETH, USDC)
+
+console.log(route.pathInput.isNative) // true
+```
+
+### ETH-WETH Pool Handling
+
+The Route class automatically handles ETH-WETH pools for wrapping/unwrapping:
+
+```typescript
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Pool for ETH <-> WETH (wrap/unwrap)
+const ethWethPool = new Pool(ETH, WETH, 500, 10, ADDRESS_ZERO, ...)
+
+// Route that wraps ETH first, then swaps
+const route = new Route([ethWethPool, wethUsdcPool], ETH, USDC)
+```
+
+### Hook-Enabled Pools
+
+Routes can include pools with hooks:
+
+```typescript
+const hookPool = new Pool(
+  ETH,
+  USDC,
+  3000,
+  60,
+  '0x1234...', // Hook address
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+
+const route = new Route([hookPool], ETH, USDC)
+// Note: The midPrice calculation works, but actual swap amounts
+// may differ if the hook modifies swap behavior
+```
+
+## Multi-Hop Routing
+
+Routes can traverse multiple pools to find indirect swap paths:
+
+```typescript
+// ETH -> USDC -> WBTC (2 hops)
+const route = new Route(
+  [ethUsdcPool, usdcWbtcPool],
+  ETH,
+  WBTC
+)
+
+// Access intermediate currencies
+route.currencyPath.forEach((currency, i) => {
+  console.log(`Step ${i}: ${currency.symbol}`)
+})
+// Step 0: ETH
+// Step 1: USDC
+// Step 2: WBTC
+```

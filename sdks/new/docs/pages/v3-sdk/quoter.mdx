@@ -1,0 +1,212 @@
+# Quoter
+
+The `Quoter` module provides utilities for generating calldata to get swap quotes from the Uniswap V3 Quoter contracts without executing the swap.
+
+## Import
+
+```typescript
+import { quoteCallParameters } from '@uniswap/v3-sdk'
+```
+
+## quoteCallParameters
+
+Produces the on-chain method name and parameters for quoting a swap.
+
+```typescript
+function quoteCallParameters<TInput extends Currency, TOutput extends Currency>(
+  route: Route<TInput, TOutput>,
+  amount: CurrencyAmount<TInput | TOutput>,
+  tradeType: TradeType,
+  options?: QuoteOptions
+): MethodParameters
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `route` | `Route<TInput, TOutput>` | The swap route to quote |
+| `amount` | `CurrencyAmount` | The amount of the quote (input for EXACT_INPUT, output for EXACT_OUTPUT) |
+| `tradeType` | `TradeType` | The trade type (EXACT_INPUT or EXACT_OUTPUT) |
+| `options` | `QuoteOptions` | Optional quote parameters |
+
+### QuoteOptions
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `sqrtPriceLimitX96` | `BigintIsh` | Optional price limit for single-hop quotes |
+| `useQuoterV2` | `boolean` | Whether to use QuoterV2 interface (default: false) |
+
+### Returns
+
+Returns a `MethodParameters` object:
+
+```typescript
+interface MethodParameters {
+  calldata: Hex.Hex
+  value: Hex.Hex
+}
+```
+
+## Example: Single-Hop Quote
+
+```typescript
+import { quoteCallParameters, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { CurrencyAmount, TradeType } from '@uniswap/sdk-core'
+
+const route = new Route([pool], USDC, WETH)
+const amountIn = CurrencyAmount.fromRawAmount(USDC, '1000000')
+
+const { calldata, value } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT
+)
+
+// Use with ethers or viem to call the Quoter contract
+const quoterContract = new Contract(QUOTER_ADDRESS, QUOTER_ABI, provider)
+const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
+  // ... decoded params from calldata
+)
+```
+
+## Example: Multi-Hop Quote
+
+```typescript
+// USDC -> WETH -> DAI route
+const route = new Route([usdcWethPool, wethDaiPool], USDC, DAI)
+const amountIn = CurrencyAmount.fromRawAmount(USDC, '1000000')
+
+const { calldata, value } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT
+)
+```
+
+## Example: Exact Output Quote
+
+```typescript
+const route = new Route([pool], USDC, WETH)
+const amountOut = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+
+const { calldata, value } = quoteCallParameters(
+  route,
+  amountOut,
+  TradeType.EXACT_OUTPUT
+)
+```
+
+## Using QuoterV2
+
+QuoterV2 provides additional information like gas estimates and price after swap:
+
+```typescript
+const { calldata, value } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT,
+  { useQuoterV2: true }
+)
+```
+
+### QuoterV2 Response
+
+When using QuoterV2, the response includes:
+- `amountOut` (or `amountIn` for exact output)
+- `sqrtPriceX96After` - The pool price after the swap
+- `initializedTicksCrossed` - Number of initialized ticks crossed
+- `gasEstimate` - Estimated gas for the swap
+
+## Price Limits
+
+For single-hop swaps, you can set a price limit:
+
+```typescript
+const { calldata, value } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT,
+  { sqrtPriceLimitX96: 1234567890123456789012345678n }
+)
+```
+
+Note: Price limits are not supported for multi-hop swaps.
+
+## Quoter Contract Addresses
+
+### QuoterV1
+- Mainnet: `0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6`
+
+### QuoterV2
+- Mainnet: `0x61fFE014bA17989E743c5F6cB21bF9697530B21e`
+
+## Complete Usage Example
+
+```typescript
+import { quoteCallParameters, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
+import { Contract, providers } from 'ethers'
+
+const provider = new providers.JsonRpcProvider(RPC_URL)
+
+// Define tokens
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Fetch pool data (you would get this from on-chain)
+const pool = new Pool(
+  USDC,
+  WETH,
+  FeeAmount.MEDIUM,
+  sqrtRatioX96,
+  liquidity,
+  tick
+)
+
+// Create route
+const route = new Route([pool], USDC, WETH)
+
+// Get quote parameters
+const amountIn = CurrencyAmount.fromRawAmount(USDC, '1000000000') // 1000 USDC
+
+const { calldata } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT,
+  { useQuoterV2: true }
+)
+
+// Call the quoter (using ethers)
+const QUOTER_V2_ADDRESS = '0x61fFE014bA17989E743c5F6cB21bF9697530B21e'
+
+const result = await provider.call({
+  to: QUOTER_V2_ADDRESS,
+  data: calldata
+})
+
+// Decode the result to get quoted output amount
+console.log('Quoted output:', result)
+```
+
+## Error Handling
+
+The quoter may revert if:
+- The pool doesn't have enough liquidity
+- The price limit is reached before the full amount is swapped
+- The route is invalid
+
+Always wrap quoter calls in try-catch:
+
+```typescript
+try {
+  const result = await provider.call({
+    to: QUOTER_ADDRESS,
+    data: calldata
+  })
+  // Process result
+} catch (error) {
+  console.error('Quote failed:', error)
+  // Handle insufficient liquidity or other errors
+}
+```

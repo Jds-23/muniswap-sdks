@@ -1,0 +1,202 @@
+# Pool
+
+The `Pool` class represents a Uniswap V3 pool with its current state, including the tokens, fee tier, current price, and liquidity.
+
+## Import
+
+```typescript
+import { Pool } from '@uniswap/v3-sdk'
+```
+
+## Constructor
+
+Creates a new Pool instance.
+
+```typescript
+new Pool(
+  tokenA: Token,
+  tokenB: Token,
+  fee: FeeAmount,
+  sqrtRatioX96: BigintIsh,
+  liquidity: BigintIsh,
+  tickCurrent: number,
+  ticks?: TickDataProvider | (Tick | TickConstructorArgs)[]
+)
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `tokenA` | `Token` | One of the tokens in the pool |
+| `tokenB` | `Token` | The other token in the pool |
+| `fee` | `FeeAmount` | The fee in hundredths of a bips of the input amount of every swap |
+| `sqrtRatioX96` | `BigintIsh` | The sqrt of the current ratio of amounts of token1 to token0 |
+| `liquidity` | `BigintIsh` | The current value of in range liquidity |
+| `tickCurrent` | `number` | The current tick of the pool |
+| `ticks` | `TickDataProvider \| (Tick \| TickConstructorArgs)[]` | Optional tick data provider or array of ticks |
+
+## Example
+
+```typescript
+import { Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+const pool = new Pool(
+  USDC,
+  WETH,
+  FeeAmount.MEDIUM,
+  '1234567890123456789012345678', // sqrtRatioX96
+  '1000000000000000000', // liquidity
+  100 // tickCurrent
+)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `token0` | `Token` | The first token of the pool, sorted by address |
+| `token1` | `Token` | The second token of the pool, sorted by address |
+| `fee` | `FeeAmount` | The fee tier of the pool |
+| `sqrtRatioX96` | `bigint` | The current sqrt price as a Q64.96 value |
+| `liquidity` | `bigint` | The current in-range liquidity |
+| `tickCurrent` | `number` | The current tick |
+| `tickDataProvider` | `TickDataProvider` | The tick data provider for this pool |
+
+## Getters
+
+### token0Price
+
+Returns the current mid price of the pool in terms of token0 (the ratio of token1 over token0).
+
+```typescript
+get token0Price(): Price<Token, Token>
+```
+
+### token1Price
+
+Returns the current mid price of the pool in terms of token1 (the ratio of token0 over token1).
+
+```typescript
+get token1Price(): Price<Token, Token>
+```
+
+### chainId
+
+Returns the chain ID of the tokens in the pool.
+
+```typescript
+get chainId(): number
+```
+
+### tickSpacing
+
+Returns the tick spacing for this pool's fee tier.
+
+```typescript
+get tickSpacing(): number
+```
+
+## Static Methods
+
+### getAddress
+
+Computes the pool address for the given tokens and fee.
+
+```typescript
+static getAddress(
+  tokenA: Token,
+  tokenB: Token,
+  fee: FeeAmount,
+  initCodeHashManualOverride?: `0x${string}`,
+  factoryAddressOverride?: Address.Address
+): Address.Address
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `tokenA` | `Token` | The first token |
+| `tokenB` | `Token` | The second token |
+| `fee` | `FeeAmount` | The fee tier |
+| `initCodeHashManualOverride` | `` `0x${string}` `` | Optional override for init code hash |
+| `factoryAddressOverride` | `Address.Address` | Optional override for factory address |
+
+#### Example
+
+```typescript
+const poolAddress = Pool.getAddress(USDC, WETH, FeeAmount.MEDIUM)
+```
+
+## Methods
+
+### involvesToken
+
+Returns true if the token is either token0 or token1.
+
+```typescript
+involvesToken(token: Token): boolean
+```
+
+### priceOf
+
+Returns the price of the given token in terms of the other token in the pool.
+
+```typescript
+priceOf(token: Token): Price<Token, Token>
+```
+
+### getOutputAmount
+
+Given an input amount of a token, returns the computed output amount and a pool with updated state.
+
+```typescript
+async getOutputAmount(
+  inputAmount: CurrencyAmount<Token>,
+  sqrtPriceLimitX96?: bigint
+): Promise<[CurrencyAmount<Token>, Pool]>
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `inputAmount` | `CurrencyAmount<Token>` | The input amount for which to quote the output amount |
+| `sqrtPriceLimitX96` | `bigint` | Optional Q64.96 sqrt price limit |
+
+#### Example
+
+```typescript
+const inputAmount = CurrencyAmount.fromRawAmount(USDC, '1000000')
+const [outputAmount, updatedPool] = await pool.getOutputAmount(inputAmount)
+```
+
+### getInputAmount
+
+Given a desired output amount of a token, returns the computed input amount and a pool with updated state.
+
+```typescript
+async getInputAmount(
+  outputAmount: CurrencyAmount<Token>,
+  sqrtPriceLimitX96?: bigint
+): Promise<[CurrencyAmount<Token>, Pool]>
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `outputAmount` | `CurrencyAmount<Token>` | The output amount for which to quote the input amount |
+| `sqrtPriceLimitX96` | `bigint` | Optional Q64.96 sqrt price limit |
+
+#### Example
+
+```typescript
+const outputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+const [inputAmount, updatedPool] = await pool.getInputAmount(outputAmount)
+```

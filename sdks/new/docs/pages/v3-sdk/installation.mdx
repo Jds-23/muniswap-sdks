@@ -1,0 +1,56 @@
+# Installation
+
+## Package Manager
+
+:::code-group
+```bash [npm]
+npm install @uniswap/v3-sdk-next
+```
+```bash [pnpm]
+pnpm add @uniswap/v3-sdk-next
+```
+```bash [yarn]
+yarn add @uniswap/v3-sdk-next
+```
+:::
+
+## Requirements
+
+- **Node.js**: 18.x or later
+- **TypeScript**: 5.0 or later (recommended)
+
+## Peer Dependencies
+
+The V3 SDK depends on SDK Core and V2 SDK:
+
+```bash
+npm install @uniswap/sdk-core-next @uniswap/v2-sdk-next
+```
+
+## Usage
+
+```typescript
+import {
+  Pool,
+  Position,
+  Route,
+  Trade,
+  SwapRouter,
+  NonfungiblePositionManager,
+  FeeAmount,
+} from '@uniswap/v3-sdk-next'
+import { Token, CurrencyAmount, Percent } from '@uniswap/sdk-core-next'
+```
+
+## TypeScript Configuration
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true
+  }
+}
+```

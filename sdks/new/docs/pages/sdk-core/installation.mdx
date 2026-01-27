@@ -1,0 +1,70 @@
+# Installation
+
+## Package Manager
+
+:::code-group
+```bash [npm]
+npm install @uniswap/sdk-core-next
+```
+```bash [pnpm]
+pnpm add @uniswap/sdk-core-next
+```
+```bash [yarn]
+yarn add @uniswap/sdk-core-next
+```
+:::
+
+## Requirements
+
+- **Node.js**: 18.x or later (for native BigInt support)
+- **TypeScript**: 5.0 or later (recommended)
+
+## Dependencies
+
+The SDK Core has minimal dependencies:
+
+- `ox` - Web3 library for address and encoding utilities
+- `tiny-invariant` - Runtime assertions
+- `zod` - Schema validation
+
+## Usage
+
+Import what you need from the package:
+
+```typescript
+import {
+  Token,
+  CurrencyAmount,
+  Price,
+  Percent,
+  Fraction,
+  Ether,
+  WETH9,
+  validateAndParseAddress,
+} from '@uniswap/sdk-core-next'
+```
+
+## TypeScript Configuration
+
+For the best experience, ensure your `tsconfig.json` has:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true
+  }
+}
+```
+
+## ESM Only
+
+This package is ESM-only. If you're using CommonJS, you'll need to use dynamic imports:
+
+```javascript
+const sdk = await import('@uniswap/sdk-core-next')
+```
+
+Or configure your bundler to handle ESM modules.

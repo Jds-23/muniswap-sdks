@@ -1,0 +1,114 @@
+# sqrt
+
+Computes the floor of the square root of a BigInt value.
+
+## Import
+
+```typescript
+import { sqrt } from '@uniswap/sdk-core-next'
+```
+
+## Function Signature
+
+```typescript
+function sqrt(value: bigint): bigint
+```
+
+## Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `value` | `bigint` | The value to compute the square root of |
+
+## Returns
+
+`bigint` - The floor of the square root (largest integer n where n² is at most the input value).
+
+## Throws
+
+Error if the value is negative.
+
+## Example
+
+```typescript
+import { sqrt } from '@uniswap/sdk-core-next'
+
+// Small values (uses Math.sqrt)
+sqrt(4n)   // 2n
+sqrt(9n)   // 3n
+sqrt(10n)  // 3n (floor)
+sqrt(0n)   // 0n
+sqrt(1n)   // 1n
+
+// Large values (uses Newton's method)
+sqrt(1000000000000000000n)  // 1000000000n
+
+// Very large values (common in DeFi)
+const liquidity = 1000000000000000000000000n
+sqrt(liquidity)  // 1000000000000n
+
+// Negative throws
+try {
+  sqrt(-1n)
+} catch (e) {
+  console.log(e.message) // "NEGATIVE"
+}
+```
+
+## Algorithm
+
+For small values (< `Number.MAX_SAFE_INTEGER`), uses JavaScript's `Math.sqrt` for performance.
+
+For large values, uses Newton's method:
+
+```typescript
+let z = value
+let x = value / 2n + 1n
+while (x < z) {
+  z = x
+  x = (value / x + x) / 2n
+}
+return z
+```
+
+## Use Cases
+
+### V2 Liquidity Calculation
+
+In Uniswap V2, initial liquidity is calculated as the geometric mean of the reserves:
+
+```typescript
+import { sqrt } from '@uniswap/sdk-core-next'
+
+function getInitialLiquidity(reserve0: bigint, reserve1: bigint): bigint {
+  return sqrt(reserve0 * reserve1)
+}
+
+const liquidity = getInitialLiquidity(
+  1000000000000000000n,  // 1 token with 18 decimals
+  2000000000n            // 2000 tokens with 6 decimals
+)
+```
+
+### Price Calculation
+
+Converting between sqrtPriceX96 and regular prices:
+
+```typescript
+import { sqrt } from '@uniswap/sdk-core-next'
+
+// Get sqrtPriceX96 from a price ratio
+function toSqrtPriceX96(amount1: bigint, amount0: bigint): bigint {
+  const Q96 = 2n ** 96n
+  // sqrtPrice = sqrt(amount1/amount0) * 2^96
+  // To avoid precision loss: sqrt(amount1 * 2^192 / amount0)
+  return sqrt((amount1 * (Q96 * Q96)) / amount0)
+}
+```
+
+## Performance
+
+- Values < 2^53: O(1) using native Math.sqrt
+- Large values: O(log n) using Newton's method
+
+The function automatically chooses the appropriate algorithm based on the input size.

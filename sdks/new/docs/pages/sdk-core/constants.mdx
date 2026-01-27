@@ -1,0 +1,147 @@
+# Constants
+
+Global constants and types used throughout the SDK.
+
+## Import
+
+```typescript
+import {
+  TradeType,
+  Rounding,
+  MaxUint256,
+  toBigInt,
+  type BigintIsh,
+} from '@uniswap/sdk-core-next'
+```
+
+## Types
+
+### `BigintIsh`
+
+A type that can be converted to `bigint`.
+
+```typescript
+type BigintIsh = bigint | string | number
+```
+
+```typescript
+import { toBigInt, type BigintIsh } from '@uniswap/sdk-core-next'
+
+const a: BigintIsh = 100n
+const b: BigintIsh = '100'
+const c: BigintIsh = 100
+
+toBigInt(a) // 100n
+toBigInt(b) // 100n
+toBigInt(c) // 100n
+```
+
+## Enums
+
+### `TradeType`
+
+Direction of a trade.
+
+```typescript
+enum TradeType {
+  EXACT_INPUT = 0,
+  EXACT_OUTPUT = 1,
+}
+```
+
+| Value | Description |
+|-------|-------------|
+| `EXACT_INPUT` | The input amount is fixed, output varies |
+| `EXACT_OUTPUT` | The output amount is fixed, input varies |
+
+```typescript
+import { TradeType } from '@uniswap/sdk-core-next'
+
+// Exact input: "Swap exactly 1 ETH for USDC"
+const tradeType = TradeType.EXACT_INPUT
+
+// Exact output: "Swap ETH to get exactly 2000 USDC"
+const tradeType = TradeType.EXACT_OUTPUT
+```
+
+### `Rounding`
+
+Rounding mode for decimal operations.
+
+```typescript
+enum Rounding {
+  ROUND_DOWN = 0,
+  ROUND_HALF_UP = 1,
+  ROUND_UP = 2,
+}
+```
+
+| Value | Description |
+|-------|-------------|
+| `ROUND_DOWN` | Truncate toward zero |
+| `ROUND_HALF_UP` | Round half away from zero (standard rounding) |
+| `ROUND_UP` | Always round away from zero |
+
+```typescript
+import { Fraction, Rounding } from '@uniswap/sdk-core-next'
+
+const f = new Fraction(5, 3) // 1.666...
+
+f.toFixed(1, {}, Rounding.ROUND_DOWN)    // "1.6"
+f.toFixed(1, {}, Rounding.ROUND_HALF_UP) // "1.7"
+f.toFixed(1, {}, Rounding.ROUND_UP)      // "1.7"
+
+const f2 = new Fraction(3, 2) // 1.5
+f2.toFixed(0, {}, Rounding.ROUND_DOWN)    // "1"
+f2.toFixed(0, {}, Rounding.ROUND_HALF_UP) // "2"
+f2.toFixed(0, {}, Rounding.ROUND_UP)      // "2"
+```
+
+## Constants
+
+### `MaxUint256`
+
+Maximum value for a uint256.
+
+```typescript
+const MaxUint256 = 2n ** 256n - 1n
+```
+
+```typescript
+import { MaxUint256 } from '@uniswap/sdk-core-next'
+
+console.log(MaxUint256)
+// 115792089237316195423570985008687907853269984665640564039457584007913129639935n
+
+// Common use: approval amounts
+const UNLIMITED_APPROVAL = MaxUint256
+```
+
+## Functions
+
+### `toBigInt(value)`
+
+Safely converts a `BigintIsh` value to `bigint`.
+
+```typescript
+function toBigInt(value: BigintIsh): bigint
+```
+
+```typescript
+import { toBigInt } from '@uniswap/sdk-core-next'
+
+// From bigint
+toBigInt(100n) // 100n
+
+// From string (decimal)
+toBigInt('100') // 100n
+
+// From string (hex)
+toBigInt('0x64') // 100n
+
+// From number
+toBigInt(100) // 100n
+
+// Non-integer number throws
+toBigInt(1.5) // throws "Cannot convert non-integer 1.5 to bigint"
+```

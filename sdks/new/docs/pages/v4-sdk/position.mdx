@@ -1,0 +1,349 @@
+# Position
+
+The `Position` class represents a liquidity position on a Uniswap V4 pool. It provides methods to calculate token amounts, handle slippage, and generate permit data.
+
+## Import
+
+```typescript
+import { Position } from '@uniswap/v4-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new Position({
+  pool: Pool,
+  liquidity: BigintIsh,
+  tickLower: number,
+  tickUpper: number
+})
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `pool` | `Pool` | The pool on which the position exists |
+| `liquidity` | `BigintIsh` | The amount of liquidity in the position |
+| `tickLower` | `number` | The lower tick boundary of the position |
+| `tickUpper` | `number` | The upper tick boundary of the position |
+
+## Example
+
+```typescript
+import { Pool, Position, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Token, Ether, Percent } from '@uniswap/sdk-core-next'
+
+// Create pool
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+const pool = new Pool(
+  ETH,
+  USDC,
+  3000,
+  60,
+  ADDRESS_ZERO,
+  '79228162514264337593543950336',
+  '1000000000000000000',
+  0
+)
+
+// Create a position
+const position = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -887220,
+  tickUpper: 887220
+})
+
+// Get token amounts
+console.log(position.amount0.toSignificant(6))
+console.log(position.amount1.toSignificant(6))
+
+// Calculate amounts with slippage
+const slippage = new Percent(50, 10000) // 0.5%
+const { amount0, amount1 } = position.mintAmountsWithSlippage(slippage)
+```
+
+## Properties
+
+### `pool`
+
+```typescript
+readonly pool: Pool
+```
+
+The pool on which this position exists.
+
+### `tickLower`
+
+```typescript
+readonly tickLower: number
+```
+
+The lower tick boundary of the position.
+
+### `tickUpper`
+
+```typescript
+readonly tickUpper: number
+```
+
+The upper tick boundary of the position.
+
+### `liquidity`
+
+```typescript
+readonly liquidity: bigint
+```
+
+The amount of liquidity in this position.
+
+### `token0PriceLower`
+
+```typescript
+get token0PriceLower(): Price<Currency, Currency>
+```
+
+The price of token0 at the lower tick boundary.
+
+### `token0PriceUpper`
+
+```typescript
+get token0PriceUpper(): Price<Currency, Currency>
+```
+
+The price of token0 at the upper tick boundary.
+
+### `amount0`
+
+```typescript
+get amount0(): CurrencyAmount<Currency>
+```
+
+The amount of currency0 that this position's liquidity could be burned for at the current pool price.
+
+### `amount1`
+
+```typescript
+get amount1(): CurrencyAmount<Currency>
+```
+
+The amount of currency1 that this position's liquidity could be burned for at the current pool price.
+
+### `mintAmounts`
+
+```typescript
+get mintAmounts(): Readonly<{ amount0: bigint; amount1: bigint }>
+```
+
+The minimum amounts that must be sent to mint the amount of liquidity held by the position at the current price.
+
+## Static Methods
+
+### `fromAmounts(params)`
+
+```typescript
+static fromAmounts({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount0: BigintIsh,
+  amount1: BigintIsh,
+  useFullPrecision: boolean
+}): Position
+```
+
+Computes the maximum amount of liquidity received for given amounts of token0 and token1.
+
+```typescript
+const position = Position.fromAmounts({
+  pool,
+  tickLower: -887220,
+  tickUpper: 887220,
+  amount0: '1000000000000000000', // 1 ETH
+  amount1: '1000000000',          // 1000 USDC
+  useFullPrecision: true
+})
+```
+
+### `fromAmount0(params)`
+
+```typescript
+static fromAmount0({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount0: BigintIsh,
+  useFullPrecision: boolean
+}): Position
+```
+
+Computes a position with maximum liquidity for a given amount of token0, assuming unlimited token1.
+
+```typescript
+const position = Position.fromAmount0({
+  pool,
+  tickLower: -887220,
+  tickUpper: 887220,
+  amount0: '1000000000000000000', // 1 ETH
+  useFullPrecision: true
+})
+```
+
+### `fromAmount1(params)`
+
+```typescript
+static fromAmount1({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount1: BigintIsh
+}): Position
+```
+
+Computes a position with maximum liquidity for a given amount of token1, assuming unlimited token0. Always uses full precision.
+
+```typescript
+const position = Position.fromAmount1({
+  pool,
+  tickLower: -887220,
+  tickUpper: 887220,
+  amount1: '1000000000' // 1000 USDC
+})
+```
+
+## Methods
+
+### `mintAmountsWithSlippage(slippageTolerance)`
+
+```typescript
+mintAmountsWithSlippage(slippageTolerance: Percent): Readonly<{ amount0: bigint; amount1: bigint }>
+```
+
+Returns the maximum amounts of token0 and token1 that must be sent to safely mint the position with the given slippage tolerance.
+
+In V4, minting is protected by maximum amounts (unlike V3 which uses minimum amounts).
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const { amount0, amount1 } = position.mintAmountsWithSlippage(slippage)
+```
+
+### `burnAmountsWithSlippage(slippageTolerance)`
+
+```typescript
+burnAmountsWithSlippage(slippageTolerance: Percent): Readonly<{ amount0: bigint; amount1: bigint }>
+```
+
+Returns the minimum amounts that should be requested when burning the position's liquidity with the given slippage tolerance.
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const { amount0, amount1 } = position.burnAmountsWithSlippage(slippage)
+```
+
+### `permitBatchData(slippageTolerance, spender, nonce, deadline)`
+
+```typescript
+permitBatchData(
+  slippageTolerance: Percent,
+  spender: string,
+  nonce: BigintIsh,
+  deadline: BigintIsh
+): AllowanceTransferPermitBatch
+```
+
+Returns the `AllowanceTransferPermitBatch` data for adding liquidity using Permit2.
+
+```typescript
+const permitData = position.permitBatchData(
+  new Percent(50, 10000),                    // 0.5% slippage
+  '0x...PositionManagerAddress',             // Spender (Position Manager)
+  1n,                                         // Permit2 nonce
+  Math.floor(Date.now() / 1000) + 3600       // Deadline (1 hour from now)
+)
+
+// permitData can be signed and submitted with the transaction
+// {
+//   details: [
+//     { token: '0x...', amount: ..., expiration: ..., nonce: ... },
+//     { token: '0x...', amount: ..., expiration: ..., nonce: ... }
+//   ],
+//   spender: '0x...',
+//   sigDeadline: ...
+// }
+```
+
+## Tick Validation
+
+The constructor validates that:
+- `tickLower` is less than `tickUpper`
+- Both ticks are within the valid range (MIN_TICK to MAX_TICK)
+- Both ticks are divisible by the pool's tick spacing
+
+```typescript
+// Valid position
+const position = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -60,  // Must be divisible by tickSpacing (60)
+  tickUpper: 60
+})
+
+// Invalid - will throw
+const invalid = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -50,  // Not divisible by 60
+  tickUpper: 50
+})
+```
+
+## V4-Specific Features
+
+### Native Currency Positions
+
+V4 positions can include native ETH directly:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, ...)
+
+const position = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -887220,
+  tickUpper: 887220
+})
+
+// amount0 is native ETH (not WETH)
+console.log(position.pool.currency0.isNative) // true
+```
+
+### Hook-Enabled Pools
+
+Positions can exist in pools with hooks:
+
+```typescript
+const poolWithHook = new Pool(
+  ETH,
+  USDC,
+  3000,
+  60,
+  '0x1234...', // Hook address
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+
+const position = new Position({
+  pool: poolWithHook,
+  liquidity: '1000000000000000000',
+  tickLower: -887220,
+  tickUpper: 887220
+})
+```

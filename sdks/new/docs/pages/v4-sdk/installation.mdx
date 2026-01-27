@@ -1,0 +1,57 @@
+# Installation
+
+## Package Manager
+
+:::code-group
+```bash [npm]
+npm install @uniswap/v4-sdk-next
+```
+```bash [pnpm]
+pnpm add @uniswap/v4-sdk-next
+```
+```bash [yarn]
+yarn add @uniswap/v4-sdk-next
+```
+:::
+
+## Requirements
+
+- **Node.js**: 18.x or later
+- **TypeScript**: 5.0 or later (recommended)
+
+## Peer Dependencies
+
+The V4 SDK depends on SDK Core and V3 SDK:
+
+```bash
+npm install @uniswap/sdk-core-next @uniswap/v3-sdk-next
+```
+
+## Usage
+
+```typescript
+import {
+  Pool,
+  Position,
+  Route,
+  Trade,
+  Hook,
+  HookOptions,
+  PositionManager,
+  V4Planner,
+} from '@uniswap/v4-sdk-next'
+import { Token, Ether, CurrencyAmount } from '@uniswap/sdk-core-next'
+```
+
+## TypeScript Configuration
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true
+  }
+}
+```

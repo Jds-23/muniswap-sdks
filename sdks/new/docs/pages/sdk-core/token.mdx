@@ -1,0 +1,198 @@
+# Token
+
+The `Token` class represents an ERC20 token with a specific address on a chain.
+
+## Import
+
+```typescript
+import { Token } from '@uniswap/sdk-core-next'
+```
+
+## Constructor
+
+```typescript
+new Token(
+  chainId: number,
+  address: string,
+  decimals: number,
+  symbol?: string,
+  name?: string,
+  bypassChecksum?: boolean,
+  buyFeeBps?: bigint,
+  sellFeeBps?: bigint
+)
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `chainId` | `number` | The chain ID where this token exists |
+| `address` | `string` | The contract address of the token |
+| `decimals` | `number` | The number of decimals (0-254) |
+| `symbol` | `string?` | Optional ticker symbol (e.g., "USDC") |
+| `name` | `string?` | Optional full name (e.g., "USD Coin") |
+| `bypassChecksum` | `boolean?` | If true, skips checksum validation |
+| `buyFeeBps` | `bigint?` | Buy fee in basis points for FOT tokens |
+| `sellFeeBps` | `bigint?` | Sell fee in basis points for FOT tokens |
+
+## Example
+
+```typescript
+import { Token } from '@uniswap/sdk-core-next'
+
+// Create a token
+const USDC = new Token(
+  1,                                             // Ethereum mainnet
+  '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC address
+  6,                                             // 6 decimals
+  'USDC',                                        // Symbol
+  'USD Coin'                                     // Name
+)
+
+// Create a fee-on-transfer token
+const TAX_TOKEN = new Token(
+  1,
+  '0x1234567890123456789012345678901234567890',
+  18,
+  'TAX',
+  'Tax Token',
+  false,
+  100n, // 1% buy fee
+  200n  // 2% sell fee
+)
+```
+
+## Properties
+
+### `address`
+
+```typescript
+readonly address: Address.Address
+```
+
+The checksummed contract address of the token.
+
+### `isNative`
+
+```typescript
+readonly isNative: false
+```
+
+Always `false` for tokens (they are not native currencies).
+
+### `isToken`
+
+```typescript
+readonly isToken: true
+```
+
+Always `true` for tokens.
+
+### `chainId`
+
+```typescript
+readonly chainId: number
+```
+
+The chain ID where this token exists.
+
+### `decimals`
+
+```typescript
+readonly decimals: number
+```
+
+The number of decimals used to represent token amounts.
+
+### `symbol`
+
+```typescript
+readonly symbol: string | undefined
+```
+
+The token's ticker symbol.
+
+### `name`
+
+```typescript
+readonly name: string | undefined
+```
+
+The token's full name.
+
+### `buyFeeBps`
+
+```typescript
+readonly buyFeeBps: bigint | undefined
+```
+
+For fee-on-transfer tokens, the buy fee in basis points.
+
+### `sellFeeBps`
+
+```typescript
+readonly sellFeeBps: bigint | undefined
+```
+
+For fee-on-transfer tokens, the sell fee in basis points.
+
+### `wrapped`
+
+```typescript
+get wrapped(): Token
+```
+
+Returns the token itself (tokens don't need wrapping).
+
+## Methods
+
+### `equals(other)`
+
+```typescript
+equals(other: Currency): boolean
+```
+
+Returns `true` if the other currency is a token with the same chain ID and address.
+
+```typescript
+const tokenA = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6)
+const tokenB = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6)
+const tokenC = new Token(1, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6)
+
+tokenA.equals(tokenB) // true (same address)
+tokenA.equals(tokenC) // false (different address)
+```
+
+### `sortsBefore(other)`
+
+```typescript
+sortsBefore(other: Token): boolean
+```
+
+Returns `true` if this token's address sorts before the other token's address. Used for ordering tokens in pairs/pools.
+
+```typescript
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6)
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18)
+
+USDC.sortsBefore(WETH) // true (0xA0... < 0xC0...)
+```
+
+**Throws**: If the tokens have the same address or different chain IDs.
+
+## Address Validation
+
+By default, addresses are validated and checksummed:
+
+```typescript
+// Valid - will be checksummed
+new Token(1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6)
+// Results in address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+
+// Invalid checksum - throws error
+new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB49', 6)
+
+// Bypass checksum validation
+new Token(1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6, 'USDC', 'USD Coin', true)
+```

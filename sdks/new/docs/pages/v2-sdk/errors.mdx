@@ -1,0 +1,124 @@
+# Errors
+
+Custom error types for V2 SDK operations.
+
+## Import
+
+```typescript
+import {
+  InsufficientReservesError,
+  InsufficientInputAmountError,
+} from '@uniswap/v2-sdk-next'
+```
+
+## Error Types
+
+### `InsufficientReservesError`
+
+Thrown when a pair doesn't have enough reserves to complete a trade.
+
+```typescript
+class InsufficientReservesError extends Error {
+  public readonly isInsufficientReservesError = true
+}
+```
+
+#### When It's Thrown
+
+- Output amount requested is greater than or equal to the reserve
+- Trying to get input amount for an output that exceeds liquidity
+
+```typescript
+import { Pair, InsufficientReservesError } from '@uniswap/v2-sdk-next'
+
+try {
+  // Trying to get 1000 USDC when reserve is only 500
+  const [inputAmount] = pair.getInputAmount(
+    CurrencyAmount.fromRawAmount(USDC, 1000_000000n)
+  )
+} catch (error) {
+  if (error instanceof InsufficientReservesError) {
+    console.log('Not enough liquidity in this pair')
+  }
+}
+```
+
+### `InsufficientInputAmountError`
+
+Thrown when the input amount is too small to produce any output.
+
+```typescript
+class InsufficientInputAmountError extends Error {
+  public readonly isInsufficientInputAmountError = true
+}
+```
+
+#### When It's Thrown
+
+- Input amount is too small (output rounds to zero)
+- After FOT fees, the effective input is zero
+
+```typescript
+import { Pair, InsufficientInputAmountError } from '@uniswap/v2-sdk-next'
+
+try {
+  // Very small input that rounds to zero output
+  const [outputAmount] = pair.getOutputAmount(
+    CurrencyAmount.fromRawAmount(WETH, 1n)
+  )
+} catch (error) {
+  if (error instanceof InsufficientInputAmountError) {
+    console.log('Input amount too small')
+  }
+}
+```
+
+## Error Handling Pattern
+
+```typescript
+import {
+  Trade,
+  Pair,
+  InsufficientReservesError,
+  InsufficientInputAmountError,
+} from '@uniswap/v2-sdk-next'
+
+function findBestTrade(pairs: Pair[], amountIn: CurrencyAmount<Token>, currencyOut: Token) {
+  try {
+    const trades = Trade.bestTradeExactIn(pairs, amountIn, currencyOut)
+
+    if (trades.length === 0) {
+      return { success: false, error: 'No routes found' }
+    }
+
+    return { success: true, trade: trades[0] }
+  } catch (error) {
+    if (error instanceof InsufficientReservesError) {
+      return { success: false, error: 'Insufficient liquidity' }
+    }
+    if (error instanceof InsufficientInputAmountError) {
+      return { success: false, error: 'Amount too small' }
+    }
+    throw error // Re-throw unexpected errors
+  }
+}
+```
+
+## Type Guards
+
+Use the boolean flags for type narrowing:
+
+```typescript
+try {
+  const [output] = pair.getOutputAmount(inputAmount)
+} catch (error) {
+  if ((error as { isInsufficientReservesError?: boolean }).isInsufficientReservesError) {
+    // Handle insufficient reserves
+  }
+  if ((error as { isInsufficientInputAmountError?: boolean }).isInsufficientInputAmountError) {
+    // Handle insufficient input
+  }
+}
+```
+
+This pattern is used internally by `Trade.bestTradeExactIn` and `Trade.bestTradeExactOut` to skip pairs that can't handle the trade amount.

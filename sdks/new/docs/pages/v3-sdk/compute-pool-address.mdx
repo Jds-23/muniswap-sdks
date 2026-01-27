@@ -1,0 +1,199 @@
+# computePoolAddress
+
+The `computePoolAddress` utility computes the address of a Uniswap V3 pool given the factory, tokens, and fee tier. It uses CREATE2 address derivation.
+
+## Import
+
+```typescript
+import { computePoolAddress } from '@uniswap/v3-sdk'
+```
+
+## Function Signature
+
+```typescript
+function computePoolAddress({
+  factoryAddress?: Address.Address,
+  tokenA: Token,
+  tokenB: Token,
+  fee: FeeAmount,
+  initCodeHashManualOverride?: `0x${string}`
+}): Address.Address
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `factoryAddress` | `Address.Address` | The V3 factory address (defaults to mainnet factory) |
+| `tokenA` | `Token` | The first token of the pair (order doesn't matter) |
+| `tokenB` | `Token` | The second token of the pair (order doesn't matter) |
+| `fee` | `FeeAmount` | The fee tier of the pool |
+| `initCodeHashManualOverride` | `` `0x${string}` `` | Optional override for the init code hash |
+
+### Returns
+
+Returns the computed pool address as `Address.Address`.
+
+## Example
+
+```typescript
+import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+const poolAddress = computePoolAddress({
+  tokenA: USDC,
+  tokenB: WETH,
+  fee: FeeAmount.MEDIUM
+})
+
+console.log(poolAddress) // '0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8'
+```
+
+## Token Order Independence
+
+The function automatically sorts tokens, so the order of `tokenA` and `tokenB` doesn't matter:
+
+```typescript
+// These produce the same address
+const address1 = computePoolAddress({
+  tokenA: USDC,
+  tokenB: WETH,
+  fee: FeeAmount.MEDIUM
+})
+
+const address2 = computePoolAddress({
+  tokenA: WETH,
+  tokenB: USDC,
+  fee: FeeAmount.MEDIUM
+})
+
+console.log(address1 === address2) // true
+```
+
+## Custom Factory Address
+
+For non-mainnet deployments or custom factories:
+
+```typescript
+const poolAddress = computePoolAddress({
+  factoryAddress: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+  tokenA: USDC,
+  tokenB: WETH,
+  fee: FeeAmount.MEDIUM
+})
+```
+
+## Chain-Specific Init Code Hash
+
+Different chains may have different bytecode for the pool contract. The SDK automatically handles this for known chains like ZKSync:
+
+```typescript
+import { Token, ChainId } from '@uniswap/sdk-core'
+
+// ZKSync tokens
+const zkSyncToken0 = new Token(ChainId.ZKSYNC, '0x...', 18, 'TOKEN0')
+const zkSyncToken1 = new Token(ChainId.ZKSYNC, '0x...', 18, 'TOKEN1')
+
+// SDK automatically uses the correct init code hash for ZKSync
+const poolAddress = computePoolAddress({
+  tokenA: zkSyncToken0,
+  tokenB: zkSyncToken1,
+  fee: FeeAmount.MEDIUM
+})
+```
+
+For chains not built into the SDK, you can override the init code hash:
+
+```typescript
+const poolAddress = computePoolAddress({
+  tokenA: customToken0,
+  tokenB: customToken1,
+  fee: FeeAmount.MEDIUM,
+  initCodeHashManualOverride: '0x...' // Custom init code hash
+})
+```
+
+## Using with Pool.getAddress
+
+The `Pool` class also provides a static method that calls `computePoolAddress`:
+
+```typescript
+import { Pool, FeeAmount } from '@uniswap/v3-sdk'
+
+const poolAddress = Pool.getAddress(USDC, WETH, FeeAmount.MEDIUM)
+```
+
+## How CREATE2 Works
+
+The pool address is deterministically computed using CREATE2:
+
+1. **Salt**: Computed from `keccak256(abi.encodePacked(token0, token1, fee))`
+2. **Init Code Hash**: The keccak256 hash of the pool contract bytecode
+3. **Factory Address**: The V3 factory that deploys pools
+
+```
+address = keccak256(0xff ++ factory ++ salt ++ initCodeHash)[12:]
+```
+
+## Constants
+
+### Default Factory Address
+
+```typescript
+const FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+```
+
+### Default Init Code Hash
+
+```typescript
+const POOL_INIT_CODE_HASH = '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
+```
+
+### ZKSync Init Code Hash
+
+```typescript
+const ZKSYNC_POOL_INIT_CODE_HASH = '0x010013f177ea1fcbc4520f9a3ca7cd2d1d77959e05aa66484027cb38e712aeed'
+```
+
+## Use Cases
+
+### Verifying Pool Existence
+
+```typescript
+import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
+import { ethers } from 'ethers'
+
+const poolAddress = computePoolAddress({
+  tokenA: USDC,
+  tokenB: WETH,
+  fee: FeeAmount.MEDIUM
+})
+
+// Check if pool exists by checking code at address
+const code = await provider.getCode(poolAddress)
+const poolExists = code !== '0x'
+```
+
+### Finding All Fee Tier Pools
+
+```typescript
+import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
+
+const feeTiers = [
+  FeeAmount.LOWEST,   // 0.01%
+  FeeAmount.LOW,      // 0.05%
+  FeeAmount.MEDIUM,   // 0.3%
+  FeeAmount.HIGH      // 1%
+]
+
+const poolAddresses = feeTiers.map(fee =>
+  computePoolAddress({
+    tokenA: USDC,
+    tokenB: WETH,
+    fee
+  })
+)
+```

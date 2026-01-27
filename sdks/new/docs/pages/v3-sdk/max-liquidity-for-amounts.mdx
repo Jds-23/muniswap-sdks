@@ -1,0 +1,211 @@
+# maxLiquidityForAmounts
+
+The `maxLiquidityForAmounts` utility computes the maximum amount of liquidity that can be minted given token amounts and price bounds.
+
+## Import
+
+```typescript
+import { maxLiquidityForAmounts } from '@uniswap/v3-sdk'
+```
+
+## Function Signature
+
+```typescript
+function maxLiquidityForAmounts(
+  sqrtRatioCurrentX96: bigint,
+  sqrtRatioAX96: bigint,
+  sqrtRatioBX96: bigint,
+  amount0: BigintIsh,
+  amount1: BigintIsh,
+  useFullPrecision: boolean
+): bigint
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtRatioCurrentX96` | `bigint` | The current pool sqrt price |
+| `sqrtRatioAX96` | `bigint` | The sqrt price at the lower tick boundary |
+| `sqrtRatioBX96` | `bigint` | The sqrt price at the upper tick boundary |
+| `amount0` | `BigintIsh` | The amount of token0 available |
+| `amount1` | `BigintIsh` | The amount of token1 available |
+| `useFullPrecision` | `boolean` | Whether to use full precision calculation |
+
+### Returns
+
+Returns the maximum liquidity that can be minted (`bigint`).
+
+## Example
+
+```typescript
+import { maxLiquidityForAmounts, getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+const currentSqrtPrice = 79228162514264337593543950336n // price = 1.0
+const sqrtPriceLower = getSqrtRatioAtTick(-60)
+const sqrtPriceUpper = getSqrtRatioAtTick(60)
+
+const amount0 = 1000000n // 1 USDC (6 decimals)
+const amount1 = 1000000000000000000n // 1 WETH (18 decimals)
+
+const maxLiquidity = maxLiquidityForAmounts(
+  currentSqrtPrice,
+  sqrtPriceLower,
+  sqrtPriceUpper,
+  amount0,
+  amount1,
+  true // use full precision
+)
+
+console.log('Max liquidity:', maxLiquidity)
+```
+
+## Precision Modes
+
+### Full Precision (`useFullPrecision: true`)
+
+Uses full 256-bit precision for the calculation. This gives the most accurate result but may differ from what the router contract calculates.
+
+```typescript
+const liquidityPrecise = maxLiquidityForAmounts(
+  currentSqrtPrice,
+  sqrtPriceLower,
+  sqrtPriceUpper,
+  amount0,
+  amount1,
+  true // Full precision
+)
+```
+
+### Imprecise Mode (`useFullPrecision: false`)
+
+Matches the precision used by the V3 periphery's `LiquidityAmounts` library. Use this when you need to match the router's calculation exactly.
+
+```typescript
+const liquidityImprecise = maxLiquidityForAmounts(
+  currentSqrtPrice,
+  sqrtPriceLower,
+  sqrtPriceUpper,
+  amount0,
+  amount1,
+  false // Match router precision
+)
+```
+
+## Behavior Based on Current Price
+
+The function behaves differently depending on where the current price is relative to the position range:
+
+### Price Below Range
+
+When `sqrtRatioCurrentX96 <= sqrtRatioAX96`:
+- All liquidity is in token0
+- `amount1` is not used
+- Returns liquidity based solely on `amount0`
+
+```typescript
+// Price below range - only token0 matters
+const liquidity = maxLiquidityForAmounts(
+  getSqrtRatioAtTick(-200), // current price below range
+  getSqrtRatioAtTick(-60),
+  getSqrtRatioAtTick(60),
+  1000000n,
+  1000000000000000000n,
+  true
+)
+// Liquidity limited by amount0 only
+```
+
+### Price Within Range
+
+When `sqrtRatioAX96 < sqrtRatioCurrentX96 < sqrtRatioBX96`:
+- Both tokens are needed
+- Returns the minimum of liquidity from token0 and token1
+- This ensures both amounts are sufficient
+
+```typescript
+// Price in range - both tokens matter
+const liquidity = maxLiquidityForAmounts(
+  getSqrtRatioAtTick(0), // current price in range
+  getSqrtRatioAtTick(-60),
+  getSqrtRatioAtTick(60),
+  1000000n,
+  1000000000000000000n,
+  true
+)
+// Liquidity limited by the smaller contribution
+```
+
+### Price Above Range
+
+When `sqrtRatioCurrentX96 >= sqrtRatioBX96`:
+- All liquidity is in token1
+- `amount0` is not used
+- Returns liquidity based solely on `amount1`
+
+```typescript
+// Price above range - only token1 matters
+const liquidity = maxLiquidityForAmounts(
+  getSqrtRatioAtTick(200), // current price above range
+  getSqrtRatioAtTick(-60),
+  getSqrtRatioAtTick(60),
+  1000000n,
+  1000000000000000000n,
+  true
+)
+// Liquidity limited by amount1 only
+```
+
+## Usage with Position
+
+The `Position.fromAmounts` static method uses this function internally:
+
+```typescript
+import { Position, Pool, FeeAmount } from '@uniswap/v3-sdk'
+
+const position = Position.fromAmounts({
+  pool,
+  tickLower: -60,
+  tickUpper: 60,
+  amount0: '1000000',
+  amount1: '1000000000000000000',
+  useFullPrecision: true
+})
+
+// position.liquidity is computed using maxLiquidityForAmounts
+```
+
+## Computing Required Amounts
+
+To do the inverse (compute amounts from liquidity), use `getAmount0Delta` and `getAmount1Delta`:
+
+```typescript
+import {
+  maxLiquidityForAmounts,
+  getAmount0Delta,
+  getAmount1Delta,
+  getSqrtRatioAtTick
+} from '@uniswap/v3-sdk'
+
+// First compute max liquidity
+const liquidity = maxLiquidityForAmounts(
+  currentSqrtPrice,
+  sqrtPriceLower,
+  sqrtPriceUpper,
+  amount0,
+  amount1,
+  true
+)
+
+// Then compute the actual amounts needed for that liquidity
+const actualAmount0 = getAmount0Delta(currentSqrtPrice, sqrtPriceUpper, liquidity, true)
+const actualAmount1 = getAmount1Delta(sqrtPriceLower, currentSqrtPrice, liquidity, true)
+```
+
+## Important Considerations
+
+1. **Token Sort Order**: The function assumes `sqrtRatioA` and `sqrtRatioB` can be in any order - it sorts them internally.
+
+2. **Rounding**: This function returns the maximum liquidity that can be minted. The actual amounts used may be slightly less than provided due to rounding.
+
+3. **Precision Trade-offs**: Use `useFullPrecision: true` for off-chain calculations, and `useFullPrecision: false` when you need to match on-chain router behavior exactly.

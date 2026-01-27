@@ -1,0 +1,200 @@
+# encodeRouteToPath
+
+The `encodeRouteToPath` utility converts a swap route into the hex-encoded path format used by the Uniswap V3 router contracts.
+
+## Import
+
+```typescript
+import { encodeRouteToPath } from '@uniswap/v3-sdk'
+```
+
+## Function Signature
+
+```typescript
+function encodeRouteToPath<TInput extends Currency, TOutput extends Currency>(
+  route: Route<TInput, TOutput>,
+  exactOutput: boolean
+): Hex.Hex
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `route` | `Route<TInput, TOutput>` | The swap route to encode |
+| `exactOutput` | `boolean` | Whether the trade is exact output (reverses the path) |
+
+### Returns
+
+Returns the hex-encoded path as `Hex.Hex`.
+
+## Path Format
+
+The path is encoded as a packed sequence of tokens and fees:
+
+```
+(token, fee, token, fee, ..., token)
+```
+
+Each element is:
+- `token`: 20 bytes (address)
+- `fee`: 3 bytes (uint24)
+
+## Example
+
+```typescript
+import { encodeRouteToPath, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EescdeCB5', 18, 'DAI')
+
+// Single-hop route: USDC -> WETH
+const singleHopRoute = new Route([usdcWethPool], USDC, WETH)
+const singleHopPath = encodeRouteToPath(singleHopRoute, false)
+
+// Multi-hop route: USDC -> WETH -> DAI
+const multiHopRoute = new Route([usdcWethPool, wethDaiPool], USDC, DAI)
+const multiHopPath = encodeRouteToPath(multiHopRoute, false)
+```
+
+## Exact Input vs Exact Output
+
+### Exact Input (Forward Path)
+
+For exact input swaps, the path is encoded in forward order (input to output):
+
+```typescript
+// USDC -> WETH -> DAI (exact input)
+const path = encodeRouteToPath(route, false)
+// Encodes: USDC -> fee -> WETH -> fee -> DAI
+```
+
+### Exact Output (Reverse Path)
+
+For exact output swaps, the path is encoded in reverse order (output to input):
+
+```typescript
+// USDC -> WETH -> DAI (exact output, path reversed)
+const path = encodeRouteToPath(route, true)
+// Encodes: DAI -> fee -> WETH -> fee -> USDC
+```
+
+## Usage with SwapRouter
+
+The `encodeRouteToPath` function is used internally by `swapCallParameters`:
+
+```typescript
+import { swapCallParameters, Trade, Route, FeeAmount } from '@uniswap/v3-sdk'
+import { TradeType } from '@uniswap/sdk-core'
+
+const trade = await Trade.fromRoute(
+  route,
+  inputAmount,
+  TradeType.EXACT_INPUT
+)
+
+// swapCallParameters internally calls encodeRouteToPath
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance,
+  recipient,
+  deadline
+})
+```
+
+## Usage with Quoter
+
+The function is also used when generating quoter call parameters:
+
+```typescript
+import { quoteCallParameters, Route, FeeAmount } from '@uniswap/v3-sdk'
+import { TradeType } from '@uniswap/sdk-core'
+
+// Multi-hop quote
+const route = new Route([pool1, pool2], tokenIn, tokenOut)
+const { calldata } = quoteCallParameters(
+  route,
+  amountIn,
+  TradeType.EXACT_INPUT
+)
+// Internally uses encodeRouteToPath for multi-hop paths
+```
+
+## Manual Path Construction
+
+You can also construct paths manually for advanced use cases:
+
+```typescript
+import { encodeRouteToPath, Route, Pool, FeeAmount } from '@uniswap/v3-sdk'
+
+// Create route with specific pools
+const route = new Route(
+  [
+    new Pool(tokenA, tokenB, FeeAmount.LOW, sqrtPrice1, liquidity1, tick1),
+    new Pool(tokenB, tokenC, FeeAmount.MEDIUM, sqrtPrice2, liquidity2, tick2),
+    new Pool(tokenC, tokenD, FeeAmount.HIGH, sqrtPrice3, liquidity3, tick3)
+  ],
+  tokenA,
+  tokenD
+)
+
+// Encode the path
+const path = encodeRouteToPath(route, false)
+// Result: tokenA (20 bytes) + fee500 (3 bytes) + tokenB (20 bytes) + fee3000 (3 bytes) + tokenC (20 bytes) + fee10000 (3 bytes) + tokenD (20 bytes)
+```
+
+## Path Length
+
+The encoded path length depends on the number of hops:
+
+| Hops | Tokens | Fees | Path Length (bytes) |
+| --- | --- | --- | --- |
+| 1 | 2 | 1 | 43 (20 + 3 + 20) |
+| 2 | 3 | 2 | 66 (20 + 3 + 20 + 3 + 20) |
+| 3 | 4 | 3 | 89 (20 + 3 + 20 + 3 + 20 + 3 + 20) |
+
+Formula: `20 + n * 23` bytes where `n` is the number of hops.
+
+## Decoding Paths
+
+To decode a path back to tokens and fees:
+
+```typescript
+function decodePath(path: string): { tokens: string[]; fees: number[] } {
+  const tokens: string[] = []
+  const fees: number[] = []
+
+  // Remove 0x prefix
+  const pathData = path.slice(2)
+
+  let offset = 0
+  while (offset < pathData.length) {
+    // Extract token address (20 bytes = 40 hex chars)
+    tokens.push('0x' + pathData.slice(offset, offset + 40))
+    offset += 40
+
+    if (offset < pathData.length) {
+      // Extract fee (3 bytes = 6 hex chars)
+      fees.push(parseInt(pathData.slice(offset, offset + 6), 16))
+      offset += 6
+    }
+  }
+
+  return { tokens, fees }
+}
+```
+
+## Error Handling
+
+The function will throw if:
+- The route has no pools
+- The route's token path is inconsistent with the pools
+
+```typescript
+try {
+  const path = encodeRouteToPath(route, false)
+} catch (error) {
+  console.error('Invalid route:', error)
+}
+```

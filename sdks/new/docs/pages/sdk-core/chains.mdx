@@ -1,0 +1,162 @@
+# Chains
+
+Chain IDs and native currency configurations for supported networks.
+
+## Import
+
+```typescript
+import {
+  ChainId,
+  SUPPORTED_CHAINS,
+  NativeCurrencyName,
+  type SupportedChainsType,
+} from '@uniswap/sdk-core-next'
+```
+
+## ChainId Enum
+
+```typescript
+enum ChainId {
+  // Mainnets
+  MAINNET = 1,
+  OPTIMISM = 10,
+  ARBITRUM_ONE = 42161,
+  POLYGON = 137,
+  BNB = 56,
+  AVALANCHE = 43114,
+  BASE = 8453,
+  ZORA = 7777777,
+  BLAST = 81457,
+  ZKSYNC = 324,
+  WORLDCHAIN = 480,
+  UNICHAIN = 130,
+  CELO = 42220,
+  GNOSIS = 100,
+  MOONBEAM = 1284,
+  ROOTSTOCK = 30,
+  SONEIUM = 1868,
+  MONAD = 143,
+  XLAYER = 196,
+
+  // Testnets
+  GOERLI = 5,
+  SEPOLIA = 11155111,
+  OPTIMISM_GOERLI = 420,
+  OPTIMISM_SEPOLIA = 11155420,
+  ARBITRUM_GOERLI = 421613,
+  ARBITRUM_SEPOLIA = 421614,
+  POLYGON_MUMBAI = 80001,
+  BASE_GOERLI = 84531,
+  BASE_SEPOLIA = 84532,
+  ZORA_SEPOLIA = 999999999,
+  CELO_ALFAJORES = 44787,
+  UNICHAIN_SEPOLIA = 1301,
+  MONAD_TESTNET = 10143,
+}
+```
+
+## Usage
+
+```typescript
+import { ChainId, Ether, Token } from '@uniswap/sdk-core-next'
+
+// Create ETH for a specific chain
+const eth = Ether.onChain(ChainId.MAINNET)
+
+// Create a token on Arbitrum
+const ARB = new Token(
+  ChainId.ARBITRUM_ONE,
+  '0x912CE59144191C1204E64559FE8253a0e49E6548',
+  18,
+  'ARB',
+  'Arbitrum'
+)
+
+// Check chain support
+function isSupported(chainId: number): boolean {
+  return SUPPORTED_CHAINS.includes(chainId as SupportedChainsType)
+}
+```
+
+## SUPPORTED_CHAINS
+
+Array of all supported chain IDs:
+
+```typescript
+const SUPPORTED_CHAINS = [
+  ChainId.MAINNET,
+  ChainId.OPTIMISM,
+  ChainId.ARBITRUM_ONE,
+  ChainId.POLYGON,
+  ChainId.BNB,
+  ChainId.AVALANCHE,
+  ChainId.BASE,
+  ChainId.ZORA,
+  ChainId.BLAST,
+  ChainId.ZKSYNC,
+  ChainId.WORLDCHAIN,
+  ChainId.UNICHAIN,
+  ChainId.CELO,
+  ChainId.ROOTSTOCK,
+  ChainId.SONEIUM,
+  ChainId.MONAD,
+  ChainId.XLAYER,
+  // ... testnets
+] as const
+```
+
+## NativeCurrencyName
+
+Names for native currencies on different chains:
+
+```typescript
+enum NativeCurrencyName {
+  ETHER = 'ETH',
+  MATIC = 'MATIC',
+  CELO = 'CELO',
+  GNOSIS = 'XDAI',
+  MOONBEAM = 'GLMR',
+  BNB = 'BNB',
+  AVAX = 'AVAX',
+  ROOTSTOCK = 'RBTC',
+}
+```
+
+## Chain Details
+
+| Chain | ID | Native | Type |
+|-------|-----|--------|------|
+| Ethereum | 1 | ETH | Mainnet |
+| Optimism | 10 | ETH | L2 |
+| Arbitrum | 42161 | ETH | L2 |
+| Polygon | 137 | MATIC | Sidechain |
+| BNB Chain | 56 | BNB | L1 |
+| Avalanche | 43114 | AVAX | L1 |
+| Base | 8453 | ETH | L2 |
+| Zora | 7777777 | ETH | L2 |
+| Blast | 81457 | ETH | L2 |
+| zkSync Era | 324 | ETH | L2 |
+| World Chain | 480 | ETH | L2 |
+| Unichain | 130 | ETH | L2 |
+| Celo | 42220 | CELO | L1 |
+
+## Type Safety
+
+```typescript
+import { ChainId, type SupportedChainsType } from '@uniswap/sdk-core-next'
+
+// Type-safe chain ID
+function getChainName(chainId: SupportedChainsType): string {
+  switch (chainId) {
+    case ChainId.MAINNET:
+      return 'Ethereum'
+    case ChainId.OPTIMISM:
+      return 'Optimism'
+    case ChainId.ARBITRUM_ONE:
+      return 'Arbitrum One'
+    // ... TypeScript ensures all chains are handled
+    default:
+      return 'Unknown'
+  }
+}
+```

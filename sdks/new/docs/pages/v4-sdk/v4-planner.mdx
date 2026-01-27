@@ -1,0 +1,323 @@
+# V4Planner
+
+The `V4Planner` class builds encoded calldata for V4 Router operations. It maintains a list of actions and their encoded parameters for swap execution.
+
+## Import
+
+```typescript
+import { V4Planner, Actions } from '@uniswap/v4-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new V4Planner()
+```
+
+Creates a new planner instance with an empty action list.
+
+## Actions Enum
+
+The `Actions` enum defines all available V4 Router actions:
+
+```typescript
+enum Actions {
+  // Liquidity actions
+  INCREASE_LIQUIDITY = 0x00,
+  DECREASE_LIQUIDITY = 0x01,
+  MINT_POSITION = 0x02,
+  BURN_POSITION = 0x03,
+
+  // Swapping
+  SWAP_EXACT_IN_SINGLE = 0x06,
+  SWAP_EXACT_IN = 0x07,
+  SWAP_EXACT_OUT_SINGLE = 0x08,
+  SWAP_EXACT_OUT = 0x09,
+
+  // Settling (closing deltas on the pool manager)
+  SETTLE = 0x0b,
+  SETTLE_ALL = 0x0c,
+  SETTLE_PAIR = 0x0d,
+
+  // Taking
+  TAKE = 0x0e,
+  TAKE_ALL = 0x0f,
+  TAKE_PORTION = 0x10,
+  TAKE_PAIR = 0x11,
+
+  CLOSE_CURRENCY = 0x12,
+  SWEEP = 0x14,
+
+  // Wrapping/unwrapping native
+  UNWRAP = 0x16,
+}
+```
+
+## Example
+
+```typescript
+import { V4Planner, Actions, Trade, Pool, Route, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { CurrencyAmount, Percent, TradeType, Ether, Token } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create a planner
+const planner = new V4Planner()
+
+// Build a trade
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96, liquidity, tick, ticks)
+const route = new Route([pool], ETH, USDC)
+const trade = await Trade.exactIn(route, CurrencyAmount.fromRawAmount(ETH, '1000000000000000000'))
+
+// Add trade to planner
+const slippage = new Percent(50, 10000) // 0.5%
+planner.addTrade(trade, slippage)
+
+// Add settlement actions
+planner.addSettle(ETH, true)  // User pays ETH
+planner.addTake(USDC, '0xRecipient')  // Take USDC to recipient
+
+// Finalize and get encoded calldata
+const encodedData = planner.finalize()
+```
+
+## Properties
+
+### `actions`
+
+```typescript
+actions: string
+```
+
+The encoded action bytes. Each action is a single byte.
+
+### `params`
+
+```typescript
+params: string[]
+```
+
+The encoded parameters for each action.
+
+## Methods
+
+### `addAction(type, parameters)`
+
+```typescript
+addAction(type: Actions, parameters: unknown[]): V4Planner
+```
+
+Add a raw action to the planner.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `Actions` | The action type |
+| `parameters` | `unknown[]` | The parameters for the action |
+
+Returns the planner for chaining.
+
+```typescript
+planner.addAction(Actions.SETTLE, [
+  '0x0000000000000000000000000000000000000000', // currency address
+  0n, // amount (0 = full delta)
+  true // payerIsUser
+])
+```
+
+### `addTrade(trade, slippageTolerance?)`
+
+```typescript
+addTrade(trade: Trade<Currency, Currency, TradeType>, slippageTolerance?: Percent): V4Planner
+```
+
+Add a trade to the planner. Automatically encodes the appropriate swap action.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `trade` | `Trade` | The trade to add |
+| `slippageTolerance` | `Percent?` | Required for exact output trades |
+
+**Note**: Only accepts trades with a single swap. Split trades must be added individually.
+
+```typescript
+// Exact input trade
+planner.addTrade(exactInTrade, slippage)
+
+// Exact output trade (slippage required)
+planner.addTrade(exactOutTrade, slippage)
+```
+
+### `addSettle(currency, payerIsUser, amount?)`
+
+```typescript
+addSettle(currency: Currency, payerIsUser: boolean, amount?: bigint): V4Planner
+```
+
+Add a settle action to close a delta.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency` | `Currency` | The currency to settle |
+| `payerIsUser` | `boolean` | Whether the user is the payer |
+| `amount` | `bigint?` | Specific amount (default: full delta) |
+
+```typescript
+// User settles the full delta
+planner.addSettle(ETH, true)
+
+// Contract settles a specific amount
+planner.addSettle(USDC, false, 1000000n)
+```
+
+### `addTake(currency, recipient, amount?)`
+
+```typescript
+addTake(currency: Currency, recipient: string, amount?: bigint): V4Planner
+```
+
+Add a take action to receive tokens.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency` | `Currency` | The currency to take |
+| `recipient` | `string` | The recipient address |
+| `amount` | `bigint?` | Specific amount (default: full delta) |
+
+```typescript
+// Take full output to recipient
+planner.addTake(USDC, '0xRecipient')
+
+// Take specific amount
+planner.addTake(USDC, '0xRecipient', 1000000000n)
+```
+
+### `addUnwrap(amount)`
+
+```typescript
+addUnwrap(amount: bigint): V4Planner
+```
+
+Add an unwrap action to convert WETH to ETH.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `amount` | `bigint` | The amount to unwrap |
+
+```typescript
+planner.addUnwrap(1000000000000000000n) // Unwrap 1 WETH to ETH
+```
+
+### `finalize()`
+
+```typescript
+finalize(): string
+```
+
+Finalize the planner and return the encoded calldata for the router.
+
+```typescript
+const encodedData = planner.finalize()
+// Use with router.execute(encodedData, deadline)
+```
+
+## Action Parameters
+
+### Swap Actions
+
+#### SWAP_EXACT_IN
+
+```typescript
+{
+  currencyIn: string,      // Input currency address
+  path: PathKey[],          // Array of path keys
+  amountIn: string,         // Input amount
+  amountOutMinimum: string  // Minimum output (slippage protection)
+}
+```
+
+#### SWAP_EXACT_OUT
+
+```typescript
+{
+  currencyOut: string,     // Output currency address
+  path: PathKey[],          // Array of path keys
+  amountOut: string,        // Desired output amount
+  amountInMaximum: string   // Maximum input (slippage protection)
+}
+```
+
+### Settlement Actions
+
+#### SETTLE
+
+```typescript
+[
+  currency: string,     // Currency address (0x0 for native)
+  amount: bigint,       // Amount (0 for full delta)
+  payerIsUser: boolean  // Whether user pays
+]
+```
+
+#### SETTLE_PAIR
+
+```typescript
+[
+  currency0: string,  // First currency address
+  currency1: string   // Second currency address
+]
+```
+
+### Take Actions
+
+#### TAKE
+
+```typescript
+[
+  currency: string,   // Currency address
+  recipient: string,  // Recipient address
+  amount: bigint      // Amount (0 for full delta)
+]
+```
+
+#### TAKE_PAIR
+
+```typescript
+[
+  currency0: string,  // First currency address
+  currency1: string,  // Second currency address
+  recipient: string   // Recipient address
+]
+```
+
+## Complete Swap Example
+
+```typescript
+import { V4Planner, Trade, Route, Pool } from '@uniswap/v4-sdk-next'
+import { CurrencyAmount, Percent } from '@uniswap/sdk-core-next'
+
+async function buildSwapCalldata(
+  pool: Pool,
+  inputAmount: CurrencyAmount,
+  recipient: string,
+  slippage: Percent
+) {
+  // Create route and trade
+  const route = new Route([pool], inputAmount.currency, pool.currency1)
+  const trade = await Trade.exactIn(route, inputAmount)
+
+  // Build planner
+  const planner = new V4Planner()
+
+  // Add swap
+  planner.addTrade(trade, slippage)
+
+  // Settle input (user pays)
+  planner.addSettle(inputAmount.currency, true)
+
+  // Take output to recipient
+  planner.addTake(pool.currency1, recipient)
+
+  return planner.finalize()
+}
+```

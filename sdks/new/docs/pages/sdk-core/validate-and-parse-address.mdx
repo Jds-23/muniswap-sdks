@@ -1,0 +1,133 @@
+# validateAndParseAddress
+
+Validates an Ethereum address and returns the checksummed version.
+
+## Import
+
+```typescript
+import { validateAndParseAddress, checkValidAddress } from '@uniswap/sdk-core-next'
+```
+
+## Functions
+
+### `validateAndParseAddress(address)`
+
+Validates an address and returns the checksummed (EIP-55) version.
+
+```typescript
+function validateAndParseAddress(address: string): Address.Address
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `address` | `string` | The hex address to validate |
+
+#### Returns
+
+`Address.Address` - The checksummed address.
+
+#### Throws
+
+Error if the address is invalid.
+
+### `checkValidAddress(address)`
+
+A lighter validation that only checks format (0x prefix, length, hex characters) without computing the checksum.
+
+```typescript
+function checkValidAddress(address: string): Address.Address
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `address` | `string` | The hex address to validate |
+
+#### Returns
+
+`Address.Address` - The address as-is (not checksummed).
+
+#### Throws
+
+Error if the address format is invalid.
+
+## Example
+
+```typescript
+import { validateAndParseAddress, checkValidAddress } from '@uniswap/sdk-core-next'
+
+// Valid address - returns checksummed
+const checksummed = validateAndParseAddress('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
+console.log(checksummed) // '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+
+// Already checksummed - returns same
+const same = validateAndParseAddress('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+console.log(same) // '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+
+// Invalid checksum - throws error
+try {
+  validateAndParseAddress('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB49')
+} catch (e) {
+  console.log(e.message) // "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB49 is not a valid address."
+}
+
+// Light validation (no checksum verification)
+const quick = checkValidAddress('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
+console.log(quick) // '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' (lowercase preserved)
+
+// Invalid format - throws
+try {
+  checkValidAddress('0xinvalid')
+} catch (e) {
+  console.log(e.message) // "0xinvalid is not a valid address."
+}
+```
+
+## Validation Rules
+
+### `validateAndParseAddress`
+- Must be a valid hex string
+- Must be 42 characters (including 0x prefix)
+- Returns EIP-55 checksummed address
+- Validates checksum if mixed case
+
+### `checkValidAddress`
+- Must start with `0x` (case insensitive)
+- Must be exactly 42 characters
+- Must contain only hex characters (0-9, a-f, A-F)
+- Does NOT validate or compute checksum
+
+## When to Use Each
+
+```typescript
+// Use validateAndParseAddress for:
+// - User input validation
+// - Ensuring consistent address format
+// - Security-critical operations
+
+const userInput = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+const token = new Token(1, validateAndParseAddress(userInput), 6)
+
+// Use checkValidAddress for:
+// - Faster validation when checksum isn't critical
+// - Processing large batches of addresses
+// - When addresses come from trusted sources
+
+const trustedAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+const quickCheck = checkValidAddress(trustedAddress)
+```
+
+## EIP-55 Checksum
+
+The checksum is encoded in the capitalization of the hex characters:
+
+```
+0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+  ^                 ^      ^
+  Capital A         Capital D    Capital E
+```
+
+This allows detecting typos in addresses. An address with incorrect capitalization will fail validation.

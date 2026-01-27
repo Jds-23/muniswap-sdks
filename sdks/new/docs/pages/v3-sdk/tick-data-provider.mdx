@@ -1,0 +1,175 @@
+# TickDataProvider
+
+The `TickDataProvider` interface defines the contract for providing tick data to V3 pools. It allows pools to fetch tick information dynamically during swap calculations.
+
+## Import
+
+```typescript
+import { TickDataProvider, NoTickDataProvider } from '@uniswap/v3-sdk'
+```
+
+## TickDataProvider Interface
+
+The interface that tick data providers must implement.
+
+```typescript
+interface TickDataProvider {
+  getTick(tick: number): Promise<{ liquidityNet: BigintIsh; liquidityGross?: BigintIsh }>
+
+  nextInitializedTickWithinOneWord(
+    tick: number,
+    lte: boolean,
+    tickSpacing: number
+  ): Promise<[number, boolean]>
+}
+```
+
+### Methods
+
+#### getTick
+
+Returns information corresponding to a specific tick.
+
+```typescript
+getTick(tick: number): Promise<{ liquidityNet: BigintIsh; liquidityGross?: BigintIsh }>
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `tick` | `number` | The tick index to load |
+
+**Returns:** A promise resolving to an object containing:
+- `liquidityNet`: The net liquidity change at this tick
+- `liquidityGross` (optional): The gross liquidity at this tick
+
+#### nextInitializedTickWithinOneWord
+
+Returns the next initialized tick within a single word.
+
+```typescript
+nextInitializedTickWithinOneWord(
+  tick: number,
+  lte: boolean,
+  tickSpacing: number
+): Promise<[number, boolean]>
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `tick` | `number` | The current tick |
+| `lte` | `boolean` | Whether the next tick should be less than or equal to the current tick |
+| `tickSpacing` | `number` | The tick spacing of the pool |
+
+**Returns:** A promise resolving to a tuple:
+- `[0]`: The next initialized tick index
+- `[1]`: Whether the tick is initialized
+
+## NoTickDataProvider
+
+A placeholder tick data provider that throws errors when accessed. Useful when tick data is not needed.
+
+```typescript
+class NoTickDataProvider implements TickDataProvider {
+  async getTick(_tick: number): Promise<{ liquidityNet: BigintIsh }>
+  async nextInitializedTickWithinOneWord(
+    _tick: number,
+    _lte: boolean,
+    _tickSpacing: number
+  ): Promise<[number, boolean]>
+}
+```
+
+Both methods throw an error with the message: "No tick data provider was given"
+
+## Example: Custom Tick Data Provider
+
+```typescript
+import { TickDataProvider } from '@uniswap/v3-sdk'
+
+class OnChainTickDataProvider implements TickDataProvider {
+  private poolAddress: string
+  private provider: any // ethers provider
+
+  constructor(poolAddress: string, provider: any) {
+    this.poolAddress = poolAddress
+    this.provider = provider
+  }
+
+  async getTick(tick: number): Promise<{ liquidityNet: bigint; liquidityGross: bigint }> {
+    // Fetch tick data from the blockchain
+    const poolContract = new Contract(this.poolAddress, POOL_ABI, this.provider)
+    const tickData = await poolContract.ticks(tick)
+
+    return {
+      liquidityGross: tickData.liquidityGross,
+      liquidityNet: tickData.liquidityNet
+    }
+  }
+
+  async nextInitializedTickWithinOneWord(
+    tick: number,
+    lte: boolean,
+    tickSpacing: number
+  ): Promise<[number, boolean]> {
+    // Fetch from bitmap
+    const poolContract = new Contract(this.poolAddress, POOL_ABI, this.provider)
+
+    const wordPos = Math.floor(tick / tickSpacing / 256)
+    const bitPos = (tick / tickSpacing) % 256
+
+    const bitmap = await poolContract.tickBitmap(wordPos)
+
+    // Find next initialized tick in bitmap
+    // ... implementation details
+
+    return [nextTick, initialized]
+  }
+}
+```
+
+## Usage with Pool
+
+```typescript
+import { Pool, FeeAmount } from '@uniswap/v3-sdk'
+
+// Using a custom tick data provider
+const tickDataProvider = new OnChainTickDataProvider(poolAddress, provider)
+
+const pool = new Pool(
+  token0,
+  token1,
+  FeeAmount.MEDIUM,
+  sqrtRatioX96,
+  liquidity,
+  currentTick,
+  tickDataProvider
+)
+
+// Now pool.getOutputAmount() and pool.getInputAmount() will use
+// the tick data provider to fetch tick information during swaps
+```
+
+## TickListDataProvider
+
+The SDK also includes a `TickListDataProvider` that wraps an array of ticks:
+
+```typescript
+import { Pool, Tick, FeeAmount } from '@uniswap/v3-sdk'
+
+const ticks = [
+  new Tick({ index: -60, liquidityGross: '1000000', liquidityNet: '1000000' }),
+  new Tick({ index: 0, liquidityGross: '2000000', liquidityNet: '1000000' }),
+  new Tick({ index: 60, liquidityGross: '1000000', liquidityNet: '-1000000' }),
+]
+
+// When you pass an array of ticks, it's automatically wrapped in TickListDataProvider
+const pool = new Pool(
+  token0,
+  token1,
+  FeeAmount.MEDIUM,
+  sqrtRatioX96,
+  liquidity,
+  currentTick,
+  ticks // Automatically converted to TickListDataProvider
+)
+```

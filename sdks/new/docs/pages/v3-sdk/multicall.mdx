@@ -1,0 +1,157 @@
+# Multicall
+
+The `Multicall` module provides a utility for encoding multiple function calls into a single multicall transaction. This is useful for batching operations like minting positions with permits or combining swaps with other actions.
+
+## Import
+
+```typescript
+import { encodeMulticall } from '@uniswap/v3-sdk'
+```
+
+## encodeMulticall
+
+Encodes multiple function calls into a single multicall calldata.
+
+```typescript
+function encodeMulticall(calldatasInput: Hex.Hex | Hex.Hex[]): Hex.Hex
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `calldatasInput` | `Hex.Hex \| Hex.Hex[]` | Single calldata or array of calldatas to encode |
+
+### Returns
+
+Returns the encoded multicall calldata as `Hex.Hex`.
+
+### Behavior
+
+- If a single calldata is passed (not an array), it returns the calldata unchanged
+- If multiple calldatas are passed, they are encoded into a multicall
+
+## Example: Single Call
+
+When you pass a single calldata, it's returned as-is:
+
+```typescript
+import { encodeMulticall } from '@uniswap/v3-sdk'
+
+const singleCalldata = '0x1234...'
+const result = encodeMulticall(singleCalldata)
+// result === singleCalldata
+```
+
+## Example: Multiple Calls
+
+When you pass multiple calldatas, they're encoded into a multicall:
+
+```typescript
+import { encodeMulticall } from '@uniswap/v3-sdk'
+
+const calldata1 = '0xabc...'
+const calldata2 = '0xdef...'
+const calldata3 = '0x123...'
+
+const multicallData = encodeMulticall([calldata1, calldata2, calldata3])
+
+// Execute all three calls in one transaction
+const tx = await contract.multicall(multicallData)
+```
+
+## Usage with Position Manager
+
+The multicall is commonly used internally by the SDK when generating position manager calldata:
+
+```typescript
+import { addCallParameters, Position } from '@uniswap/v3-sdk'
+import { Percent, Ether } from '@uniswap/sdk-core'
+
+// When minting with native ETH, the SDK internally uses multicall to combine:
+// 1. The mint call
+// 2. The refundETH call (to return excess ETH)
+
+const { calldata, value } = addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: BigInt(deadline),
+  recipient: userAddress,
+  useNative: Ether.onChain(1)
+})
+
+// The calldata is already a multicall combining mint + refundETH
+```
+
+## Usage with SwapRouter
+
+The SwapRouter also uses multicall internally:
+
+```typescript
+import { swapCallParameters, Trade } from '@uniswap/v3-sdk'
+import { Percent, TradeType } from '@uniswap/sdk-core'
+
+// When swapping with permits, fees, or native currency handling,
+// the SDK combines multiple calls:
+// 1. selfPermit (if permit provided)
+// 2. swap call
+// 3. unwrapWETH9 or sweepToken (if needed)
+// 4. refundETH (for exact output ETH swaps)
+
+const { calldata, value } = swapCallParameters(trade, {
+  slippageTolerance: new Percent(50, 10000),
+  recipient: userAddress,
+  deadline: BigInt(deadline),
+  inputTokenPermit: permitData,
+  fee: { fee: new Percent(3, 1000), recipient: feeRecipient }
+})
+```
+
+## Manual Multicall Usage
+
+You can manually construct multicalls for custom operations:
+
+```typescript
+import { encodeMulticall, encodeSelfPermit, encodeUnwrapWETH9 } from '@uniswap/v3-sdk'
+import { AbiFunction } from 'ox'
+
+// Encode individual calls
+const permitCalldata = encodeSelfPermit(token, owner, permitOptions)
+const swapCalldata = AbiFunction.encodeData(swapAbi, swapParams)
+const unwrapCalldata = encodeUnwrapWETH9({ amountMinimum, recipient })
+
+// Combine into multicall
+const multicallData = encodeMulticall([
+  permitCalldata,
+  swapCalldata,
+  unwrapCalldata
+])
+
+// Execute
+const tx = await swapRouter.multicall(multicallData)
+```
+
+## Error Handling
+
+When using multicall, if any individual call fails, the entire transaction reverts. The revert reason will typically indicate which call failed:
+
+```typescript
+try {
+  const tx = await contract.multicall(multicallData)
+  await tx.wait()
+} catch (error) {
+  // The error message will contain the revert reason
+  // from the specific call that failed
+  console.error('Multicall failed:', error)
+}
+```
+
+## Gas Considerations
+
+- Multicall saves gas on transaction overhead by batching multiple calls
+- Each individual call within the multicall still consumes its own gas
+- For read-only calls, consider using `callStatic` to simulate the multicall without sending a transaction
+
+```typescript
+// Simulate multicall without sending transaction
+const results = await contract.callStatic.multicall(multicallData)
+```

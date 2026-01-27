@@ -1,0 +1,283 @@
+# Sqrt Price Math
+
+The sqrt price math utilities provide functions for computing token amounts and price changes in Uniswap V3 pools.
+
+## Import
+
+```typescript
+import {
+  getNextSqrtPriceFromInput,
+  getNextSqrtPriceFromOutput,
+  getAmount0Delta,
+  getAmount1Delta
+} from '@uniswap/v3-sdk'
+```
+
+## Functions
+
+### getNextSqrtPriceFromInput
+
+Gets the next sqrt price given an input amount of token0 or token1.
+
+```typescript
+function getNextSqrtPriceFromInput(
+  sqrtPX96: bigint,
+  liquidity: bigint,
+  amountIn: bigint,
+  zeroForOne: boolean
+): bigint
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtPX96` | `bigint` | The starting sqrt price |
+| `liquidity` | `bigint` | The amount of usable liquidity |
+| `amountIn` | `bigint` | How much of token0 or token1 is being swapped in |
+| `zeroForOne` | `boolean` | Whether the amount in is token0 (true) or token1 (false) |
+
+#### Returns
+
+The next sqrt price after swapping the given amount in.
+
+#### Example
+
+```typescript
+import { getNextSqrtPriceFromInput } from '@uniswap/v3-sdk'
+
+const currentSqrtPrice = 79228162514264337593543950336n // ~1.0
+const liquidity = 1000000000000000000n
+const amountIn = 1000000n
+
+// Swapping token0 for token1 (price decreases)
+const nextPrice0For1 = getNextSqrtPriceFromInput(
+  currentSqrtPrice,
+  liquidity,
+  amountIn,
+  true // zeroForOne
+)
+
+// Swapping token1 for token0 (price increases)
+const nextPrice1For0 = getNextSqrtPriceFromInput(
+  currentSqrtPrice,
+  liquidity,
+  amountIn,
+  false // oneForZero
+)
+```
+
+### getNextSqrtPriceFromOutput
+
+Gets the next sqrt price given an output amount of token0 or token1.
+
+```typescript
+function getNextSqrtPriceFromOutput(
+  sqrtPX96: bigint,
+  liquidity: bigint,
+  amountOut: bigint,
+  zeroForOne: boolean
+): bigint
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtPX96` | `bigint` | The starting sqrt price |
+| `liquidity` | `bigint` | The amount of usable liquidity |
+| `amountOut` | `bigint` | How much of token0 or token1 is being swapped out |
+| `zeroForOne` | `boolean` | Whether the output is token1 (true) or token0 (false) |
+
+#### Example
+
+```typescript
+import { getNextSqrtPriceFromOutput } from '@uniswap/v3-sdk'
+
+const currentSqrtPrice = 79228162514264337593543950336n
+const liquidity = 1000000000000000000n
+const amountOut = 1000000n
+
+// Getting token1 out (zeroForOne swap)
+const nextPrice = getNextSqrtPriceFromOutput(
+  currentSqrtPrice,
+  liquidity,
+  amountOut,
+  true
+)
+```
+
+### getAmount0Delta
+
+Gets the amount of token0 delta between two sqrt prices.
+
+```typescript
+function getAmount0Delta(
+  sqrtRatioAX96: bigint,
+  sqrtRatioBX96: bigint,
+  liquidity: bigint,
+  roundUp: boolean
+): bigint
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtRatioAX96` | `bigint` | A sqrt ratio |
+| `sqrtRatioBX96` | `bigint` | Another sqrt ratio |
+| `liquidity` | `bigint` | The liquidity amount |
+| `roundUp` | `boolean` | Whether to round the result up |
+
+#### Formula
+
+```
+amount0 = liquidity * (sqrtRatioB - sqrtRatioA) / (sqrtRatioA * sqrtRatioB)
+```
+
+#### Example
+
+```typescript
+import { getAmount0Delta, getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+const sqrtPriceLower = getSqrtRatioAtTick(-60)
+const sqrtPriceUpper = getSqrtRatioAtTick(60)
+const liquidity = 1000000000000000000n
+
+// Amount of token0 in the position (rounded down for burns)
+const amount0 = getAmount0Delta(sqrtPriceLower, sqrtPriceUpper, liquidity, false)
+
+// Amount of token0 needed to mint (rounded up)
+const amount0Mint = getAmount0Delta(sqrtPriceLower, sqrtPriceUpper, liquidity, true)
+```
+
+### getAmount1Delta
+
+Gets the amount of token1 delta between two sqrt prices.
+
+```typescript
+function getAmount1Delta(
+  sqrtRatioAX96: bigint,
+  sqrtRatioBX96: bigint,
+  liquidity: bigint,
+  roundUp: boolean
+): bigint
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sqrtRatioAX96` | `bigint` | A sqrt ratio |
+| `sqrtRatioBX96` | `bigint` | Another sqrt ratio |
+| `liquidity` | `bigint` | The liquidity amount |
+| `roundUp` | `boolean` | Whether to round the result up |
+
+#### Formula
+
+```
+amount1 = liquidity * (sqrtRatioB - sqrtRatioA)
+```
+
+#### Example
+
+```typescript
+import { getAmount1Delta, getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+const sqrtPriceLower = getSqrtRatioAtTick(-60)
+const sqrtPriceUpper = getSqrtRatioAtTick(60)
+const liquidity = 1000000000000000000n
+
+// Amount of token1 in the position
+const amount1 = getAmount1Delta(sqrtPriceLower, sqrtPriceUpper, liquidity, false)
+```
+
+## Use Cases
+
+### Computing Position Token Amounts
+
+```typescript
+import { getAmount0Delta, getAmount1Delta, getSqrtRatioAtTick } from '@uniswap/v3-sdk'
+
+function getPositionAmounts(
+  tickLower: number,
+  tickUpper: number,
+  tickCurrent: number,
+  sqrtPriceX96: bigint,
+  liquidity: bigint
+) {
+  const sqrtPriceLower = getSqrtRatioAtTick(tickLower)
+  const sqrtPriceUpper = getSqrtRatioAtTick(tickUpper)
+
+  let amount0: bigint
+  let amount1: bigint
+
+  if (tickCurrent < tickLower) {
+    // All in token0
+    amount0 = getAmount0Delta(sqrtPriceLower, sqrtPriceUpper, liquidity, false)
+    amount1 = 0n
+  } else if (tickCurrent < tickUpper) {
+    // Split between tokens
+    amount0 = getAmount0Delta(sqrtPriceX96, sqrtPriceUpper, liquidity, false)
+    amount1 = getAmount1Delta(sqrtPriceLower, sqrtPriceX96, liquidity, false)
+  } else {
+    // All in token1
+    amount0 = 0n
+    amount1 = getAmount1Delta(sqrtPriceLower, sqrtPriceUpper, liquidity, false)
+  }
+
+  return { amount0, amount1 }
+}
+```
+
+### Simulating a Swap
+
+```typescript
+import { getNextSqrtPriceFromInput, getAmount0Delta, getAmount1Delta } from '@uniswap/v3-sdk'
+
+function simulateSwap(
+  sqrtPriceX96: bigint,
+  liquidity: bigint,
+  amountIn: bigint,
+  zeroForOne: boolean
+) {
+  const sqrtPriceAfter = getNextSqrtPriceFromInput(
+    sqrtPriceX96,
+    liquidity,
+    amountIn,
+    zeroForOne
+  )
+
+  // Calculate output amount
+  const amountOut = zeroForOne
+    ? getAmount1Delta(sqrtPriceAfter, sqrtPriceX96, liquidity, false)
+    : getAmount0Delta(sqrtPriceX96, sqrtPriceAfter, liquidity, false)
+
+  return {
+    sqrtPriceAfter,
+    amountOut
+  }
+}
+```
+
+## Rounding Behavior
+
+The `roundUp` parameter is critical for maintaining solvency:
+
+- **For minting**: Round amounts UP so the user provides at least enough tokens
+- **For burning**: Round amounts DOWN so the protocol doesn't give more than it has
+- **For swaps**: Input amounts round up, output amounts round down
+
+```typescript
+// Minting - round up to ensure enough tokens provided
+const mintAmount0 = getAmount0Delta(sqrtA, sqrtB, liquidity, true)
+const mintAmount1 = getAmount1Delta(sqrtA, sqrtB, liquidity, true)
+
+// Burning - round down to not give more than available
+const burnAmount0 = getAmount0Delta(sqrtA, sqrtB, liquidity, false)
+const burnAmount1 = getAmount1Delta(sqrtA, sqrtB, liquidity, false)
+```
+
+## Precision Notes
+
+These functions use 256-bit arithmetic internally to maintain precision during intermediate calculations. The final results are returned as `bigint` values with the appropriate rounding applied.

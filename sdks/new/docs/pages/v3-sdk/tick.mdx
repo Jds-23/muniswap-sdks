@@ -1,0 +1,121 @@
+# Tick
+
+The `Tick` class represents a tick in a Uniswap V3 pool. Ticks are discrete price points at which liquidity can be added or removed.
+
+## Import
+
+```typescript
+import { Tick } from '@uniswap/v3-sdk'
+```
+
+## Constructor
+
+Creates a new Tick instance.
+
+```typescript
+new Tick({
+  index: number,
+  liquidityGross: BigintIsh,
+  liquidityNet: BigintIsh
+})
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `index` | `number` | The tick index, must be between MIN_TICK and MAX_TICK |
+| `liquidityGross` | `BigintIsh` | The total liquidity referencing this tick |
+| `liquidityNet` | `BigintIsh` | The net liquidity change when crossing this tick |
+
+## Example
+
+```typescript
+import { Tick } from '@uniswap/v3-sdk'
+
+const tick = new Tick({
+  index: 100,
+  liquidityGross: '1000000000000000000',
+  liquidityNet: '500000000000000000'
+})
+
+console.log(tick.index) // 100
+console.log(tick.liquidityGross) // 1000000000000000000n
+console.log(tick.liquidityNet) // 500000000000000000n
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `index` | `number` | The tick index |
+| `liquidityGross` | `bigint` | Total liquidity referencing this tick |
+| `liquidityNet` | `bigint` | Net liquidity change when crossing this tick |
+
+## TickConstructorArgs Interface
+
+The constructor accepts an object with the following shape:
+
+```typescript
+interface TickConstructorArgs {
+  index: number
+  liquidityGross: BigintIsh
+  liquidityNet: BigintIsh
+}
+```
+
+## Understanding Ticks
+
+### Tick Index
+
+The tick index represents a specific price point. The price at a given tick is calculated as:
+
+```
+price = 1.0001^tick
+```
+
+For example:
+- Tick 0 corresponds to price 1.0
+- Tick 100 corresponds to price ~1.01 (1.0001^100)
+- Tick -100 corresponds to price ~0.99 (1.0001^-100)
+
+### Tick Bounds
+
+Ticks have minimum and maximum values:
+
+```typescript
+import { MIN_TICK, MAX_TICK } from '@uniswap/v3-sdk'
+
+console.log(MIN_TICK) // -887272
+console.log(MAX_TICK) // 887272
+```
+
+### Liquidity Values
+
+- **liquidityGross**: The total amount of liquidity that references this tick as either its lower or upper bound. Used to determine if the tick needs to be crossed during a swap.
+
+- **liquidityNet**: The amount of liquidity added (positive) or removed (negative) when the tick is crossed from left to right. When crossing from right to left, the sign is flipped.
+
+## Usage with Pool
+
+Ticks are typically used when constructing a Pool:
+
+```typescript
+import { Pool, Tick, FeeAmount } from '@uniswap/v3-sdk'
+
+const ticks = [
+  new Tick({ index: -60, liquidityGross: '1000000', liquidityNet: '1000000' }),
+  new Tick({ index: 0, liquidityGross: '2000000', liquidityNet: '1000000' }),
+  new Tick({ index: 60, liquidityGross: '1000000', liquidityNet: '-1000000' }),
+]
+
+const pool = new Pool(
+  token0,
+  token1,
+  FeeAmount.MEDIUM,
+  sqrtRatioX96,
+  liquidity,
+  currentTick,
+  ticks
+)
+```

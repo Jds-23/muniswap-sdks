@@ -1,0 +1,345 @@
+# Pool
+
+The `Pool` class represents a Uniswap V4 liquidity pool. V4 pools support hooks for custom logic and native currency (ETH without WETH wrapping).
+
+## Import
+
+```typescript
+import { Pool } from '@uniswap/v4-sdk-next'
+```
+
+## Types
+
+### PoolKey
+
+The `PoolKey` type uniquely identifies a V4 pool.
+
+```typescript
+type PoolKey = {
+  currency0: string    // Address of first currency (0x0 for native ETH)
+  currency1: string    // Address of second currency
+  fee: number          // Fee in hundredths of bips
+  tickSpacing: number  // Tick spacing of the pool
+  hooks: string        // Hook contract address
+}
+```
+
+### PoolId
+
+The Pool ID is a `bytes32` hash (keccak256) of the encoded PoolKey. It serves as the unique identifier for a pool in the V4 PoolManager contract.
+
+## Constructor
+
+```typescript
+new Pool(
+  currencyA: Currency,
+  currencyB: Currency,
+  fee: number,
+  tickSpacing: number,
+  hooks: string,
+  sqrtRatioX96: BigintIsh,
+  liquidity: BigintIsh,
+  tickCurrent: number,
+  ticks?: TickDataProvider | (Tick | TickConstructorArgs)[]
+)
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `currencyA` | `Currency` | One of the currencies in the pool |
+| `currencyB` | `Currency` | The other currency in the pool |
+| `fee` | `number` | Fee in hundredths of bips (or `DYNAMIC_FEE_FLAG` for dynamic fees) |
+| `tickSpacing` | `number` | The tick spacing of the pool |
+| `hooks` | `string` | The hook contract address (use `ADDRESS_ZERO` for no hooks) |
+| `sqrtRatioX96` | `BigintIsh` | The sqrt of the current ratio of amounts (Q64.96 format) |
+| `liquidity` | `BigintIsh` | The current value of in-range liquidity |
+| `tickCurrent` | `number` | The current tick of the pool |
+| `ticks` | `TickDataProvider \| Tick[]` | Optional tick data provider or array of ticks |
+
+## Example
+
+```typescript
+import { Pool, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Token, Ether, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+// Define currencies
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create a V4 pool with native ETH (no hooks)
+const pool = new Pool(
+  ETH,
+  USDC,
+  3000,                                    // 0.3% fee
+  60,                                       // tick spacing
+  ADDRESS_ZERO,                            // no hooks
+  '79228162514264337593543950336',         // sqrtPriceX96 (1:1 price)
+  '1000000000000000000',                   // liquidity
+  0                                        // current tick
+)
+
+// Access pool properties
+console.log(pool.chainId)      // 1
+console.log(pool.fee)          // 3000
+console.log(pool.tickSpacing)  // 60
+console.log(pool.poolId)       // bytes32 pool identifier
+```
+
+## Static Methods
+
+### `getPoolKey(currencyA, currencyB, fee, tickSpacing, hooks)`
+
+```typescript
+static getPoolKey(
+  currencyA: Currency,
+  currencyB: Currency,
+  fee: number,
+  tickSpacing: number,
+  hooks: string
+): PoolKey
+```
+
+Constructs the pool key for a V4 pool. Currencies are automatically sorted.
+
+```typescript
+const poolKey = Pool.getPoolKey(ETH, USDC, 3000, 60, ADDRESS_ZERO)
+// {
+//   currency0: '0x0000000000000000000000000000000000000000',
+//   currency1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+//   fee: 3000,
+//   tickSpacing: 60,
+//   hooks: '0x0000000000000000000000000000000000000000'
+// }
+```
+
+### `getPoolId(currencyA, currencyB, fee, tickSpacing, hooks)`
+
+```typescript
+static getPoolId(
+  currencyA: Currency,
+  currencyB: Currency,
+  fee: number,
+  tickSpacing: number,
+  hooks: string
+): string
+```
+
+Computes the pool ID (keccak256 hash of the encoded pool key).
+
+```typescript
+const poolId = Pool.getPoolId(ETH, USDC, 3000, 60, ADDRESS_ZERO)
+// Returns: '0x...' (32-byte hex string)
+```
+
+## Properties
+
+### `currency0` / `currency1`
+
+```typescript
+readonly currency0: Currency
+readonly currency1: Currency
+```
+
+The currencies in the pool, sorted by address. Native ETH is represented with address `0x0`.
+
+### `token0` / `token1`
+
+```typescript
+get token0(): Currency
+get token1(): Currency
+```
+
+Aliases for `currency0` and `currency1` for backwards compatibility with V2/V3 SDKs.
+
+### `fee`
+
+```typescript
+readonly fee: number
+```
+
+The pool fee in hundredths of a basis point (e.g., 3000 = 0.3%).
+
+### `tickSpacing`
+
+```typescript
+readonly tickSpacing: number
+```
+
+The spacing between usable ticks in the pool.
+
+### `hooks`
+
+```typescript
+readonly hooks: string
+```
+
+The hook contract address. Use `ADDRESS_ZERO` for pools without hooks.
+
+### `sqrtRatioX96`
+
+```typescript
+readonly sqrtRatioX96: bigint
+```
+
+The current sqrt price in Q64.96 format.
+
+### `liquidity`
+
+```typescript
+readonly liquidity: bigint
+```
+
+The current in-range liquidity.
+
+### `tickCurrent`
+
+```typescript
+readonly tickCurrent: number
+```
+
+The current tick of the pool.
+
+### `poolKey`
+
+```typescript
+readonly poolKey: PoolKey
+```
+
+The pool key that uniquely identifies this pool.
+
+### `poolId`
+
+```typescript
+readonly poolId: string
+```
+
+The pool ID (keccak256 hash of the pool key).
+
+### `chainId`
+
+```typescript
+get chainId(): number
+```
+
+The chain ID of the currencies in the pool.
+
+### `currency0Price` / `currency1Price`
+
+```typescript
+get currency0Price(): Price<Currency, Currency>
+get currency1Price(): Price<Currency, Currency>
+```
+
+The current mid price of the pool in terms of currency0 or currency1.
+
+## Methods
+
+### `involvesCurrency(currency)`
+
+```typescript
+involvesCurrency(currency: Currency): boolean
+```
+
+Returns `true` if the currency is either currency0 or currency1.
+
+### `v4InvolvesToken(currency)`
+
+```typescript
+v4InvolvesToken(currency: Currency): boolean
+```
+
+V4-specific method that checks if the currency or its wrapped version is in the pool. Useful for ETH/WETH connection in mixed routes.
+
+### `priceOf(currency)`
+
+```typescript
+priceOf(currency: Currency): Price<Currency, Currency>
+```
+
+Returns the price of the given currency in terms of the other currency in the pool.
+
+### `getOutputAmount(inputAmount, sqrtPriceLimitX96?)`
+
+```typescript
+async getOutputAmount(
+  inputAmount: CurrencyAmount<Currency>,
+  sqrtPriceLimitX96?: bigint
+): Promise<[CurrencyAmount<Currency>, Pool]>
+```
+
+Given an input amount, returns the computed output amount and a pool with updated state. Only works for vanilla hookless pools.
+
+```typescript
+const inputAmount = CurrencyAmount.fromRawAmount(ETH, '1000000000000000000')
+const [outputAmount, newPool] = await pool.getOutputAmount(inputAmount)
+```
+
+### `getInputAmount(outputAmount, sqrtPriceLimitX96?)`
+
+```typescript
+async getInputAmount(
+  outputAmount: CurrencyAmount<Currency>,
+  sqrtPriceLimitX96?: bigint
+): Promise<[CurrencyAmount<Currency>, Pool]>
+```
+
+Given a desired output amount, returns the computed input amount and a pool with updated state. Only works for vanilla hookless pools.
+
+## V4-Specific Features
+
+### Native Currency Support
+
+V4 pools can include native ETH directly without wrapping to WETH:
+
+```typescript
+import { Ether } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96, liquidity, tick)
+
+// currency0 will be native ETH (address 0x0)
+console.log(pool.currency0.isNative) // true
+```
+
+### Dynamic Fees
+
+V4 supports dynamic fees controlled by hooks:
+
+```typescript
+import { DYNAMIC_FEE_FLAG } from '@uniswap/v4-sdk-next'
+
+// Pool with dynamic fees (requires a hook)
+const dynamicFeePool = new Pool(
+  currencyA,
+  currencyB,
+  DYNAMIC_FEE_FLAG,  // 0x800000
+  60,
+  hookAddress,       // Must have a valid hook for dynamic fees
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+```
+
+### Hook Integration
+
+Pools can have hooks that execute custom logic at various points:
+
+```typescript
+// Pool with a custom hook
+const poolWithHook = new Pool(
+  ETH,
+  USDC,
+  3000,
+  60,
+  '0x1234...', // Hook contract address
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+
+// Note: Pools with swap-affecting hooks cannot use getOutputAmount/getInputAmount
+// as the hook may modify swap behavior in ways the SDK cannot predict
+```

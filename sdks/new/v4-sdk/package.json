@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "Modern SDK for Uniswap V4 with native BigInt and ox",
   "repository": "https://github.com/Uniswap/sdks.git",
-  "keywords": ["uniswap", "ethereum", "bigint", "ox", "v4", "hooks"],
+  "keywords": [
+    "uniswap",
+    "ethereum",
+    "bigint",
+    "ox",
+    "v4",
+    "hooks"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "dist/index.cjs",
@@ -21,7 +28,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=18"
   },

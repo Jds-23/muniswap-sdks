@@ -1,0 +1,242 @@
+# CurrencyAmount
+
+The `CurrencyAmount` class represents an amount of a specific currency with precise arithmetic.
+
+## Import
+
+```typescript
+import { CurrencyAmount } from '@uniswap/sdk-core-next'
+```
+
+## Creating Amounts
+
+### `fromRawAmount(currency, rawAmount)`
+
+Create from the raw/smallest unit amount (e.g., wei for ETH).
+
+```typescript
+import { CurrencyAmount, Token, Ether } from '@uniswap/sdk-core-next'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// 1 USDC = 1,000,000 raw units (6 decimals)
+const amount = CurrencyAmount.fromRawAmount(USDC, 1000000n)
+
+console.log(amount.toExact())       // "1"
+console.log(amount.quotient)        // 1000000n
+
+// 1 ETH = 10^18 wei
+const ethAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), '1000000000000000000')
+```
+
+### `fromFractionalAmount(currency, numerator, denominator)`
+
+Create from a fractional amount (useful for precise calculations).
+
+```typescript
+// 0.5 USDC
+const halfUsdc = CurrencyAmount.fromFractionalAmount(USDC, 1, 2)
+
+// From a calculation result
+const result = CurrencyAmount.fromFractionalAmount(USDC, 1234567n, 1000000n)
+```
+
+## Properties
+
+### `currency`
+
+```typescript
+readonly currency: T
+```
+
+The currency this amount is denominated in.
+
+### `decimalScale`
+
+```typescript
+readonly decimalScale: bigint
+```
+
+The scale factor based on decimals (10^decimals).
+
+```typescript
+const usdcAmount = CurrencyAmount.fromRawAmount(USDC, 1000000n)
+usdcAmount.decimalScale // 1000000n (10^6)
+```
+
+### `quotient`
+
+```typescript
+get quotient(): bigint
+```
+
+The raw integer amount (inherited from Fraction).
+
+### `wrapped`
+
+```typescript
+get wrapped(): CurrencyAmount<Token>
+```
+
+Returns the amount as a wrapped token amount.
+
+```typescript
+const ethAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), '1000000000000000000')
+const wethAmount = ethAmount.wrapped
+
+wethAmount.currency.symbol // 'WETH'
+wethAmount.quotient        // Same value
+```
+
+## Methods
+
+### `add(other)`
+
+```typescript
+add(other: CurrencyAmount<T>): CurrencyAmount<T>
+```
+
+Add two amounts of the same currency.
+
+```typescript
+const a = CurrencyAmount.fromRawAmount(USDC, 1000000n)
+const b = CurrencyAmount.fromRawAmount(USDC, 2000000n)
+const sum = a.add(b)
+
+sum.toExact() // "3"
+```
+
+**Throws**: If currencies don't match.
+
+### `subtract(other)`
+
+```typescript
+subtract(other: CurrencyAmount<T>): CurrencyAmount<T>
+```
+
+Subtract an amount.
+
+```typescript
+const a = CurrencyAmount.fromRawAmount(USDC, 3000000n)
+const b = CurrencyAmount.fromRawAmount(USDC, 1000000n)
+const diff = a.subtract(b)
+
+diff.toExact() // "2"
+```
+
+### `multiply(other)`
+
+```typescript
+multiply(other: Fraction | BigintIsh): CurrencyAmount<T>
+```
+
+Multiply by a fraction or number.
+
+```typescript
+const amount = CurrencyAmount.fromRawAmount(USDC, 1000000n)
+const doubled = amount.multiply(2)
+
+doubled.toExact() // "2"
+
+// Multiply by percentage (for slippage)
+const slippage = new Percent(5, 100) // 5%
+const reduced = amount.multiply(new Percent(95, 100))
+```
+
+### `divide(other)`
+
+```typescript
+divide(other: Fraction | BigintIsh): CurrencyAmount<T>
+```
+
+Divide by a fraction or number.
+
+```typescript
+const amount = CurrencyAmount.fromRawAmount(USDC, 2000000n)
+const half = amount.divide(2)
+
+half.toExact() // "1"
+```
+
+### `toSignificant(significantDigits?, format?, rounding?)`
+
+```typescript
+toSignificant(
+  significantDigits?: number,  // default: 6
+  format?: { groupSeparator?: string },
+  rounding?: Rounding          // default: ROUND_DOWN
+): string
+```
+
+Format with significant digits, accounting for decimals.
+
+```typescript
+const amount = CurrencyAmount.fromRawAmount(USDC, 1234567n) // 1.234567 USDC
+
+amount.toSignificant(4)  // "1.235"
+amount.toSignificant(2)  // "1.2"
+```
+
+### `toFixed(decimalPlaces?, format?, rounding?)`
+
+```typescript
+toFixed(
+  decimalPlaces?: number,  // default: currency.decimals
+  format?: { groupSeparator?: string },
+  rounding?: Rounding      // default: ROUND_DOWN
+): string
+```
+
+Format with fixed decimal places.
+
+```typescript
+const amount = CurrencyAmount.fromRawAmount(USDC, 1234567n) // 1.234567 USDC
+
+amount.toFixed(2)  // "1.23"
+amount.toFixed(4)  // "1.2345"
+amount.toFixed(6)  // "1.234567"
+```
+
+**Throws**: If decimalPlaces > currency.decimals.
+
+### `toExact(format?)`
+
+```typescript
+toExact(format?: { groupSeparator?: string }): string
+```
+
+Format with all decimal places (no rounding).
+
+```typescript
+const amount = CurrencyAmount.fromRawAmount(USDC, 1234567n)
+amount.toExact()  // "1.234567"
+
+// With thousands separator
+const largeAmount = CurrencyAmount.fromRawAmount(USDC, 1234567890n)
+largeAmount.toExact({ groupSeparator: ',' })  // "1,234.56789"
+```
+
+## Example: Working with Trade Amounts
+
+```typescript
+import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core-next'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Input amount
+const inputAmount = CurrencyAmount.fromRawAmount(USDC, 1000_000000n) // 1000 USDC
+
+// Slippage tolerance
+const slippageTolerance = new Percent(50, 10000) // 0.5%
+
+// Minimum output (for exact input trade)
+const outputAmount = CurrencyAmount.fromRawAmount(WETH, 500000000000000000n) // 0.5 WETH
+const minOutput = outputAmount.multiply(
+  new Percent(10000 - 50, 10000) // 99.5%
+)
+
+console.log(`Input: ${inputAmount.toSignificant(6)} ${inputAmount.currency.symbol}`)
+console.log(`Expected output: ${outputAmount.toSignificant(6)} ${outputAmount.currency.symbol}`)
+console.log(`Minimum output: ${minOutput.toSignificant(6)} ${minOutput.currency.symbol}`)
+```

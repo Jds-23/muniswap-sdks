@@ -1,0 +1,211 @@
+# Price Tick Conversions
+
+The price tick conversion utilities provide functions for converting between `Price` objects and ticks in Uniswap V3.
+
+## Import
+
+```typescript
+import { tickToPrice, priceToClosestTick } from '@uniswap/v3-sdk'
+```
+
+## Functions
+
+### tickToPrice
+
+Returns a `Price` object corresponding to the input tick and the base/quote tokens.
+
+```typescript
+function tickToPrice(baseToken: Token, quoteToken: Token, tick: number): Price<Token, Token>
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `baseToken` | `Token` | The base token of the price |
+| `quoteToken` | `Token` | The quote token of the price |
+| `tick` | `number` | The tick for which to return the price |
+
+#### Returns
+
+Returns a `Price<Token, Token>` object representing the price at the given tick.
+
+#### Example
+
+```typescript
+import { tickToPrice } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Get price at tick 0 (approximately 1:1)
+const priceAtTick0 = tickToPrice(USDC, WETH, 0)
+console.log(priceAtTick0.toSignificant(6)) // "1"
+
+// Get price at tick 100
+const priceAtTick100 = tickToPrice(USDC, WETH, 100)
+console.log(priceAtTick100.toSignificant(6)) // "1.01005"
+
+// Get price at tick -100
+const priceAtTickMinus100 = tickToPrice(USDC, WETH, -100)
+console.log(priceAtTickMinus100.toSignificant(6)) // "0.990049"
+```
+
+### priceToClosestTick
+
+Returns the first tick for which the given price is greater than or equal to the tick price.
+
+```typescript
+function priceToClosestTick(price: Price<Token, Token>): number
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `price` | `Price<Token, Token>` | The price for which to return the closest tick |
+
+#### Returns
+
+Returns the closest tick (`number`) to the given price.
+
+#### Example
+
+```typescript
+import { priceToClosestTick, tickToPrice } from '@uniswap/v3-sdk'
+import { Price, Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Create a price (1 USDC = 0.0005 WETH, meaning 1 ETH = 2000 USDC)
+const price = new Price(USDC, WETH, 2000, 1) // quoteAmount / baseAmount
+
+const tick = priceToClosestTick(price)
+console.log(tick)
+```
+
+## Token Order Matters
+
+The order of tokens affects the interpretation of the price and tick:
+
+```typescript
+import { tickToPrice } from '@uniswap/v3-sdk'
+
+// USDC as base, WETH as quote: "How much WETH per USDC?"
+const priceUsdcBase = tickToPrice(USDC, WETH, 100)
+console.log(`1 USDC = ${priceUsdcBase.toSignificant(6)} WETH`)
+
+// WETH as base, USDC as quote: "How much USDC per WETH?"
+const priceWethBase = tickToPrice(WETH, USDC, 100)
+console.log(`1 WETH = ${priceWethBase.toSignificant(6)} USDC`)
+```
+
+## Use Cases
+
+### Setting Position Price Range
+
+```typescript
+import { tickToPrice, priceToClosestTick } from '@uniswap/v3-sdk'
+import { Price, Token } from '@uniswap/sdk-core'
+
+// Define desired price range
+const lowerPrice = new Price(WETH, USDC, 1, 1800) // 1 ETH = 1800 USDC
+const upperPrice = new Price(WETH, USDC, 1, 2200) // 1 ETH = 2200 USDC
+
+// Convert to ticks
+const tickLower = priceToClosestTick(lowerPrice)
+const tickUpper = priceToClosestTick(upperPrice)
+
+// Round to valid tick spacing (e.g., 60 for 0.3% fee tier)
+const tickSpacing = 60
+const tickLowerRounded = Math.floor(tickLower / tickSpacing) * tickSpacing
+const tickUpperRounded = Math.ceil(tickUpper / tickSpacing) * tickSpacing
+
+// Get the actual prices for the rounded ticks
+const actualLowerPrice = tickToPrice(WETH, USDC, tickLowerRounded)
+const actualUpperPrice = tickToPrice(WETH, USDC, tickUpperRounded)
+
+console.log(`Lower: ${actualLowerPrice.toSignificant(6)} USDC/ETH`)
+console.log(`Upper: ${actualUpperPrice.toSignificant(6)} USDC/ETH`)
+```
+
+### Displaying Current Pool Price
+
+```typescript
+import { tickToPrice } from '@uniswap/v3-sdk'
+
+// Get the current tick from pool state
+const currentTick = pool.tickCurrent
+
+// Convert to human-readable price
+const currentPrice = tickToPrice(pool.token1, pool.token0, currentTick)
+console.log(`Current price: ${currentPrice.toSignificant(6)}`)
+```
+
+### Creating a Price from Amounts
+
+```typescript
+import { priceToClosestTick } from '@uniswap/v3-sdk'
+import { Price, Token } from '@uniswap/sdk-core'
+
+// If 1000 USDC trades for 0.5 WETH
+const price = new Price(
+  USDC,
+  WETH,
+  1000n * 10n ** 6n,    // 1000 USDC in smallest units
+  5n * 10n ** 17n       // 0.5 WETH in smallest units
+)
+
+const tick = priceToClosestTick(price)
+```
+
+## Price Formula
+
+The relationship between tick and price is:
+
+```
+price = 1.0001^tick
+```
+
+For the Q64.96 sqrt price format:
+
+```
+sqrtPriceX96 = sqrt(1.0001^tick) * 2^96
+```
+
+## Handling Token Decimals
+
+The `Price` class automatically handles decimal differences between tokens:
+
+```typescript
+import { tickToPrice } from '@uniswap/v3-sdk'
+
+const USDC = new Token(1, '0x...', 6, 'USDC')   // 6 decimals
+const WETH = new Token(1, '0x...', 18, 'WETH') // 18 decimals
+
+// The price is automatically adjusted for decimals
+const price = tickToPrice(USDC, WETH, 0)
+
+// Display in human-readable format
+console.log(price.toSignificant(6))      // Decimal-adjusted
+console.log(price.toFixed(18))           // Full precision
+```
+
+## Precision Considerations
+
+Due to the discrete nature of ticks, there may be small rounding errors:
+
+```typescript
+import { tickToPrice, priceToClosestTick } from '@uniswap/v3-sdk'
+
+const originalTick = 12345
+const price = tickToPrice(token0, token1, originalTick)
+const recoveredTick = priceToClosestTick(price)
+
+// recoveredTick should equal originalTick, but verify
+console.log(originalTick === recoveredTick) // true (in most cases)
+```
+
+The `priceToClosestTick` function returns the floor tick, so there may be edge cases where the exact tick differs by 1.

@@ -1,0 +1,88 @@
+# SDK Core
+
+The SDK Core (`@uniswap/sdk-core-next`) provides the foundational building blocks for all Uniswap SDKs. It includes core entities for representing tokens and currencies, precise arithmetic with fractions, and essential utilities.
+
+## Features
+
+- **Type-safe Currency Handling**: Abstract currency types with Token and NativeCurrency implementations
+- **Precise Arithmetic**: Fraction-based math for accurate DeFi calculations
+- **Native BigInt**: All numeric operations use native JavaScript BigInt
+- **Address Validation**: Zod-based schema validation with checksum verification
+
+## Installation
+
+```bash
+npm install @uniswap/sdk-core-next
+```
+
+```bash
+pnpm add @uniswap/sdk-core-next
+```
+
+```bash
+yarn add @uniswap/sdk-core-next
+```
+
+## Quick Start
+
+```typescript
+import { Token, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core-next'
+
+// Create a token
+const USDC = new Token(
+  1, // chainId (Ethereum mainnet)
+  '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  6, // decimals
+  'USDC',
+  'USD Coin'
+)
+
+// Create a currency amount
+const amount = CurrencyAmount.fromRawAmount(USDC, 1000000n) // 1 USDC
+
+// Format for display
+console.log(amount.toSignificant(6)) // "1"
+console.log(amount.toFixed(2)) // "1.00"
+
+// Work with percentages
+const slippage = new Percent(50, 10000) // 0.5%
+const minAmount = amount.multiply(new Percent(9950, 10000))
+```
+
+## Modules
+
+### Entities
+
+Core data structures for representing currencies and tokens:
+
+- [Token](/sdk-core/token) - ERC20 token representation
+- [Currency](/sdk-core/currency) - Union type of Token and NativeCurrency
+- [Ether](/sdk-core/ether) - ETH representation for mainnet
+- [NativeCurrency](/sdk-core/native-currency) - Abstract base for chain-native currencies
+- [WETH9](/sdk-core/weth9) - Wrapped Ether token addresses
+
+### Fractions
+
+Precise fractional arithmetic for DeFi:
+
+- [Fraction](/sdk-core/fraction) - Base fraction class with arbitrary precision
+- [CurrencyAmount](/sdk-core/currency-amount) - Amount of a specific currency
+- [Price](/sdk-core/price) - Exchange rate between two currencies
+- [Percent](/sdk-core/percent) - Percentage representation
+
+### Utilities
+
+Helper functions for common operations:
+
+- [computePriceImpact](/sdk-core/compute-price-impact) - Calculate price impact of trades
+- [validateAndParseAddress](/sdk-core/validate-and-parse-address) - Address validation with checksum
+- [sqrt](/sdk-core/sqrt) - BigInt square root
+- [sortedInsert](/sdk-core/sorted-insert) - Insert into sorted array
+
+### Configuration
+
+Chain and address configuration:
+
+- [Constants](/sdk-core/constants) - Global constants and rounding modes
+- [Chains](/sdk-core/chains) - Supported chain configurations
+- [Addresses](/sdk-core/addresses) - Contract address mappings

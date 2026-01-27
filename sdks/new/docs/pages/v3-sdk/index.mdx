@@ -1,0 +1,113 @@
+# V3 SDK
+
+The V3 SDK (`@uniswap/v3-sdk-next`) provides tools for building on Uniswap V3's concentrated liquidity protocol. It includes entities for pools, positions, and trades, along with comprehensive contract interfaces.
+
+## Features
+
+- **Concentrated Liquidity**: Position liquidity in specific price ranges
+- **Multiple Fee Tiers**: Choose from 0.01%, 0.05%, 0.3%, or 1% fee tiers
+- **NFT Positions**: Manage positions as unique NFTs
+- **Full Math Library**: Tick math, sqrt price math, and liquidity calculations
+
+## Installation
+
+```bash
+npm install @uniswap/v3-sdk-next
+```
+
+```bash
+pnpm add @uniswap/v3-sdk-next
+```
+
+```bash
+yarn add @uniswap/v3-sdk-next
+```
+
+## Quick Start
+
+```typescript
+import { Pool, Position, nearestUsableTick, FeeAmount } from '@uniswap/v3-sdk-next'
+import { Token, CurrencyAmount } from '@uniswap/sdk-core-next'
+
+// Define tokens
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create a pool (data typically fetched from chain)
+const pool = new Pool(
+  WETH,
+  USDC,
+  FeeAmount.MEDIUM,      // 0.3% fee
+  '1234567890123456789', // sqrtPriceX96
+  '1000000000000000000', // liquidity
+  -58000                 // tickCurrent
+)
+
+// Get the pool price
+console.log(pool.token0Price.toSignificant(6))
+
+// Create a position in a price range
+const position = new Position({
+  pool,
+  liquidity: 1000000n,
+  tickLower: nearestUsableTick(-60000, pool.tickSpacing),
+  tickUpper: nearestUsableTick(-56000, pool.tickSpacing),
+})
+
+// Get position amounts
+console.log(position.amount0.toSignificant(6))
+console.log(position.amount1.toSignificant(6))
+```
+
+## How V3 Works
+
+Uniswap V3 introduces concentrated liquidity:
+
+- **Price Ranges**: LPs provide liquidity within specific price ranges
+- **Capital Efficiency**: Up to 4000x more capital efficient than V2
+- **Tick-based Pricing**: Prices are tracked in discrete "ticks"
+- **NFT Positions**: Each position is a unique NFT with its own range
+
+### Fee Tiers
+
+| Fee | Tick Spacing | Best For |
+|-----|--------------|----------|
+| 0.01% | 1 | Stable pairs |
+| 0.05% | 10 | Stable/similar assets |
+| 0.3% | 60 | Most pairs |
+| 1% | 200 | Exotic pairs |
+
+## Modules
+
+### Entities
+
+- [Pool](/v3-sdk/pool) - V3 pool representation with tick-based pricing
+- [Position](/v3-sdk/position) - LP position in a specific price range
+- [Route](/v3-sdk/route) - Sequence of pools for a trade path
+- [Trade](/v3-sdk/trade) - Represents a swap with slippage handling
+- [Tick](/v3-sdk/tick) - Tick data structure
+- [TickDataProvider](/v3-sdk/tick-data-provider) - Interface for tick data access
+
+### Contracts
+
+- [SwapRouter](/v3-sdk/swap-router) - Swap execution interface
+- [NFTPositionManager](/v3-sdk/nft-position-manager) - Position management
+- [Quoter](/v3-sdk/quoter) - Quote swap amounts
+- [Staker](/v3-sdk/staker) - Liquidity mining interface
+- [Multicall](/v3-sdk/multicall) - Batch multiple calls
+- [Payments](/v3-sdk/payments) - ETH and token payment helpers
+- [SelfPermit](/v3-sdk/self-permit) - Permit2 integration
+
+### Utilities
+
+- [computePoolAddress](/v3-sdk/compute-pool-address) - Calculate pool addresses
+- [encodeSqrtRatioX96](/v3-sdk/encode-sqrt-ratio-x96) - Encode prices
+- [tickMath](/v3-sdk/tick-math) - Tick to price conversions
+- [sqrtPriceMath](/v3-sdk/sqrt-price-math) - Sqrt price calculations
+- [maxLiquidityForAmounts](/v3-sdk/max-liquidity-for-amounts) - Liquidity calculations
+- [priceTickConversions](/v3-sdk/price-tick-conversions) - Price/tick helpers
+- [encodeRouteToPath](/v3-sdk/encode-route-to-path) - Encode routes for contracts
+
+### Reference
+
+- [Constants](/v3-sdk/constants) - Fee amounts, factory addresses, and more

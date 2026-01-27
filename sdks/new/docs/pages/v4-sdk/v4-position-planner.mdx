@@ -1,0 +1,350 @@
+# V4PositionPlanner
+
+The `V4PositionPlanner` class extends `V4Planner` with convenience methods for position management actions. It simplifies creating mint, increase, decrease, burn, settle, and take operations.
+
+## Import
+
+```typescript
+import { V4PositionPlanner } from '@uniswap/v4-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new V4PositionPlanner()
+```
+
+Creates a new position planner instance.
+
+## Inheritance
+
+`V4PositionPlanner` extends `V4Planner`, so all base methods like `addAction`, `addSettle`, `addTake`, `addUnwrap`, and `finalize` are available.
+
+## Example
+
+```typescript
+import { V4PositionPlanner, Pool, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Ether, Token } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96, liquidity, tick)
+
+// Create position planner
+const planner = new V4PositionPlanner()
+
+// Add mint action
+planner.addMint(
+  pool,
+  -887220,                    // tickLower
+  887220,                     // tickUpper
+  '1000000000000000000',     // liquidity
+  '1000000000000000000',     // amount0Max (1 ETH)
+  '2000000000',               // amount1Max (2000 USDC)
+  '0xRecipient'               // owner
+)
+
+// Add settlement
+planner.addSettlePair(pool.currency0, pool.currency1)
+
+// Finalize
+const encodedData = planner.finalize()
+```
+
+## Methods
+
+### `addMint(pool, tickLower, tickUpper, liquidity, amount0Max, amount1Max, owner, hookData?)`
+
+```typescript
+addMint(
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  liquidity: BigintIsh,
+  amount0Max: BigintIsh,
+  amount1Max: BigintIsh,
+  owner: string,
+  hookData?: string
+): void
+```
+
+Add a `MINT_POSITION` action to create a new position.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pool` | `Pool` | The pool to mint in |
+| `tickLower` | `number` | The lower tick boundary |
+| `tickUpper` | `number` | The upper tick boundary |
+| `liquidity` | `BigintIsh` | The amount of liquidity to mint |
+| `amount0Max` | `BigintIsh` | Maximum amount of currency0 to spend |
+| `amount1Max` | `BigintIsh` | Maximum amount of currency1 to spend |
+| `owner` | `string` | The owner of the minted position NFT |
+| `hookData` | `string?` | Optional data to pass to hooks (default: `0x`) |
+
+```typescript
+planner.addMint(
+  pool,
+  -60,          // tickLower
+  60,           // tickUpper
+  liquidity,
+  amount0Max,
+  amount1Max,
+  recipient,
+  '0x1234...'   // Optional hook data
+)
+```
+
+### `addIncrease(tokenId, liquidity, amount0Max, amount1Max, hookData?)`
+
+```typescript
+addIncrease(
+  tokenId: BigintIsh,
+  liquidity: BigintIsh,
+  amount0Max: BigintIsh,
+  amount1Max: BigintIsh,
+  hookData?: string
+): void
+```
+
+Add an `INCREASE_LIQUIDITY` action to add liquidity to an existing position.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tokenId` | `BigintIsh` | The position NFT token ID |
+| `liquidity` | `BigintIsh` | The amount of liquidity to add |
+| `amount0Max` | `BigintIsh` | Maximum amount of currency0 to spend |
+| `amount1Max` | `BigintIsh` | Maximum amount of currency1 to spend |
+| `hookData` | `string?` | Optional data to pass to hooks (default: `0x`) |
+
+```typescript
+planner.addIncrease(
+  12345n,       // tokenId
+  liquidity,
+  amount0Max,
+  amount1Max
+)
+```
+
+### `addDecrease(tokenId, liquidity, amount0Min, amount1Min, hookData?)`
+
+```typescript
+addDecrease(
+  tokenId: BigintIsh,
+  liquidity: BigintIsh,
+  amount0Min: BigintIsh,
+  amount1Min: BigintIsh,
+  hookData?: string
+): void
+```
+
+Add a `DECREASE_LIQUIDITY` action to remove liquidity from an existing position.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tokenId` | `BigintIsh` | The position NFT token ID |
+| `liquidity` | `BigintIsh` | The amount of liquidity to remove |
+| `amount0Min` | `BigintIsh` | Minimum amount of currency0 to receive |
+| `amount1Min` | `BigintIsh` | Minimum amount of currency1 to receive |
+| `hookData` | `string?` | Optional data to pass to hooks (default: `0x`) |
+
+```typescript
+planner.addDecrease(
+  12345n,       // tokenId
+  liquidity,
+  amount0Min,
+  amount1Min
+)
+```
+
+### `addBurn(tokenId, amount0Min, amount1Min, hookData?)`
+
+```typescript
+addBurn(
+  tokenId: BigintIsh,
+  amount0Min: BigintIsh,
+  amount1Min: BigintIsh,
+  hookData?: string
+): void
+```
+
+Add a `BURN_POSITION` action to burn a position NFT and collect all remaining tokens.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tokenId` | `BigintIsh` | The position NFT token ID to burn |
+| `amount0Min` | `BigintIsh` | Minimum amount of currency0 to receive |
+| `amount1Min` | `BigintIsh` | Minimum amount of currency1 to receive |
+| `hookData` | `string?` | Optional data to pass to hooks (default: `0x`) |
+
+```typescript
+planner.addBurn(
+  12345n,       // tokenId
+  amount0Min,
+  amount1Min
+)
+```
+
+### `addSettlePair(currency0, currency1)`
+
+```typescript
+addSettlePair(currency0: Currency, currency1: Currency): void
+```
+
+Add a `SETTLE_PAIR` action to settle both currencies of a pool.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency0` | `Currency` | The first currency |
+| `currency1` | `Currency` | The second currency |
+
+```typescript
+planner.addSettlePair(pool.currency0, pool.currency1)
+```
+
+### `addTakePair(currency0, currency1, recipient)`
+
+```typescript
+addTakePair(currency0: Currency, currency1: Currency, recipient: string): void
+```
+
+Add a `TAKE_PAIR` action to take both currencies to a recipient.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency0` | `Currency` | The first currency |
+| `currency1` | `Currency` | The second currency |
+| `recipient` | `string` | The recipient address |
+
+```typescript
+planner.addTakePair(pool.currency0, pool.currency1, '0xRecipient')
+```
+
+### `addSweep(currency, to)`
+
+```typescript
+addSweep(currency: Currency, to: string): void
+```
+
+Add a `SWEEP` action to sweep any remaining balance of a currency.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency` | `Currency` | The currency to sweep |
+| `to` | `string` | The recipient address |
+
+```typescript
+planner.addSweep(ETH, '0xRecipient')
+```
+
+## Complete Examples
+
+### Mint Position with Native ETH
+
+```typescript
+import { V4PositionPlanner, Pool, Position, ADDRESS_ZERO, MSG_SENDER } from '@uniswap/v4-sdk-next'
+
+const planner = new V4PositionPlanner()
+
+// Add mint
+planner.addMint(
+  pool,
+  position.tickLower,
+  position.tickUpper,
+  position.liquidity,
+  amount0Max,
+  amount1Max,
+  recipient
+)
+
+// Settle both currencies (user is payer)
+planner.addSettlePair(pool.currency0, pool.currency1)
+
+// Sweep any leftover ETH back to sender
+planner.addSweep(pool.currency0, MSG_SENDER)
+
+const encodedData = planner.finalize()
+```
+
+### Decrease Liquidity and Collect
+
+```typescript
+const planner = new V4PositionPlanner()
+
+// Decrease liquidity
+planner.addDecrease(
+  tokenId,
+  liquidityToRemove,
+  amount0Min,
+  amount1Min
+)
+
+// Take both currencies to recipient
+planner.addTakePair(pool.currency0, pool.currency1, recipient)
+
+const encodedData = planner.finalize()
+```
+
+### Collect Fees Only
+
+```typescript
+const planner = new V4PositionPlanner()
+
+// Decrease by 0 liquidity (just collect fees)
+planner.addDecrease(
+  tokenId,
+  0n,           // 0 liquidity = just collect fees
+  0n,           // No minimum required
+  0n
+)
+
+// Take fees to recipient
+planner.addTakePair(pool.currency0, pool.currency1, recipient)
+
+const encodedData = planner.finalize()
+```
+
+### Full Exit with Burn
+
+```typescript
+const planner = new V4PositionPlanner()
+
+// Burn the position (removes all liquidity and burns NFT)
+planner.addBurn(
+  tokenId,
+  amount0Min,
+  amount1Min
+)
+
+// Take all tokens to recipient
+planner.addTakePair(pool.currency0, pool.currency1, recipient)
+
+const encodedData = planner.finalize()
+```
+
+### Migration from V3
+
+```typescript
+const planner = new V4PositionPlanner()
+
+// Mint new V4 position
+planner.addMint(
+  pool,
+  tickLower,
+  tickUpper,
+  liquidity,
+  amount0Max,
+  amount1Max,
+  recipient
+)
+
+// For migration, the V4 position manager is the payer (not the user)
+planner.addSettle(pool.currency0, false) // false = payer is not user
+planner.addSettle(pool.currency1, false)
+
+// Sweep any remaining tokens back
+planner.addSweep(pool.currency0, recipient)
+planner.addSweep(pool.currency1, recipient)
+
+const encodedData = planner.finalize()
+```

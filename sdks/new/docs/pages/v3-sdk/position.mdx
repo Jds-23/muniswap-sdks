@@ -1,0 +1,225 @@
+# Position
+
+The `Position` class represents a liquidity position on a Uniswap V3 pool. It contains information about the pool, the tick range, and the liquidity amount.
+
+## Import
+
+```typescript
+import { Position } from '@uniswap/v3-sdk'
+```
+
+## Constructor
+
+Creates a new Position instance.
+
+```typescript
+new Position({
+  pool: Pool,
+  liquidity: BigintIsh,
+  tickLower: number,
+  tickUpper: number
+})
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `pool` | `Pool` | The pool for which to create the position |
+| `liquidity` | `BigintIsh` | The liquidity of the position |
+| `tickLower` | `number` | The lower tick of the position |
+| `tickUpper` | `number` | The upper tick of the position |
+
+## Example
+
+```typescript
+import { Position, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+const pool = new Pool(
+  USDC,
+  WETH,
+  FeeAmount.MEDIUM,
+  '1234567890123456789012345678',
+  '1000000000000000000',
+  100
+)
+
+const position = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -60,
+  tickUpper: 60
+})
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `pool` | `Pool` | The pool that this position is on |
+| `tickLower` | `number` | The lower tick of the position's range |
+| `tickUpper` | `number` | The upper tick of the position's range |
+| `liquidity` | `bigint` | The liquidity of this position |
+
+## Getters
+
+### token0PriceLower
+
+Returns the sqrt price of token0 at the lower tick boundary.
+
+```typescript
+get token0PriceLower(): bigint
+```
+
+### token0PriceUpper
+
+Returns the sqrt price of token0 at the upper tick boundary.
+
+```typescript
+get token0PriceUpper(): bigint
+```
+
+### amount0
+
+Returns the amount of token0 that this position's liquidity could be burned for at the current pool price.
+
+```typescript
+get amount0(): CurrencyAmount<Token>
+```
+
+### amount1
+
+Returns the amount of token1 that this position's liquidity could be burned for at the current pool price.
+
+```typescript
+get amount1(): CurrencyAmount<Token>
+```
+
+### mintAmounts
+
+Returns the minimum amounts that must be sent in order to mint the amount of liquidity held by the position. These values are rounded up.
+
+```typescript
+get mintAmounts(): { amount0: bigint; amount1: bigint }
+```
+
+## Static Methods
+
+### fromAmounts
+
+Creates a position from the specified amounts of token0 and token1.
+
+```typescript
+static fromAmounts({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount0: BigintIsh,
+  amount1: BigintIsh,
+  useFullPrecision: boolean
+}): Position
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `pool` | `Pool` | The pool for which to create the position |
+| `tickLower` | `number` | The lower tick |
+| `tickUpper` | `number` | The upper tick |
+| `amount0` | `BigintIsh` | The amount of token0 |
+| `amount1` | `BigintIsh` | The amount of token1 |
+| `useFullPrecision` | `boolean` | Whether to use full precision for liquidity calculation |
+
+#### Example
+
+```typescript
+const position = Position.fromAmounts({
+  pool,
+  tickLower: -60,
+  tickUpper: 60,
+  amount0: '1000000',
+  amount1: '1000000000000000000',
+  useFullPrecision: true
+})
+```
+
+### fromAmount0
+
+Creates a position from the specified amount of token0.
+
+```typescript
+static fromAmount0({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount0: BigintIsh,
+  useFullPrecision: boolean
+}): Position
+```
+
+### fromAmount1
+
+Creates a position from the specified amount of token1.
+
+```typescript
+static fromAmount1({
+  pool: Pool,
+  tickLower: number,
+  tickUpper: number,
+  amount1: BigintIsh,
+  useFullPrecision: boolean
+}): Position
+```
+
+## Methods
+
+### mintAmountsWithSlippage
+
+Returns the minimum amounts that must be sent in order to safely mint the amount of liquidity held by the position with the given slippage tolerance.
+
+```typescript
+mintAmountsWithSlippage(slippageTolerance: Percent): { amount0: bigint; amount1: bigint }
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `slippageTolerance` | `Percent` | The slippage tolerance |
+
+#### Example
+
+```typescript
+import { Percent } from '@uniswap/sdk-core'
+
+const slippage = new Percent(5, 1000) // 0.5%
+const { amount0, amount1 } = position.mintAmountsWithSlippage(slippage)
+```
+
+### burnAmountsWithSlippage
+
+Returns the minimum amounts that should be requested in order to safely burn the amount of liquidity held by the position with the given slippage tolerance.
+
+```typescript
+burnAmountsWithSlippage(slippageTolerance: Percent): { amount0: bigint; amount1: bigint }
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `slippageTolerance` | `Percent` | The slippage tolerance |
+
+#### Example
+
+```typescript
+import { Percent } from '@uniswap/sdk-core'
+
+const slippage = new Percent(5, 1000) // 0.5%
+const { amount0, amount1 } = position.burnAmountsWithSlippage(slippage)
+```

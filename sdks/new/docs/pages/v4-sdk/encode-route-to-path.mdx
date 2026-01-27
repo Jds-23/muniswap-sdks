@@ -1,0 +1,199 @@
+# encodeRouteToPath
+
+The `encodeRouteToPath` function encodes a V4 route into an array of `PathKey` structs for use in router calls.
+
+## Import
+
+```typescript
+import { encodeRouteToPath, type PathKey } from '@uniswap/v4-sdk-next'
+```
+
+## Function Signature
+
+```typescript
+function encodeRouteToPath(
+  route: Route<Currency, Currency>,
+  exactOutput?: boolean
+): PathKey[]
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `route` | `Route<Currency, Currency>` | The route to encode |
+| `exactOutput` | `boolean?` | Whether this is an exact output swap (reverses the path) |
+
+### Returns
+
+An array of `PathKey` structs representing each hop in the swap path.
+
+## PathKey Type
+
+```typescript
+type PathKey = {
+  /** The currency address for this path segment (0x0 for native) */
+  intermediateCurrency: string
+  /** The fee tier of the pool (in hundredths of a bip) */
+  fee: number
+  /** The tick spacing of the pool */
+  tickSpacing: number
+  /** The hook address for this pool */
+  hooks: string
+  /** Optional hook data for this hop (default: 0x) */
+  hookData: string
+}
+```
+
+## Example
+
+```typescript
+import { Pool, Route, encodeRouteToPath, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Ether, Token } from '@uniswap/sdk-core-next'
+
+// Define currencies
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EescdeCB5BE3830', 18, 'DAI')
+
+// Create pools
+const ethUsdcPool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96_1, liquidity1, tick1)
+const usdcDaiPool = new Pool(USDC, DAI, 500, 10, ADDRESS_ZERO, sqrtPriceX96_2, liquidity2, tick2)
+
+// Create route: ETH -> USDC -> DAI
+const route = new Route([ethUsdcPool, usdcDaiPool], ETH, DAI)
+
+// Encode for exact input swap
+const pathExactIn = encodeRouteToPath(route, false)
+console.log(pathExactIn)
+// [
+//   {
+//     intermediateCurrency: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+//     fee: 3000,
+//     tickSpacing: 60,
+//     hooks: '0x0000000000000000000000000000000000000000',
+//     hookData: '0x'
+//   },
+//   {
+//     intermediateCurrency: '0x6B175474E89094C44Da98b954EedecsB5BE3830', // DAI
+//     fee: 500,
+//     tickSpacing: 10,
+//     hooks: '0x0000000000000000000000000000000000000000',
+//     hookData: '0x'
+//   }
+// ]
+
+// Encode for exact output swap (path is reversed)
+const pathExactOut = encodeRouteToPath(route, true)
+// Path keys are in reverse order for exact output
+```
+
+## Exact Input vs Exact Output
+
+The path encoding differs based on the swap direction:
+
+### Exact Input
+
+For exact input swaps, the path follows the natural order:
+- Start currency -> Intermediate currency 1 -> ... -> End currency
+- Each PathKey contains the **next** currency in the path
+
+```typescript
+// ETH -> USDC -> DAI (exact input)
+const path = encodeRouteToPath(route, false)
+// path[0].intermediateCurrency = USDC (next after ETH)
+// path[1].intermediateCurrency = DAI (next after USDC)
+```
+
+### Exact Output
+
+For exact output swaps, the path is reversed:
+- End currency -> ... -> Intermediate currency 1 -> Start currency
+- The router processes the path backwards
+
+```typescript
+// ETH -> USDC -> DAI (exact output)
+const path = encodeRouteToPath(route, true)
+// Path is reversed internally for the router
+```
+
+## Native Currency Handling
+
+Native ETH is represented with the zero address:
+
+```typescript
+const ethUsdcPool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, ...)
+const route = new Route([ethUsdcPool], ETH, USDC)
+
+const path = encodeRouteToPath(route, false)
+// If ETH is the intermediate, intermediateCurrency will be:
+// '0x0000000000000000000000000000000000000000'
+```
+
+## With Hooks
+
+Pools with hooks include the hook address in the path:
+
+```typescript
+const hookAddress = '0x000000000000000000000000000000000000C0C0'
+const poolWithHook = new Pool(ETH, USDC, 3000, 60, hookAddress, ...)
+
+const route = new Route([poolWithHook], ETH, USDC)
+const path = encodeRouteToPath(route, false)
+
+console.log(path[0].hooks)  // '0x000000000000000000000000000000000000C0C0'
+```
+
+## Usage with V4Planner
+
+The encoded path is used internally by `V4Planner.addTrade()`:
+
+```typescript
+import { V4Planner } from '@uniswap/v4-sdk-next'
+
+const planner = new V4Planner()
+
+// addTrade internally calls encodeRouteToPath
+planner.addTrade(trade, slippageTolerance)
+```
+
+You can also use it directly when building custom swap calls:
+
+```typescript
+import { V4Planner, Actions, encodeRouteToPath } from '@uniswap/v4-sdk-next'
+
+const planner = new V4Planner()
+const path = encodeRouteToPath(route, false)
+
+planner.addAction(Actions.SWAP_EXACT_IN, [{
+  currencyIn: ADDRESS_ZERO, // ETH
+  path: path,
+  amountIn: inputAmount.toString(),
+  amountOutMinimum: minOutput.toString()
+}])
+```
+
+## Multi-Hop Routing
+
+For multi-hop routes, each pool contributes one PathKey:
+
+```typescript
+// Three-hop route: ETH -> USDC -> WBTC -> DAI
+const route = new Route(
+  [ethUsdcPool, usdcWbtcPool, wbtcDaiPool],
+  ETH,
+  DAI
+)
+
+const path = encodeRouteToPath(route, false)
+// path.length === 3
+// path[0]: ETH -> USDC hop
+// path[1]: USDC -> WBTC hop
+// path[2]: WBTC -> DAI hop
+```
+
+## Notes
+
+- The function creates a deep copy of the pools array, so it does not modify the original route
+- Hook data is currently set to `'0x'` for all hops (custom hook data per hop is not yet supported)
+- The `intermediateCurrency` in each PathKey is the **output** currency of that hop

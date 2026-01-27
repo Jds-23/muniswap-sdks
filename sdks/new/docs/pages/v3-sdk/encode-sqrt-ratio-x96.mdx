@@ -1,0 +1,162 @@
+# encodeSqrtRatioX96
+
+The `encodeSqrtRatioX96` utility converts a price ratio into the Q64.96 sqrt price format used by Uniswap V3 pools.
+
+## Import
+
+```typescript
+import { encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+```
+
+## Function Signature
+
+```typescript
+function encodeSqrtRatioX96(amount1: BigintIsh, amount0: BigintIsh): bigint
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `amount1` | `BigintIsh` | The numerator amount (amount of token1) |
+| `amount0` | `BigintIsh` | The denominator amount (amount of token0) |
+
+### Returns
+
+Returns the sqrt ratio as a Q64.96 value (`bigint`).
+
+## Formula
+
+The function computes:
+
+```
+sqrtRatioX96 = sqrt(amount1 / amount0) * 2^96
+```
+
+Or equivalently:
+
+```
+sqrtRatioX96 = sqrt(amount1 * 2^192 / amount0)
+```
+
+## Example
+
+```typescript
+import { encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+
+// For a 1:1 price ratio
+const sqrtPriceX96 = encodeSqrtRatioX96(1n, 1n)
+console.log(sqrtPriceX96) // 79228162514264337593543950336n (2^96)
+
+// For a 2:1 price ratio (token1/token0 = 2)
+const sqrtPrice2to1 = encodeSqrtRatioX96(2n, 1n)
+console.log(sqrtPrice2to1) // ~112045541949572279837463876454n
+
+// For a 1:2 price ratio (token1/token0 = 0.5)
+const sqrtPrice1to2 = encodeSqrtRatioX96(1n, 2n)
+console.log(sqrtPrice1to2) // ~56022770974786139918731938227n
+```
+
+## Use Cases
+
+### Initializing a Pool
+
+When creating a new pool, you need to provide the initial sqrt price:
+
+```typescript
+import { encodeSqrtRatioX96, Pool, FeeAmount } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+
+// Price: 1 ETH = 2000 USDC
+// Since USDC is token0 (sorted), we need WETH/USDC ratio
+// But amounts need to account for decimals:
+// 1 WETH (18 decimals) = 1e18
+// 2000 USDC (6 decimals) = 2000e6
+
+const sqrtPriceX96 = encodeSqrtRatioX96(
+  1n * 10n ** 18n,  // 1 WETH in smallest units
+  2000n * 10n ** 6n  // 2000 USDC in smallest units
+)
+
+const pool = new Pool(
+  USDC,
+  WETH,
+  FeeAmount.MEDIUM,
+  sqrtPriceX96,
+  0n, // liquidity
+  0   // tick (needs to match sqrtPriceX96)
+)
+```
+
+### Computing Price from Token Amounts
+
+```typescript
+import { encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+
+// If you have 1000 USDC and 0.5 ETH in a position
+const usdcAmount = 1000n * 10n ** 6n  // 1000 USDC
+const wethAmount = 5n * 10n ** 17n    // 0.5 WETH
+
+// The implied price ratio
+const sqrtPriceX96 = encodeSqrtRatioX96(wethAmount, usdcAmount)
+```
+
+## Understanding Q64.96 Format
+
+Uniswap V3 uses a Q64.96 fixed-point number format for sqrt prices:
+- 64 bits for the integer part
+- 96 bits for the fractional part
+
+This allows precise representation of prices across a very wide range while maintaining numerical precision.
+
+### Conversion Examples
+
+```typescript
+import { encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+
+// The value 2^96 represents sqrt(1) = 1
+const Q96 = 2n ** 96n
+console.log(encodeSqrtRatioX96(1n, 1n)) // Approximately Q96
+
+// sqrt(2) * 2^96
+console.log(encodeSqrtRatioX96(2n, 1n)) // Approximately 1.414 * Q96
+
+// sqrt(0.5) * 2^96
+console.log(encodeSqrtRatioX96(1n, 2n)) // Approximately 0.707 * Q96
+```
+
+## Related Functions
+
+### Inverse Operation
+
+To get the tick from a sqrt price, use `getTickAtSqrtRatio`:
+
+```typescript
+import { encodeSqrtRatioX96 } from '@uniswap/v3-sdk'
+import { getTickAtSqrtRatio } from '@uniswap/v3-sdk'
+
+const sqrtPriceX96 = encodeSqrtRatioX96(2000n * 10n ** 6n, 1n * 10n ** 18n)
+const tick = getTickAtSqrtRatio(sqrtPriceX96)
+```
+
+### Price Conversion
+
+To convert between ticks and prices, see the [Price Tick Conversions](/v3-sdk/price-tick-conversions) utilities.
+
+## Precision Considerations
+
+The function uses the `sqrt` function from `@uniswap/sdk-core`, which computes the integer square root. This means there may be small rounding errors for very precise calculations:
+
+```typescript
+// The result is an integer, so there's implicit rounding
+const sqrtPrice = encodeSqrtRatioX96(3n, 2n)
+
+// For maximum precision, use larger numbers
+const sqrtPricePrecise = encodeSqrtRatioX96(
+  3n * 10n ** 18n,
+  2n * 10n ** 18n
+)
+```

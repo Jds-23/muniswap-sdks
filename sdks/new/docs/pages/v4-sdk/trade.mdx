@@ -1,0 +1,354 @@
+# Trade
+
+The `Trade` class represents a trade executed against one or more V4 routes. It calculates execution price, price impact, and slippage-adjusted amounts.
+
+## Import
+
+```typescript
+import { Trade } from '@uniswap/v4-sdk-next'
+```
+
+## Types
+
+### BestTradeOptions
+
+```typescript
+interface BestTradeOptions {
+  /** Maximum number of results to return (default: 3) */
+  maxNumResults?: number
+  /** Maximum number of hops a trade should contain (default: 3) */
+  maxHops?: number
+}
+```
+
+## Constructor
+
+The constructor is private. Use the static factory methods to create trades.
+
+## Example
+
+```typescript
+import { Pool, Route, Trade, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Token, Ether, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core-next'
+
+// Setup currencies and pool
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96, liquidity, tick, ticks)
+
+// Create route
+const route = new Route([pool], ETH, USDC)
+
+// Create exact input trade
+const inputAmount = CurrencyAmount.fromRawAmount(ETH, '1000000000000000000') // 1 ETH
+const trade = await Trade.exactIn(route, inputAmount)
+
+// Access trade properties
+console.log(trade.inputAmount.toSignificant(6))   // "1.0"
+console.log(trade.outputAmount.toSignificant(6))  // e.g., "1800.00"
+console.log(trade.executionPrice.toSignificant(6))
+console.log(trade.priceImpact.toSignificant(2))   // e.g., "0.05%"
+
+// Calculate slippage-adjusted amounts
+const slippage = new Percent(50, 10000) // 0.5%
+const minOutput = trade.minimumAmountOut(slippage)
+console.log(minOutput.toSignificant(6))
+```
+
+## Static Methods
+
+### `exactIn(route, amountIn)`
+
+```typescript
+static async exactIn<TInput extends Currency, TOutput extends Currency>(
+  route: Route<TInput, TOutput>,
+  amountIn: CurrencyAmount<TInput>
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_INPUT>>
+```
+
+Constructs an exact input trade.
+
+```typescript
+const inputAmount = CurrencyAmount.fromRawAmount(ETH, '1000000000000000000')
+const trade = await Trade.exactIn(route, inputAmount)
+```
+
+### `exactOut(route, amountOut)`
+
+```typescript
+static async exactOut<TInput extends Currency, TOutput extends Currency>(
+  route: Route<TInput, TOutput>,
+  amountOut: CurrencyAmount<TOutput>
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_OUTPUT>>
+```
+
+Constructs an exact output trade.
+
+```typescript
+const outputAmount = CurrencyAmount.fromRawAmount(USDC, '1000000000') // 1000 USDC
+const trade = await Trade.exactOut(route, outputAmount)
+```
+
+### `fromRoute(route, amount, tradeType)`
+
+```typescript
+static async fromRoute<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(
+  route: Route<TInput, TOutput>,
+  amount: CurrencyAmount,
+  tradeType: TTradeType
+): Promise<Trade<TInput, TOutput, TTradeType>>
+```
+
+Constructs a trade by simulating swaps through the given route.
+
+```typescript
+const trade = await Trade.fromRoute(route, amount, TradeType.EXACT_INPUT)
+```
+
+### `fromRoutes(routes, tradeType)`
+
+```typescript
+static async fromRoutes<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(
+  routes: { amount: CurrencyAmount; route: Route<TInput, TOutput> }[],
+  tradeType: TTradeType
+): Promise<Trade<TInput, TOutput, TTradeType>>
+```
+
+Constructs a trade with split routes (multiple paths for the same swap).
+
+```typescript
+// Split trade across two routes
+const trade = await Trade.fromRoutes(
+  [
+    { amount: CurrencyAmount.fromRawAmount(ETH, '500000000000000000'), route: route1 },
+    { amount: CurrencyAmount.fromRawAmount(ETH, '500000000000000000'), route: route2 }
+  ],
+  TradeType.EXACT_INPUT
+)
+```
+
+### `createUncheckedTrade(params)`
+
+```typescript
+static createUncheckedTrade<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType>(
+  params: {
+    route: Route<TInput, TOutput>
+    inputAmount: CurrencyAmount<TInput>
+    outputAmount: CurrencyAmount<TOutput>
+    tradeType: TTradeType
+  }
+): Trade<TInput, TOutput, TTradeType>
+```
+
+Creates a trade without simulating the swap. Useful when you have pre-computed amounts (e.g., from a quoter).
+
+```typescript
+const trade = Trade.createUncheckedTrade({
+  route,
+  inputAmount: CurrencyAmount.fromRawAmount(ETH, '1000000000000000000'),
+  outputAmount: CurrencyAmount.fromRawAmount(USDC, '1800000000'),
+  tradeType: TradeType.EXACT_INPUT
+})
+```
+
+### `createUncheckedTradeWithMultipleRoutes(params)`
+
+```typescript
+static createUncheckedTradeWithMultipleRoutes<TInput, TOutput, TTradeType>(
+  params: {
+    routes: {
+      route: Route<TInput, TOutput>
+      inputAmount: CurrencyAmount<TInput>
+      outputAmount: CurrencyAmount<TOutput>
+    }[]
+    tradeType: TTradeType
+  }
+): Trade<TInput, TOutput, TTradeType>
+```
+
+Creates a multi-route trade without simulating swaps.
+
+### `bestTradeExactIn(pools, currencyAmountIn, currencyOut, options?)`
+
+```typescript
+static async bestTradeExactIn<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  currencyAmountIn: CurrencyAmount<TInput>,
+  currencyOut: TOutput,
+  options?: BestTradeOptions
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_INPUT>[]>
+```
+
+Finds the best trades for a given exact input amount.
+
+```typescript
+const trades = await Trade.bestTradeExactIn(
+  [pool1, pool2, pool3],
+  CurrencyAmount.fromRawAmount(ETH, '1000000000000000000'),
+  USDC,
+  { maxNumResults: 3, maxHops: 3 }
+)
+
+// trades are sorted by output amount (best first)
+const bestTrade = trades[0]
+```
+
+### `bestTradeExactOut(pools, currencyIn, currencyAmountOut, options?)`
+
+```typescript
+static async bestTradeExactOut<TInput extends Currency, TOutput extends Currency>(
+  pools: Pool[],
+  currencyIn: TInput,
+  currencyAmountOut: CurrencyAmount<TOutput>,
+  options?: BestTradeOptions
+): Promise<Trade<TInput, TOutput, TradeType.EXACT_OUTPUT>[]>
+```
+
+Finds the best trades for a given exact output amount.
+
+```typescript
+const trades = await Trade.bestTradeExactOut(
+  [pool1, pool2, pool3],
+  ETH,
+  CurrencyAmount.fromRawAmount(USDC, '1000000000'),
+  { maxNumResults: 3, maxHops: 3 }
+)
+```
+
+## Properties
+
+### `swaps`
+
+```typescript
+readonly swaps: {
+  route: Route<TInput, TOutput>
+  inputAmount: CurrencyAmount<TInput>
+  outputAmount: CurrencyAmount<TOutput>
+}[]
+```
+
+The individual swaps that make up this trade. A trade can consist of multiple routes.
+
+### `route`
+
+```typescript
+get route(): Route<TInput, TOutput>
+```
+
+Returns the route if the trade has only one swap. Throws if the trade has multiple routes.
+
+### `tradeType`
+
+```typescript
+readonly tradeType: TTradeType
+```
+
+The type of trade (`TradeType.EXACT_INPUT` or `TradeType.EXACT_OUTPUT`).
+
+### `inputAmount`
+
+```typescript
+get inputAmount(): CurrencyAmount<TInput>
+```
+
+The total input amount for the trade (sum of all swap input amounts).
+
+### `outputAmount`
+
+```typescript
+get outputAmount(): CurrencyAmount<TOutput>
+```
+
+The total output amount for the trade (sum of all swap output amounts).
+
+### `executionPrice`
+
+```typescript
+get executionPrice(): Price<TInput, TOutput>
+```
+
+The execution price (output amount / input amount).
+
+### `priceImpact`
+
+```typescript
+get priceImpact(): Percent
+```
+
+The percent difference between the route's mid price and the execution price.
+
+## Methods
+
+### `minimumAmountOut(slippageTolerance, amountOut?)`
+
+```typescript
+minimumAmountOut(
+  slippageTolerance: Percent,
+  amountOut?: CurrencyAmount<TOutput>
+): CurrencyAmount<TOutput>
+```
+
+Returns the minimum amount to receive for the given slippage tolerance. For exact output trades, returns the output amount unchanged.
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const minOutput = trade.minimumAmountOut(slippage)
+```
+
+### `maximumAmountIn(slippageTolerance, amountIn?)`
+
+```typescript
+maximumAmountIn(
+  slippageTolerance: Percent,
+  amountIn?: CurrencyAmount<TInput>
+): CurrencyAmount<TInput>
+```
+
+Returns the maximum amount to spend for the given slippage tolerance. For exact input trades, returns the input amount unchanged.
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const maxInput = trade.maximumAmountIn(slippage)
+```
+
+### `worstExecutionPrice(slippageTolerance)`
+
+```typescript
+worstExecutionPrice(slippageTolerance: Percent): Price<TInput, TOutput>
+```
+
+Returns the worst execution price after accounting for slippage tolerance.
+
+```typescript
+const slippage = new Percent(50, 10000) // 0.5%
+const worstPrice = trade.worstExecutionPrice(slippage)
+```
+
+## Trade Comparator
+
+```typescript
+function tradeComparator<TInput, TOutput, TTradeType>(
+  a: Trade<TInput, TOutput, TTradeType>,
+  b: Trade<TInput, TOutput, TTradeType>
+): number
+```
+
+A comparator function for sorting trades. Compares by:
+1. Output amount (higher is better)
+2. Input amount (lower is better)
+3. Number of hops (fewer is better)
+
+## Validation
+
+Trades validate that:
+- All routes have the same input currency
+- All routes have the same output currency
+- No pool is used in multiple routes (pools cannot be duplicated)
+
+```typescript
+// Invalid - same pool used twice (will throw 'POOLS_DUPLICATED')
+const invalidTrade = await Trade.fromRoutes([
+  { amount: amount1, route: new Route([pool], ETH, USDC) },
+  { amount: amount2, route: new Route([pool], ETH, USDC) }  // Same pool
+], TradeType.EXACT_INPUT)
+```

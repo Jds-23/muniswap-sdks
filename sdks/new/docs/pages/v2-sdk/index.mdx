@@ -1,0 +1,87 @@
+# V2 SDK
+
+The V2 SDK (`@uniswap/v2-sdk-next`) provides tools for building on Uniswap V2's constant-product automated market maker. It includes entities for pairs, routes, and trades, with full support for fee-on-transfer tokens.
+
+## Features
+
+- **Pair Management**: Create and query V2 liquidity pairs
+- **Trade Routing**: Find optimal multi-hop trade paths
+- **FOT Support**: Full fee-on-transfer token handling
+- **Liquidity Math**: Calculate minted liquidity and values
+
+## Installation
+
+```bash
+npm install @uniswap/v2-sdk-next
+```
+
+```bash
+pnpm add @uniswap/v2-sdk-next
+```
+
+```bash
+yarn add @uniswap/v2-sdk-next
+```
+
+## Quick Start
+
+```typescript
+import { Pair, Route, Trade } from '@uniswap/v2-sdk-next'
+import { Token, CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core-next'
+
+// Define tokens
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create a pair with reserves (typically fetched from chain)
+const pair = new Pair(
+  CurrencyAmount.fromRawAmount(WETH, '2000000000000000000000'), // 2000 WETH
+  CurrencyAmount.fromRawAmount(USDC, '4000000000000')           // 4M USDC
+)
+
+// Create a route
+const route = new Route([pair], WETH, USDC)
+
+// Get the mid price
+console.log(route.midPrice.toSignificant(6)) // "2000"
+
+// Create a trade
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000') // 1 WETH
+const trade = Trade.exactIn(route, inputAmount)
+
+// Get execution price and price impact
+console.log(trade.executionPrice.toSignificant(6))
+console.log(trade.priceImpact.toSignificant(2) + '%')
+```
+
+## How V2 Works
+
+Uniswap V2 uses the constant product formula:
+
+```
+x * y = k
+```
+
+Where:
+- `x` is the reserve of token0
+- `y` is the reserve of token1
+- `k` is a constant that only changes when liquidity is added/removed
+
+This formula ensures that trades always have a price, with larger trades having more price impact.
+
+## Modules
+
+### Entities
+
+- [Pair](/v2-sdk/pair) - V2 liquidity pair representation
+- [Route](/v2-sdk/route) - Sequence of pairs for a trade path
+- [Trade](/v2-sdk/trade) - Represents a swap with amounts and prices
+
+### Interfaces
+
+- [Router](/v2-sdk/router) - Trade options for router interactions
+
+### Reference
+
+- [Constants](/v2-sdk/constants) - Factory addresses and init code hashes
+- [Errors](/v2-sdk/errors) - Custom error types

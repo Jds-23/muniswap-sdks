@@ -1,0 +1,239 @@
+# Fraction
+
+The `Fraction` class provides precise fractional arithmetic using BigInt numerator and denominator.
+
+## Import
+
+```typescript
+import { Fraction } from '@uniswap/sdk-core-next'
+```
+
+## Constructor
+
+```typescript
+new Fraction(numerator: BigintIsh, denominator?: BigintIsh)
+```
+
+### Parameters
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `numerator` | `BigintIsh` | - | The numerator |
+| `denominator` | `BigintIsh` | `1n` | The denominator |
+
+`BigintIsh` can be `bigint`, `string`, or `number`.
+
+## Example
+
+```typescript
+import { Fraction } from '@uniswap/sdk-core-next'
+
+// Create fractions
+const half = new Fraction(1, 2)
+const quarter = new Fraction(1n, 4n)
+const fromString = new Fraction('100', '3')
+
+// Arithmetic
+const sum = half.add(quarter)       // 3/4
+const diff = half.subtract(quarter) // 1/4
+const product = half.multiply(2)    // 1
+const quotient = half.divide(2)     // 1/4
+
+// Formatting
+half.toSignificant(2)  // "0.5"
+half.toFixed(4)        // "0.5000"
+```
+
+## Properties
+
+### `numerator`
+
+```typescript
+readonly numerator: bigint
+```
+
+### `denominator`
+
+```typescript
+readonly denominator: bigint
+```
+
+### `quotient`
+
+```typescript
+get quotient(): bigint
+```
+
+Returns the floor division result (numerator / denominator).
+
+```typescript
+const f = new Fraction(7, 3)
+f.quotient // 2n
+```
+
+### `remainder`
+
+```typescript
+get remainder(): Fraction
+```
+
+Returns the remainder after floor division.
+
+```typescript
+const f = new Fraction(7, 3)
+f.remainder // Fraction(1, 3)
+```
+
+### `asFraction`
+
+```typescript
+get asFraction(): Fraction
+```
+
+Returns a new Fraction with the same numerator/denominator. Useful for converting subclasses back to Fraction.
+
+## Methods
+
+### `invert()`
+
+```typescript
+invert(): Fraction
+```
+
+Returns a new fraction with numerator and denominator swapped.
+
+```typescript
+new Fraction(3, 4).invert() // Fraction(4, 3)
+```
+
+### `add(other)`
+
+```typescript
+add(other: Fraction | BigintIsh): Fraction
+```
+
+Returns a new fraction that is the sum of this and the other.
+
+```typescript
+new Fraction(1, 4).add(new Fraction(1, 4)) // Fraction(2, 4) = 1/2
+new Fraction(1, 2).add(1)                  // Fraction(3, 2)
+```
+
+### `subtract(other)`
+
+```typescript
+subtract(other: Fraction | BigintIsh): Fraction
+```
+
+Returns a new fraction that is this minus the other.
+
+```typescript
+new Fraction(3, 4).subtract(new Fraction(1, 4)) // Fraction(2, 4) = 1/2
+```
+
+### `multiply(other)`
+
+```typescript
+multiply(other: Fraction | BigintIsh): Fraction
+```
+
+Returns a new fraction that is the product.
+
+```typescript
+new Fraction(1, 2).multiply(new Fraction(2, 3)) // Fraction(2, 6) = 1/3
+new Fraction(1, 2).multiply(4)                  // Fraction(4, 2) = 2
+```
+
+### `divide(other)`
+
+```typescript
+divide(other: Fraction | BigintIsh): Fraction
+```
+
+Returns a new fraction that is the quotient.
+
+```typescript
+new Fraction(1, 2).divide(new Fraction(3, 4)) // Fraction(4, 6) = 2/3
+new Fraction(1, 2).divide(2)                  // Fraction(1, 4)
+```
+
+### `lessThan(other)`
+
+```typescript
+lessThan(other: Fraction | BigintIsh): boolean
+```
+
+```typescript
+new Fraction(1, 4).lessThan(new Fraction(1, 2)) // true
+```
+
+### `equalTo(other)`
+
+```typescript
+equalTo(other: Fraction | BigintIsh): boolean
+```
+
+```typescript
+new Fraction(1, 2).equalTo(new Fraction(2, 4)) // true
+```
+
+### `greaterThan(other)`
+
+```typescript
+greaterThan(other: Fraction | BigintIsh): boolean
+```
+
+```typescript
+new Fraction(3, 4).greaterThan(new Fraction(1, 2)) // true
+```
+
+### `toSignificant(significantDigits, format?, rounding?)`
+
+```typescript
+toSignificant(
+  significantDigits: number,
+  format?: { groupSeparator?: string },
+  rounding?: Rounding
+): string
+```
+
+Returns a string with the specified number of significant digits.
+
+```typescript
+import { Rounding } from '@uniswap/sdk-core-next'
+
+const f = new Fraction(1, 3)
+f.toSignificant(4)                                    // "0.3333"
+f.toSignificant(2)                                    // "0.33"
+f.toSignificant(4, { groupSeparator: ',' })           // "0.3333"
+f.toSignificant(4, {}, Rounding.ROUND_UP)             // "0.3334"
+```
+
+### `toFixed(decimalPlaces, format?, rounding?)`
+
+```typescript
+toFixed(
+  decimalPlaces: number,
+  format?: { groupSeparator?: string },
+  rounding?: Rounding
+): string
+```
+
+Returns a string with the specified number of decimal places.
+
+```typescript
+const f = new Fraction(1, 3)
+f.toFixed(4)                                          // "0.3333"
+f.toFixed(2)                                          // "0.33"
+f.toFixed(4, { groupSeparator: ',' }, Rounding.ROUND_UP) // "0.3334"
+```
+
+## Rounding Modes
+
+```typescript
+import { Rounding } from '@uniswap/sdk-core-next'
+
+Rounding.ROUND_DOWN    // 0 - Truncate
+Rounding.ROUND_HALF_UP // 1 - Round half away from zero (default)
+Rounding.ROUND_UP      // 2 - Always round away from zero
+```

@@ -1,0 +1,233 @@
+# Constants
+
+The V3 SDK exports several constants used throughout the Uniswap V3 protocol.
+
+## Import
+
+```typescript
+import {
+  FACTORY_ADDRESS,
+  ADDRESS_ZERO,
+  POOL_INIT_CODE_HASH,
+  poolInitCodeHash,
+  FeeAmount,
+  TICK_SPACINGS
+} from '@uniswap/v3-sdk'
+```
+
+## Contract Addresses
+
+### FACTORY_ADDRESS
+
+The default V3 factory address (mainnet and most chains).
+
+```typescript
+const FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+```
+
+### ADDRESS_ZERO
+
+The zero address constant.
+
+```typescript
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
+```
+
+## Init Code Hashes
+
+### POOL_INIT_CODE_HASH
+
+The default pool init code hash used for CREATE2 address computation.
+
+```typescript
+const POOL_INIT_CODE_HASH = '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
+```
+
+### poolInitCodeHash
+
+Function that returns the pool init code hash for a given chain. Most chains use the default hash, but some (like ZKSync) have different bytecode.
+
+```typescript
+function poolInitCodeHash(chainId?: ChainId): `0x${string}`
+```
+
+#### Example
+
+```typescript
+import { poolInitCodeHash } from '@uniswap/v3-sdk'
+import { ChainId } from '@uniswap/sdk-core'
+
+// Default init code hash
+const defaultHash = poolInitCodeHash()
+console.log(defaultHash) // '0xe34f199b19b2b4f...'
+
+// ZKSync-specific init code hash
+const zkSyncHash = poolInitCodeHash(ChainId.ZKSYNC)
+console.log(zkSyncHash) // '0x010013f177ea1fc...'
+```
+
+## Fee Amounts
+
+### FeeAmount
+
+Enum of the default factory-enabled fee amounts, denominated in hundredths of bips (0.01%).
+
+```typescript
+enum FeeAmount {
+  LOWEST = 100,    // 0.01%
+  LOW_200 = 200,   // 0.02%
+  LOW_300 = 300,   // 0.03%
+  LOW_400 = 400,   // 0.04%
+  LOW = 500,       // 0.05%
+  MEDIUM = 3000,   // 0.3%
+  HIGH = 10000     // 1%
+}
+```
+
+#### Fee Tier Details
+
+| Fee Tier | Value | Percentage | Typical Use Case |
+| --- | --- | --- | --- |
+| `LOWEST` | 100 | 0.01% | Stable-stable pairs (USDC/USDT) |
+| `LOW_200` | 200 | 0.02% | Low volatility pairs |
+| `LOW_300` | 300 | 0.03% | Low volatility pairs |
+| `LOW_400` | 400 | 0.04% | Low volatility pairs |
+| `LOW` | 500 | 0.05% | Stable pairs, correlated assets |
+| `MEDIUM` | 3000 | 0.3% | Most pairs (ETH/USDC, etc.) |
+| `HIGH` | 10000 | 1% | Exotic pairs, high volatility |
+
+#### Example
+
+```typescript
+import { FeeAmount } from '@uniswap/v3-sdk'
+
+// Creating a pool with 0.3% fee
+const pool = new Pool(
+  token0,
+  token1,
+  FeeAmount.MEDIUM, // 3000 = 0.3%
+  sqrtPriceX96,
+  liquidity,
+  tick
+)
+```
+
+## Tick Spacings
+
+### TICK_SPACINGS
+
+Maps fee amounts to their corresponding tick spacings. Lower fee tiers have tighter tick spacing for more granular pricing.
+
+```typescript
+const TICK_SPACINGS: { [amount in FeeAmount]: number } = {
+  [FeeAmount.LOWEST]: 1,
+  [FeeAmount.LOW_200]: 4,
+  [FeeAmount.LOW_300]: 6,
+  [FeeAmount.LOW_400]: 8,
+  [FeeAmount.LOW]: 10,
+  [FeeAmount.MEDIUM]: 60,
+  [FeeAmount.HIGH]: 200
+}
+```
+
+#### Tick Spacing Details
+
+| Fee Tier | Tick Spacing | Price Granularity |
+| --- | --- | --- |
+| 0.01% | 1 | Every tick (~0.01% increments) |
+| 0.02% | 4 | Every 4 ticks (~0.04% increments) |
+| 0.03% | 6 | Every 6 ticks (~0.06% increments) |
+| 0.04% | 8 | Every 8 ticks (~0.08% increments) |
+| 0.05% | 10 | Every 10 ticks (~0.1% increments) |
+| 0.3% | 60 | Every 60 ticks (~0.6% increments) |
+| 1% | 200 | Every 200 ticks (~2% increments) |
+
+#### Example
+
+```typescript
+import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
+
+const tickSpacing = TICK_SPACINGS[FeeAmount.MEDIUM]
+console.log(tickSpacing) // 60
+
+// Ensure tick is valid for fee tier
+function isValidTick(tick: number, feeAmount: FeeAmount): boolean {
+  const spacing = TICK_SPACINGS[feeAmount]
+  return tick % spacing === 0
+}
+
+// Round tick to nearest valid tick
+function roundToValidTick(tick: number, feeAmount: FeeAmount): number {
+  const spacing = TICK_SPACINGS[feeAmount]
+  return Math.round(tick / spacing) * spacing
+}
+```
+
+## Usage Examples
+
+### Computing Pool Address
+
+```typescript
+import { FACTORY_ADDRESS, POOL_INIT_CODE_HASH, FeeAmount } from '@uniswap/v3-sdk'
+import { computePoolAddress } from '@uniswap/v3-sdk'
+
+const poolAddress = computePoolAddress({
+  factoryAddress: FACTORY_ADDRESS,
+  tokenA: USDC,
+  tokenB: WETH,
+  fee: FeeAmount.MEDIUM
+})
+```
+
+### Finding All Fee Tier Pools
+
+```typescript
+import { FeeAmount, computePoolAddress } from '@uniswap/v3-sdk'
+
+const feeAmounts = Object.values(FeeAmount).filter(v => typeof v === 'number') as FeeAmount[]
+
+const poolAddresses = feeAmounts.map(fee => ({
+  fee,
+  address: computePoolAddress({
+    tokenA: token0,
+    tokenB: token1,
+    fee
+  })
+}))
+```
+
+### Creating Valid Position Ticks
+
+```typescript
+import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
+
+function createPositionTicks(
+  currentTick: number,
+  rangePercent: number,
+  feeAmount: FeeAmount
+): { tickLower: number; tickUpper: number } {
+  const spacing = TICK_SPACINGS[feeAmount]
+
+  // Approximate tick range for desired price range
+  const tickRange = Math.floor(Math.log(1 + rangePercent / 100) / Math.log(1.0001))
+
+  // Round to valid tick spacing
+  const tickLower = Math.floor((currentTick - tickRange) / spacing) * spacing
+  const tickUpper = Math.ceil((currentTick + tickRange) / spacing) * spacing
+
+  return { tickLower, tickUpper }
+}
+```
+
+## Chain-Specific Deployments
+
+While `FACTORY_ADDRESS` is the same on most EVM chains, some chains have different deployment addresses. Always verify the correct addresses for your target chain:
+
+| Chain | Factory Address |
+| --- | --- |
+| Ethereum Mainnet | `0x1F98431c8aD98523631AE4a59f267346ea31F984` |
+| Polygon | `0x1F98431c8aD98523631AE4a59f267346ea31F984` |
+| Arbitrum | `0x1F98431c8aD98523631AE4a59f267346ea31F984` |
+| Optimism | `0x1F98431c8aD98523631AE4a59f267346ea31F984` |
+| Base | `0x33128a8fC17869897dcE68Ed026d694621f6FDfD` |
+| BNB Chain | `0xdB1d10011AD0Ff90774D0C6Bb92e5C5c8b4461F7` |

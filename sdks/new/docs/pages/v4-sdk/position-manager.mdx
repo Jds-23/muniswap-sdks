@@ -1,0 +1,406 @@
+# PositionManager
+
+The `V4PositionManager` class provides methods to encode calldata for the V4 PositionManager contract. It handles position minting, liquidity management, and fee collection.
+
+## Import
+
+```typescript
+import { V4PositionManager } from '@uniswap/v4-sdk-next'
+```
+
+## Overview
+
+The V4PositionManager is an abstract class with static methods for encoding transactions. It does not require instantiation.
+
+## Types
+
+### CommonOptions
+
+Options shared by all position operations.
+
+```typescript
+interface CommonOptions {
+  /** How much the pool price is allowed to move */
+  slippageTolerance: Percent
+  /** Optional data to pass to hooks */
+  hookData?: string
+  /** When the transaction expires, in epoch seconds */
+  deadline: BigintIsh
+}
+```
+
+### MintOptions
+
+Options for minting a new position.
+
+```typescript
+interface MintOptions extends CommonOptions, CommonAddLiquidityOptions {
+  /** The account that should receive the minted NFT */
+  recipient: string
+  /** Creates pool if not initialized before mint */
+  createPool?: boolean
+  /** Initial price to set on the pool if creating */
+  sqrtPriceX96?: BigintIsh
+  /** Whether the mint is part of a migration from V3 to V4 */
+  migrate?: boolean
+}
+```
+
+### IncreaseLiquidityOptions
+
+Options for increasing liquidity on an existing position.
+
+```typescript
+interface IncreaseLiquidityOptions extends CommonOptions, CommonAddLiquidityOptions {
+  /** The ID of the position to modify */
+  tokenId: BigintIsh
+}
+```
+
+### RemoveLiquidityOptions
+
+Options for removing liquidity from a position.
+
+```typescript
+interface RemoveLiquidityOptions extends CommonOptions {
+  /** The ID of the position to modify */
+  tokenId: BigintIsh
+  /** The percentage of position liquidity to exit */
+  liquidityPercentage: Percent
+  /** Whether the NFT should be burned if exiting entirely */
+  burnToken?: boolean
+  /** Optional permit for the token ID being exited */
+  permit?: NFTPermitOptions
+}
+```
+
+### CollectOptions
+
+Options for collecting fees from a position.
+
+```typescript
+interface CollectOptions extends CommonOptions {
+  /** The ID of the position to collect for */
+  tokenId: BigintIsh
+  /** The account that should receive the tokens */
+  recipient: string
+}
+```
+
+### CommonAddLiquidityOptions
+
+Options for operations that add liquidity.
+
+```typescript
+interface CommonAddLiquidityOptions {
+  /** Whether to spend ether. If true, one currency must be native */
+  useNative?: NativeCurrency
+  /** Optional permit2 batch permit for spending tokens */
+  batchPermit?: BatchPermitOptions
+}
+```
+
+### BatchPermitOptions
+
+Options for Permit2 batch permits.
+
+```typescript
+interface BatchPermitOptions {
+  owner: string
+  permitBatch: AllowanceTransferPermitBatch
+  signature: string
+}
+```
+
+### NFTPermitOptions
+
+Options for ERC721 position NFT permits.
+
+```typescript
+interface NFTPermitOptions {
+  spender: string
+  tokenId: BigintIsh
+  deadline: BigintIsh
+  nonce: BigintIsh
+  signature: string
+}
+```
+
+## Static Methods
+
+### `createCallParameters(poolKey, sqrtPriceX96)`
+
+```typescript
+static createCallParameters(poolKey: PoolKey, sqrtPriceX96: BigintIsh): MethodParameters
+```
+
+Produces calldata to initialize a new pool.
+
+```typescript
+import { V4PositionManager, Pool, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+
+const poolKey = Pool.getPoolKey(ETH, USDC, 3000, 60, ADDRESS_ZERO)
+const sqrtPriceX96 = '79228162514264337593543950336' // 1:1 price
+
+const { calldata, value } = V4PositionManager.createCallParameters(poolKey, sqrtPriceX96)
+```
+
+### `addCallParameters(position, options)`
+
+```typescript
+static addCallParameters(position: Position, options: AddLiquidityOptions): MethodParameters
+```
+
+Produces calldata for minting a new position or increasing liquidity on an existing position.
+
+#### Minting a New Position
+
+```typescript
+import { V4PositionManager, Pool, Position, ADDRESS_ZERO } from '@uniswap/v4-sdk-next'
+import { Percent, Ether, Token } from '@uniswap/sdk-core-next'
+
+const ETH = Ether.onChain(1)
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6)
+
+const pool = new Pool(ETH, USDC, 3000, 60, ADDRESS_ZERO, sqrtPriceX96, liquidity, tick)
+const position = new Position({
+  pool,
+  liquidity: '1000000000000000000',
+  tickLower: -887220,
+  tickUpper: 887220
+})
+
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000), // 0.5%
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  recipient: '0xYourAddress',
+  useNative: ETH // Use native ETH instead of WETH
+})
+```
+
+#### Minting with Pool Creation
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  recipient: '0xYourAddress',
+  createPool: true,
+  sqrtPriceX96: '79228162514264337593543950336'
+})
+```
+
+#### Increasing Liquidity
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  tokenId: 12345n // Existing position token ID
+})
+```
+
+#### With Permit2
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  recipient: '0xYourAddress',
+  batchPermit: {
+    owner: '0xYourAddress',
+    permitBatch: {
+      details: [
+        { token: USDC.address, amount: amount0, expiration: deadline, nonce: 0n },
+        { token: WETH.address, amount: amount1, expiration: deadline, nonce: 1n }
+      ],
+      spender: POSITION_MANAGER_ADDRESS,
+      sigDeadline: deadline
+    },
+    signature: '0x...' // Signed permit
+  }
+})
+```
+
+### `removeCallParameters(position, options)`
+
+```typescript
+static removeCallParameters(position: Position, options: RemoveLiquidityOptions): MethodParameters
+```
+
+Produces calldata for removing liquidity from a position.
+
+#### Partial Removal
+
+```typescript
+const { calldata, value } = V4PositionManager.removeCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  tokenId: 12345n,
+  liquidityPercentage: new Percent(50, 100) // Remove 50%
+})
+```
+
+#### Full Removal with Burn
+
+```typescript
+const { calldata, value } = V4PositionManager.removeCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  tokenId: 12345n,
+  liquidityPercentage: new Percent(100, 100), // Remove 100%
+  burnToken: true // Burn the NFT
+})
+```
+
+#### With NFT Permit
+
+```typescript
+const { calldata, value } = V4PositionManager.removeCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  tokenId: 12345n,
+  liquidityPercentage: new Percent(100, 100),
+  burnToken: true,
+  permit: {
+    spender: POSITION_MANAGER_ADDRESS,
+    tokenId: 12345n,
+    deadline: Math.floor(Date.now() / 1000) + 3600,
+    nonce: 0n,
+    signature: '0x...'
+  }
+})
+```
+
+### `collectCallParameters(position, options)`
+
+```typescript
+static collectCallParameters(position: Position, options: CollectOptions): MethodParameters
+```
+
+Produces calldata for collecting fees from a position.
+
+```typescript
+const { calldata, value } = V4PositionManager.collectCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: Math.floor(Date.now() / 1000) + 3600,
+  tokenId: 12345n,
+  recipient: '0xYourAddress'
+})
+```
+
+### `encodeModifyLiquidities(unlockData, deadline)`
+
+```typescript
+static encodeModifyLiquidities(unlockData: string, deadline: BigintIsh): string
+```
+
+Encodes a modifyLiquidities call with the given unlock data and deadline.
+
+```typescript
+const calldata = V4PositionManager.encodeModifyLiquidities(
+  plannerData,
+  Math.floor(Date.now() / 1000) + 3600
+)
+```
+
+### `encodePermitBatch(owner, permitBatch, signature)`
+
+```typescript
+static encodePermitBatch(
+  owner: string,
+  permitBatch: AllowanceTransferPermitBatch,
+  signature: string
+): string
+```
+
+Encodes a Permit2 batch permit call.
+
+### `encodeERC721Permit(spender, tokenId, deadline, nonce, signature)`
+
+```typescript
+static encodeERC721Permit(
+  spender: string,
+  tokenId: BigintIsh,
+  deadline: BigintIsh,
+  nonce: BigintIsh,
+  signature: string
+): string
+```
+
+Encodes an ERC721 permit call for position NFTs.
+
+### `getPermitData(permit, positionManagerAddress, chainId)`
+
+```typescript
+static getPermitData(
+  permit: NFTPermitValues,
+  positionManagerAddress: string,
+  chainId: number
+): NFTPermitData
+```
+
+Prepares the data for signing an EIP-712 NFT permit.
+
+```typescript
+const permitData = V4PositionManager.getPermitData(
+  {
+    spender: '0xSpenderAddress',
+    tokenId: 12345n,
+    deadline: Math.floor(Date.now() / 1000) + 3600,
+    nonce: 0n
+  },
+  POSITION_MANAGER_ADDRESS,
+  1 // Ethereum mainnet
+)
+
+// Sign with EIP-712
+// const signature = await wallet._signTypedData(
+//   permitData.domain,
+//   permitData.types,
+//   permitData.values
+// )
+```
+
+## V4-Specific Features
+
+### Native ETH Support
+
+V4 PositionManager supports native ETH directly:
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: deadline,
+  recipient: '0xYourAddress',
+  useNative: Ether.onChain(1) // Send ETH with the transaction
+})
+
+// `value` will contain the hex amount of ETH to send
+```
+
+### Hook Data
+
+Pass custom data to hooks during position operations:
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: deadline,
+  recipient: '0xYourAddress',
+  hookData: '0x1234...' // Custom hook data
+})
+```
+
+### Migration Support
+
+Support for migrating positions from V3 to V4:
+
+```typescript
+const { calldata, value } = V4PositionManager.addCallParameters(position, {
+  slippageTolerance: new Percent(50, 10000),
+  deadline: deadline,
+  recipient: '0xYourAddress',
+  migrate: true // Special handling for migration
+})
+```

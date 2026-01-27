@@ -1,0 +1,97 @@
+# Currency
+
+The `Currency` type is a union of `Token` and `NativeCurrency`. It represents any fungible asset that can be used in Uniswap.
+
+## Import
+
+```typescript
+import type { Currency } from '@uniswap/sdk-core-next'
+```
+
+## Type Definition
+
+```typescript
+type Currency = NativeCurrency | Token
+```
+
+## Usage
+
+Currency is used as a generic type throughout the SDK to handle both native currencies (like ETH) and ERC20 tokens uniformly.
+
+```typescript
+import { Token, Ether, CurrencyAmount, type Currency } from '@uniswap/sdk-core-next'
+
+// Both are valid Currency types
+const eth: Currency = Ether.onChain(1)
+const usdc: Currency = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+
+// Create amounts from any currency
+const ethAmount = CurrencyAmount.fromRawAmount(eth, '1000000000000000000')
+const usdcAmount = CurrencyAmount.fromRawAmount(usdc, '1000000')
+```
+
+## Type Guards
+
+You can use the `isNative` and `isToken` properties to narrow the type:
+
+```typescript
+function getAddress(currency: Currency): string {
+  if (currency.isToken) {
+    // TypeScript knows this is a Token
+    return currency.address
+  }
+  // Native currency - return wrapped address
+  return currency.wrapped.address
+}
+```
+
+## Common Properties
+
+All currencies share these properties from `BaseCurrency`:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `chainId` | `number` | The chain ID where the currency exists |
+| `decimals` | `number` | Number of decimal places |
+| `symbol` | `string \| undefined` | Ticker symbol |
+| `name` | `string \| undefined` | Full name |
+| `isNative` | `boolean` | True for native currencies |
+| `isToken` | `boolean` | True for ERC20 tokens |
+| `wrapped` | `Token` | The wrapped version (e.g., WETH for ETH) |
+
+## Methods
+
+### `equals(other)`
+
+```typescript
+equals(other: Currency): boolean
+```
+
+Returns true if the currencies are equivalent.
+
+```typescript
+const eth = Ether.onChain(1)
+const eth2 = Ether.onChain(1)
+const usdc = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6)
+
+eth.equals(eth2)  // true
+eth.equals(usdc)  // false
+```
+
+## Working with Currency in Generics
+
+```typescript
+import { CurrencyAmount, type Currency } from '@uniswap/sdk-core-next'
+
+// Generic function that works with any currency
+function formatAmount<T extends Currency>(amount: CurrencyAmount<T>): string {
+  return `${amount.toSignificant(6)} ${amount.currency.symbol}`
+}
+
+// Works with both native and token amounts
+const ethAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), '1000000000000000000')
+const usdcAmount = CurrencyAmount.fromRawAmount(usdc, '1000000')
+
+formatAmount(ethAmount)  // "1 ETH"
+formatAmount(usdcAmount) // "1 USDC"
+```

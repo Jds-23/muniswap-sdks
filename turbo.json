@@ -30,6 +30,24 @@
     },
     "typecheck": {
       "dependsOn": []
+    },
+    "docs:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "docs:build": {
+      "inputs": [
+        "sdks/new/docs/**"
+      ],
+      "outputs": [
+        "sdks/new/docs/dist/**"
+      ]
+    },
+    "docs:preview": {
+      "dependsOn": [
+        "docs:build"
+      ],
+      "cache": false
     }
   }
 }

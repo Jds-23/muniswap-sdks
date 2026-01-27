@@ -1,0 +1,158 @@
+# Route
+
+The `Route` class represents a path through one or more V2 pairs for a trade.
+
+## Import
+
+```typescript
+import { Route } from '@uniswap/v2-sdk-next'
+```
+
+## Constructor
+
+```typescript
+new Route<TInput extends Currency, TOutput extends Currency>(
+  pairs: Pair[],
+  input: TInput,
+  output: TOutput
+)
+```
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `pairs` | `Pair[]` | Ordered list of pairs to route through |
+| `input` | `TInput` | The input currency |
+| `output` | `TOutput` | The output currency |
+
+## Example
+
+```typescript
+import { Pair, Route } from '@uniswap/v2-sdk-next'
+import { Token, CurrencyAmount, Ether } from '@uniswap/sdk-core-next'
+
+const WETH = new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH')
+const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC')
+const DAI = new Token(1, '0x6B175474E89094C44Da98b954EesidC44Da98b954E', 18, 'DAI')
+
+// Single hop route: WETH -> USDC
+const wethUsdcPair = new Pair(
+  CurrencyAmount.fromRawAmount(WETH, '1000000000000000000000'),
+  CurrencyAmount.fromRawAmount(USDC, '2000000000000')
+)
+const directRoute = new Route([wethUsdcPair], WETH, USDC)
+
+// Multi-hop route: WETH -> USDC -> DAI
+const usdcDaiPair = new Pair(
+  CurrencyAmount.fromRawAmount(USDC, '1000000000000'),
+  CurrencyAmount.fromRawAmount(DAI, '1000000000000000000000')
+)
+const multiHopRoute = new Route([wethUsdcPair, usdcDaiPair], WETH, DAI)
+
+// Route with native ETH input
+const ETH = Ether.onChain(1)
+const ethRoute = new Route([wethUsdcPair], ETH, USDC)
+```
+
+## Properties
+
+### `pairs`
+
+```typescript
+readonly pairs: Pair[]
+```
+
+The ordered list of pairs in the route.
+
+### `path`
+
+```typescript
+readonly path: Token[]
+```
+
+The token path through the route (always uses wrapped versions).
+
+```typescript
+const route = new Route([wethUsdcPair, usdcDaiPair], WETH, DAI)
+console.log(route.path.map(t => t.symbol))
+// ['WETH', 'USDC', 'DAI']
+```
+
+### `input`
+
+```typescript
+readonly input: TInput
+```
+
+The input currency (can be native like ETH).
+
+### `output`
+
+```typescript
+readonly output: TOutput
+```
+
+The output currency (can be native like ETH).
+
+### `midPrice`
+
+```typescript
+get midPrice(): Price<TInput, TOutput>
+```
+
+The mid price of the route (price without any trade).
+
+```typescript
+const route = new Route([wethUsdcPair], WETH, USDC)
+console.log(route.midPrice.toSignificant(6)) // "2000" (USDC per WETH)
+
+const multiRoute = new Route([wethUsdcPair, usdcDaiPair], WETH, DAI)
+console.log(multiRoute.midPrice.toSignificant(6)) // Compound price
+```
+
+### `chainId`
+
+```typescript
+get chainId(): number
+```
+
+The chain ID (all pairs must be on the same chain).
+
+## Validation
+
+The Route constructor validates:
+
+1. At least one pair is provided
+2. All pairs are on the same chain
+3. The input token is in the first pair
+4. The output token is in the last pair
+5. The path is connected (each pair shares a token with the next)
+
+```typescript
+// This throws: input not in first pair
+new Route([usdcDaiPair], WETH, DAI)
+
+// This throws: pairs not connected
+new Route([wethUsdcPair, wethDaiPair], WETH, DAI)
+
+// This throws: different chains
+new Route([mainnetPair, arbitrumPair], tokenA, tokenB)
+```
+
+## Use with Trade
+
+Routes are typically used to construct trades:
+
+```typescript
+import { Route, Trade } from '@uniswap/v2-sdk-next'
+import { CurrencyAmount, TradeType } from '@uniswap/sdk-core-next'
+
+const route = new Route([pair], WETH, USDC)
+const inputAmount = CurrencyAmount.fromRawAmount(WETH, '1000000000000000000')
+
+const trade = Trade.exactIn(route, inputAmount)
+
+console.log(trade.executionPrice.toSignificant(6))
+console.log(trade.priceImpact.toSignificant(2) + '%')
+```

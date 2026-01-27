@@ -1,0 +1,48 @@
+# Installation
+
+## Package Manager
+
+:::code-group
+```bash [npm]
+npm install @uniswap/v2-sdk-next
+```
+```bash [pnpm]
+pnpm add @uniswap/v2-sdk-next
+```
+```bash [yarn]
+yarn add @uniswap/v2-sdk-next
+```
+:::
+
+## Requirements
+
+- **Node.js**: 18.x or later
+- **TypeScript**: 5.0 or later (recommended)
+
+## Peer Dependencies
+
+The V2 SDK depends on SDK Core:
+
+```bash
+npm install @uniswap/sdk-core-next
+```
+
+## Usage
+
+```typescript
+import { Pair, Route, Trade } from '@uniswap/v2-sdk-next'
+import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core-next'
+```
+
+## TypeScript Configuration
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true
+  }
+}
+```
