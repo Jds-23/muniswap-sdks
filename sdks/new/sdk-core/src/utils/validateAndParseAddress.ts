@@ -1,4 +1,4 @@
-import { getAddress } from 'viem'
+import { Address } from 'ox'
 
 /**
  * Validates an address and returns the parsed (checksummed) version of that address
@@ -6,7 +6,7 @@ import { getAddress } from 'viem'
  */
 export function validateAndParseAddress(address: string): string {
   try {
-    return getAddress(address)
+    return Address.checksum(address)
   } catch {
     throw new Error(`${address} is not a valid address.`)
   }

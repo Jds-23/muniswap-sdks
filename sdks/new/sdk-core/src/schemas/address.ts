@@ -1,4 +1,4 @@
-import { getAddress, isAddress } from 'viem'
+import { Address } from 'ox'
 import { z } from 'zod'
 
 /**
@@ -6,8 +6,8 @@ import { z } from 'zod'
  */
 export const addressSchema = z
   .string()
-  .refine(isAddress, { message: 'Invalid Ethereum address' })
-  .transform((addr) => getAddress(addr))
+  .refine((addr) => Address.validate(addr), { message: 'Invalid Ethereum address' })
+  .transform((addr) => Address.checksum(addr as `0x${string}`))
 
 /**
  * Type-safe Ethereum address type derived from the schema
