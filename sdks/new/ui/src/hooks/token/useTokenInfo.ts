@@ -1,7 +1,7 @@
-import { useReadContracts } from "wagmi";
 import { erc20Abi } from "@/abi/erc20";
-import type { Address } from "viem";
 import type { TokenData } from "@/types/token";
+import type { Address } from "viem";
+import { useReadContracts } from "wagmi";
 
 interface UseTokenInfoParams {
   address: Address | undefined;
@@ -36,7 +36,7 @@ export function useTokenInfo({ address, chainId }: UseTokenInfoParams) {
   });
 
   const tokenInfo: TokenData | undefined =
-    data && data[0].result && data[1].result && data[2].result
+    data?.[0].result && data[1].result && data[2].result
       ? {
           address: address as Address,
           name: data[0].result as string,

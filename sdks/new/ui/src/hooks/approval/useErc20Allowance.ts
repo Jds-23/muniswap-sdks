@@ -1,6 +1,6 @@
-import { useReadContract } from "wagmi";
 import { erc20Abi } from "@/abi/erc20";
 import type { Address } from "viem";
+import { useReadContract } from "wagmi";
 
 interface UseErc20AllowanceParams {
   tokenAddress: Address | undefined;
@@ -15,7 +15,12 @@ export function useErc20Allowance({
   spenderAddress,
   chainId,
 }: UseErc20AllowanceParams) {
-  const { data: allowance, isLoading, error, refetch } = useReadContract({
+  const {
+    data: allowance,
+    isLoading,
+    error,
+    refetch,
+  } = useReadContract({
     address: tokenAddress as Address,
     abi: erc20Abi,
     functionName: "allowance",

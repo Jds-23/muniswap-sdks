@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { TokenInfo } from "@/constants/tokens";
 import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { TokenIcon } from "./TokenIcon";
 import { TokenSelectorModal } from "./TokenSelectorModal";
-import type { TokenInfo } from "@/constants/tokens";
 
 interface TokenSelectorProps {
   selectedToken: TokenInfo | null;

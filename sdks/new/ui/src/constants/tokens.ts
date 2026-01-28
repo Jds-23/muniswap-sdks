@@ -1,5 +1,5 @@
-import { arbitrum, base, mainnet, optimism } from "wagmi/chains";
 import type { Address } from "viem";
+import { arbitrum, base, mainnet, optimism } from "wagmi/chains";
 
 export interface TokenInfo {
   address: Address;

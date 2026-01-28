@@ -1,11 +1,11 @@
-import { useChainId } from "wagmi";
+import { getPermit2, getPositionManager } from "@/config/contracts";
+import type { TokenInfo } from "@/constants/tokens";
 import { useApprovalFlow } from "@/hooks/approval/useApprovalFlow";
 import { useApproveErc20 } from "@/hooks/approval/useApproveErc20";
 import { useApprovePermit2 } from "@/hooks/approval/useApprovePermit2";
-import { ApprovalStep } from "./ApprovalStep";
-import { getPermit2, getPositionManager } from "@/config/contracts";
-import type { TokenInfo } from "@/constants/tokens";
 import { useEffect } from "react";
+import { useChainId } from "wagmi";
+import { ApprovalStep } from "./ApprovalStep";
 
 interface ApprovalFlowProps {
   token0: TokenInfo | null;
@@ -78,10 +78,21 @@ export function ApprovalFlow({
 
   // Refetch allowances after successful approvals
   useEffect(() => {
-    if (isSuccessToken0 || isSuccessToken1 || isSuccessPermit2_0 || isSuccessPermit2_1) {
+    if (
+      isSuccessToken0 ||
+      isSuccessToken1 ||
+      isSuccessPermit2_0 ||
+      isSuccessPermit2_1
+    ) {
       refetchAll();
     }
-  }, [isSuccessToken0, isSuccessToken1, isSuccessPermit2_0, isSuccessPermit2_1, refetchAll]);
+  }, [
+    isSuccessToken0,
+    isSuccessToken1,
+    isSuccessPermit2_0,
+    isSuccessPermit2_1,
+    refetchAll,
+  ]);
 
   // Notify when approval is complete
   useEffect(() => {

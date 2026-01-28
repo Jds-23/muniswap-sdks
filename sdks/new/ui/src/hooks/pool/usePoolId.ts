@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import { Token } from "@uniswap/sdk-core-next";
 import { Pool } from "@uniswap/v4-sdk-next";
+import { useMemo } from "react";
 import type { Address, Hex } from "viem";
 
 interface UsePoolIdParams {
@@ -44,7 +44,7 @@ export function usePoolId({
         currency1,
         fee,
         tickSpacing,
-        hooks
+        hooks,
       ) as Hex;
     } catch {
       return undefined;

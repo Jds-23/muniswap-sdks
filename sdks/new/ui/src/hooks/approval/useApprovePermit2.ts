@@ -1,8 +1,12 @@
-import { useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi";
 import { permit2Abi } from "@/abi/permit2";
 import { getPermit2 } from "@/config/contracts";
 import { MAX_UINT160 } from "@/constants/defaults";
 import type { Address } from "viem";
+import {
+  useChainId,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 
 interface UseApprovePermit2Params {
   tokenAddress: Address | undefined;

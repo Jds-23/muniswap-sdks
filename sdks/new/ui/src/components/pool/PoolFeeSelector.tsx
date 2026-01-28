@@ -19,7 +19,7 @@ export function PoolFeeSelector({
   onSelect,
 }: PoolFeeSelectorProps) {
   const currentTier = FEE_TIERS.find(
-    (t) => t.fee === fee && t.tickSpacing === tickSpacing
+    (t) => t.fee === fee && t.tickSpacing === tickSpacing,
   );
 
   return (
@@ -28,10 +28,14 @@ export function PoolFeeSelector({
         Fee Tier
       </label>
       <Select
-        value={currentTier ? `${currentTier.fee}-${currentTier.tickSpacing}` : "custom"}
+        value={
+          currentTier
+            ? `${currentTier.fee}-${currentTier.tickSpacing}`
+            : "custom"
+        }
         onValueChange={(value) => {
           const tier = FEE_TIERS.find(
-            (t) => `${t.fee}-${t.tickSpacing}` === value
+            (t) => `${t.fee}-${t.tickSpacing}` === value,
           );
           if (tier) {
             onSelect(tier.fee, tier.tickSpacing);

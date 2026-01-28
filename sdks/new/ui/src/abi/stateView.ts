@@ -1,7 +1,11 @@
 export const stateViewAbi = [
   {
     inputs: [
-      { internalType: "contract IPoolManager", name: "_poolManager", type: "address" },
+      {
+        internalType: "contract IPoolManager",
+        name: "_poolManager",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -24,8 +28,16 @@ export const stateViewAbi = [
     ],
     name: "getFeeGrowthInside",
     outputs: [
-      { internalType: "uint256", name: "feeGrowthInside0X128", type: "uint256" },
-      { internalType: "uint256", name: "feeGrowthInside1X128", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside0X128",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside1X128",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -45,8 +57,16 @@ export const stateViewAbi = [
     name: "getPositionInfo",
     outputs: [
       { internalType: "uint128", name: "liquidity", type: "uint128" },
-      { internalType: "uint256", name: "feeGrowthInside0LastX128", type: "uint256" },
-      { internalType: "uint256", name: "feeGrowthInside1LastX128", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside0LastX128",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside1LastX128",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -62,8 +82,16 @@ export const stateViewAbi = [
     name: "getPositionInfo",
     outputs: [
       { internalType: "uint128", name: "liquidity", type: "uint128" },
-      { internalType: "uint256", name: "feeGrowthInside0LastX128", type: "uint256" },
-      { internalType: "uint256", name: "feeGrowthInside1LastX128", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside0LastX128",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "feeGrowthInside1LastX128",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -107,8 +135,16 @@ export const stateViewAbi = [
     ],
     name: "getTickFeeGrowthOutside",
     outputs: [
-      { internalType: "uint256", name: "feeGrowthOutside0X128", type: "uint256" },
-      { internalType: "uint256", name: "feeGrowthOutside1X128", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "feeGrowthOutside0X128",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "feeGrowthOutside1X128",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -122,8 +158,16 @@ export const stateViewAbi = [
     outputs: [
       { internalType: "uint128", name: "liquidityGross", type: "uint128" },
       { internalType: "int128", name: "liquidityNet", type: "int128" },
-      { internalType: "uint256", name: "feeGrowthOutside0X128", type: "uint256" },
-      { internalType: "uint256", name: "feeGrowthOutside1X128", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "feeGrowthOutside0X128",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "feeGrowthOutside1X128",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -144,7 +188,9 @@ export const stateViewAbi = [
   {
     inputs: [],
     name: "poolManager",
-    outputs: [{ internalType: "contract IPoolManager", name: "", type: "address" }],
+    outputs: [
+      { internalType: "contract IPoolManager", name: "", type: "address" },
+    ],
     stateMutability: "view",
     type: "function",
   },

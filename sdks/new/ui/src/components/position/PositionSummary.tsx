@@ -1,5 +1,5 @@
-import { formatTokenAmount } from "@/lib/format";
 import type { TokenInfo } from "@/constants/tokens";
+import { formatTokenAmount } from "@/lib/format";
 
 interface PositionSummaryProps {
   token0: TokenInfo | null;
@@ -40,7 +40,9 @@ export function PositionSummary({
         </div>
         {amount0 !== undefined && (
           <div>
-            <span className="text-muted-foreground">{token0.symbol} Amount:</span>
+            <span className="text-muted-foreground">
+              {token0.symbol} Amount:
+            </span>
             <p className="font-medium">
               {formatTokenAmount(amount0, token0.decimals)}
             </p>
@@ -53,7 +55,9 @@ export function PositionSummary({
         )}
         {amount1 !== undefined && (
           <div>
-            <span className="text-muted-foreground">{token1.symbol} Amount:</span>
+            <span className="text-muted-foreground">
+              {token1.symbol} Amount:
+            </span>
             <p className="font-medium">
               {formatTokenAmount(amount1, token1.decimals)}
             </p>

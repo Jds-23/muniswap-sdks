@@ -1,7 +1,7 @@
-import { useReadContract } from "wagmi";
 import { permit2Abi } from "@/abi/permit2";
 import { getPermit2 } from "@/config/contracts";
 import type { Address } from "viem";
+import { useReadContract } from "wagmi";
 
 interface UsePermit2AllowanceParams {
   tokenAddress: Address | undefined;

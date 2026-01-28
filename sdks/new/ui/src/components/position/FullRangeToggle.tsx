@@ -1,10 +1,14 @@
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { TICK_RANGE_FULL } from "@/constants/defaults";
 
 interface FullRangeToggleProps {
   isFullRange: boolean;
-  onChange: (isFullRange: boolean, tickLower: number, tickUpper: number) => void;
+  onChange: (
+    isFullRange: boolean,
+    tickLower: number,
+    tickUpper: number,
+  ) => void;
   tickSpacing: number;
 }
 

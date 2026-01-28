@@ -1,7 +1,7 @@
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { erc20Abi } from "@/abi/erc20";
 import { MAX_UINT256 } from "@/constants/defaults";
 import type { Address } from "viem";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 interface UseApproveErc20Params {
   tokenAddress: Address | undefined;

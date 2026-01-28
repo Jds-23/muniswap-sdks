@@ -1,6 +1,6 @@
-import { useReadContract } from "wagmi";
 import { erc20Abi } from "@/abi/erc20";
 import type { Address } from "viem";
+import { useReadContract } from "wagmi";
 
 interface UseTokenBalanceParams {
   tokenAddress: Address | undefined;
@@ -13,7 +13,12 @@ export function useTokenBalance({
   userAddress,
   chainId,
 }: UseTokenBalanceParams) {
-  const { data: balance, isLoading, error, refetch } = useReadContract({
+  const {
+    data: balance,
+    isLoading,
+    error,
+    refetch,
+  } = useReadContract({
     address: tokenAddress as Address,
     abi: erc20Abi,
     functionName: "balanceOf",

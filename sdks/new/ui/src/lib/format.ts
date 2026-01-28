@@ -1,4 +1,4 @@
-import { formatUnits, parseUnits, type Address } from "viem";
+import { type Address, formatUnits, parseUnits } from "viem";
 
 export function shortenAddress(address: Address, chars = 4): string {
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
@@ -7,7 +7,7 @@ export function shortenAddress(address: Address, chars = 4): string {
 export function formatTokenAmount(
   amount: bigint,
   decimals: number,
-  displayDecimals = 6
+  displayDecimals = 6,
 ): string {
   const formatted = formatUnits(amount, decimals);
   const [whole, fraction] = formatted.split(".");
@@ -15,10 +15,7 @@ export function formatTokenAmount(
   return `${whole}.${fraction.slice(0, displayDecimals)}`;
 }
 
-export function parseTokenAmount(
-  amount: string,
-  decimals: number
-): bigint {
+export function parseTokenAmount(amount: string, decimals: number): bigint {
   if (!amount || amount === "") return 0n;
   try {
     return parseUnits(amount, decimals);
@@ -48,7 +45,7 @@ export function formatPercent(value: number, decimals = 2): string {
 export function sqrtPriceX96ToPrice(
   sqrtPriceX96: bigint,
   decimals0: number,
-  decimals1: number
+  decimals1: number,
 ): number {
   const Q96 = 2n ** 96n;
   const price = Number(sqrtPriceX96 * sqrtPriceX96) / Number(Q96 * Q96);
@@ -59,7 +56,7 @@ export function sqrtPriceX96ToPrice(
 export function tickToPrice(
   tick: number,
   decimals0: number,
-  decimals1: number
+  decimals1: number,
 ): number {
   const price = 1.0001 ** tick;
   const decimalAdjustment = 10 ** (decimals0 - decimals1);

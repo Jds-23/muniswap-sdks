@@ -1,4 +1,3 @@
-import { useChainId, useSwitchChain } from "wagmi";
 import {
   Select,
   SelectContent,
@@ -7,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supportedChains } from "@/config/chains";
+import { useChainId, useSwitchChain } from "wagmi";
 
 export function ChainSwitcher() {
   const chainId = useChainId();
@@ -17,7 +17,9 @@ export function ChainSwitcher() {
   return (
     <Select
       value={chainId?.toString()}
-      onValueChange={(value) => switchChain?.({ chainId: parseInt(value) })}
+      onValueChange={(value) =>
+        switchChain?.({ chainId: Number.parseInt(value) })
+      }
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue>{currentChain?.name || "Select Chain"}</SelectValue>

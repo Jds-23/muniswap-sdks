@@ -1,8 +1,12 @@
-import { useSendTransaction, useWaitForTransactionReceipt, useChainId } from "wagmi";
-import { Percent } from "@uniswap/sdk-core-next";
-import { V4PositionManager, type Position } from "@uniswap/v4-sdk-next";
 import { getPositionManager } from "@/config/contracts";
+import { Percent } from "@uniswap/sdk-core-next";
+import { type Position, V4PositionManager } from "@uniswap/v4-sdk-next";
 import type { Address, Hex } from "viem";
+import {
+  useChainId,
+  useSendTransaction,
+  useWaitForTransactionReceipt,
+} from "wagmi";
 
 interface UseMintPositionParams {
   position: Position | undefined;
@@ -40,7 +44,7 @@ export function useMintPosition({
 
     const slippage = new Percent(slippageTolerance, 10000);
     const deadline = BigInt(
-      Math.floor(Date.now() / 1000) + deadlineMinutes * 60
+      Math.floor(Date.now() / 1000) + deadlineMinutes * 60,
     );
 
     const { calldata, value } = V4PositionManager.addCallParameters(position, {

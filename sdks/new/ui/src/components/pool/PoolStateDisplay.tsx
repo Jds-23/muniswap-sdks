@@ -1,10 +1,10 @@
-import { usePoolId } from "@/hooks/pool/usePoolId";
-import { usePoolState } from "@/hooks/pool/usePoolState";
-import { usePoolPrice } from "@/hooks/pool/usePoolPrice";
-import { formatNumber, shortenAddress } from "@/lib/format";
 import type { TokenInfo } from "@/constants/tokens";
-import type { Address, Hex } from "viem";
+import { usePoolId } from "@/hooks/pool/usePoolId";
+import { usePoolPrice } from "@/hooks/pool/usePoolPrice";
+import { usePoolState } from "@/hooks/pool/usePoolState";
+import { formatNumber, shortenAddress } from "@/lib/format";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import type { Address, Hex } from "viem";
 
 interface PoolStateDisplayProps {
   token0: TokenInfo | null;
@@ -89,7 +89,9 @@ export function PoolStateDisplay({
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Pool ID:</span>
-          <p className="font-mono text-xs">{shortenAddress(poolId as Hex, 8)}</p>
+          <p className="font-mono text-xs">
+            {shortenAddress(poolId as Hex, 8)}
+          </p>
         </div>
         <div>
           <span className="text-muted-foreground">Current Tick:</span>

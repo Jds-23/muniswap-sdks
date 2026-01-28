@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { useChainId } from "wagmi";
 import {
   Dialog,
   DialogContent,
@@ -7,11 +5,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { getTokensForChain, type TokenInfo } from "@/constants/tokens";
-import { TokenIcon } from "./TokenIcon";
+import { type TokenInfo, getTokensForChain } from "@/constants/tokens";
 import { useTokenInfo } from "@/hooks/token/useTokenInfo";
-import { isAddress, type Address } from "viem";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { type Address, isAddress } from "viem";
+import { useChainId } from "wagmi";
+import { TokenIcon } from "./TokenIcon";
 
 interface TokenSelectorModalProps {
   open: boolean;
@@ -41,7 +41,7 @@ export function TokenSelectorModal({
     (token) =>
       token.symbol.toLowerCase().includes(search.toLowerCase()) ||
       token.name.toLowerCase().includes(search.toLowerCase()) ||
-      token.address.toLowerCase() === search.toLowerCase()
+      token.address.toLowerCase() === search.toLowerCase(),
   );
 
   const handleSelect = (token: TokenInfo) => {
@@ -69,7 +69,7 @@ export function TokenSelectorModal({
                 onClick={() => handleSelect(token)}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors",
-                  selectedToken?.address === token.address && "bg-accent"
+                  selectedToken?.address === token.address && "bg-accent",
                 )}
               >
                 <TokenIcon symbol={token.symbol} logoURI={token.logoURI} />

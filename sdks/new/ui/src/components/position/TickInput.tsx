@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 
 interface TickInputProps {
@@ -47,8 +47,8 @@ export function TickInput({
           type="number"
           value={value}
           onChange={(e) => {
-            const newValue = parseInt(e.target.value);
-            if (!isNaN(newValue)) {
+            const newValue = Number.parseInt(e.target.value);
+            if (!Number.isNaN(newValue)) {
               onChange(roundToTickSpacing(newValue));
             }
           }}

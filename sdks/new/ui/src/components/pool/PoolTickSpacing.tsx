@@ -19,8 +19,8 @@ export function PoolTickSpacing({
         type="number"
         value={tickSpacing}
         onChange={(e) => {
-          const value = parseInt(e.target.value);
-          if (!isNaN(value) && value > 0) {
+          const value = Number.parseInt(e.target.value);
+          if (!Number.isNaN(value) && value > 0) {
             onChange(value);
           }
         }}

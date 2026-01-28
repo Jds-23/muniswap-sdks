@@ -1,10 +1,10 @@
+import { getPermit2, getPositionManager } from "@/config/contracts";
+import type { ApprovalStep } from "@/types/position";
 import { useMemo } from "react";
+import type { Address } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { useErc20Allowance } from "./useErc20Allowance";
 import { usePermit2Allowance } from "./usePermit2Allowance";
-import { getPermit2, getPositionManager } from "@/config/contracts";
-import type { Address } from "viem";
-import type { ApprovalStep } from "@/types/position";
 
 interface UseApprovalFlowParams {
   token0Address: Address | undefined;

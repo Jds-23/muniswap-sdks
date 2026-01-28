@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { TickInput } from "./TickInput";
-import { FullRangeToggle } from "./FullRangeToggle";
-import { tickToPrice } from "@/lib/format";
 import type { TokenInfo } from "@/constants/tokens";
+import { tickToPrice } from "@/lib/format";
+import { useState } from "react";
+import { FullRangeToggle } from "./FullRangeToggle";
+import { TickInput } from "./TickInput";
 
 interface TickRangeSelectorProps {
   tickLower: number;
@@ -30,7 +30,7 @@ export function TickRangeSelector({
   const handleFullRangeChange = (
     fullRange: boolean,
     newTickLower: number,
-    newTickUpper: number
+    newTickUpper: number,
   ) => {
     setIsFullRange(fullRange);
     if (fullRange) {

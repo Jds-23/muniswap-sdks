@@ -1,7 +1,7 @@
-import { useReadContract } from "wagmi";
 import { stateViewAbi } from "@/abi/stateView";
 import { getStateView } from "@/config/contracts";
 import type { Hex } from "viem";
+import { useReadContract } from "wagmi";
 
 interface UsePoolStateParams {
   poolId: Hex | undefined;

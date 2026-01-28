@@ -34,7 +34,7 @@ export function TokenIcon({
       className={cn(
         "rounded-full bg-muted flex items-center justify-center font-medium",
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {symbol.slice(0, 2)}

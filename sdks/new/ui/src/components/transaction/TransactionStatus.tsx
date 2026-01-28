@@ -1,7 +1,7 @@
-import { CheckCircle, ExternalLink, Loader2, XCircle } from "lucide-react";
-import { useChainId } from "wagmi";
 import { supportedChains } from "@/config/chains";
+import { CheckCircle, ExternalLink, Loader2, XCircle } from "lucide-react";
 import type { Hex } from "viem";
+import { useChainId } from "wagmi";
 
 interface TransactionStatusProps {
   hash: Hex | undefined;
@@ -45,7 +45,7 @@ export function TransactionStatus({
       {isSuccess && (
         <div className="flex items-center gap-2 text-green-500">
           <CheckCircle className="h-4 w-4" />
-          <span>Position minted successfully!</span>
+          <span>Transaction successful!</span>
         </div>
       )}
 

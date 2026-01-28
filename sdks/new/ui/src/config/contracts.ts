@@ -24,3 +24,9 @@ export function getPoolManager(chainId: number): Address {
   if (!contracts) throw new Error(`Unsupported chain: ${chainId}`);
   return contracts.POOL_MANAGER;
 }
+
+export function getUniversalRouter(chainId: number): Address {
+  const contracts = CONTRACTS[chainId as SupportedChainId];
+  if (!contracts) throw new Error(`Unsupported chain: ${chainId}`);
+  return contracts.UNIVERSAL_ROUTER;
+}

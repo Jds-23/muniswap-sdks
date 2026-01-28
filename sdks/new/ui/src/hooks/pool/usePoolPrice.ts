@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { sqrtPriceX96ToPrice, tickToPrice } from "@/lib/format";
+import { useMemo } from "react";
 
 interface UsePoolPriceParams {
   sqrtPriceX96: bigint | undefined;

@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isAddress, type Address } from "viem";
+import { type Address, isAddress } from "viem";
 
 interface PoolHooksInputProps {
   hooks: Address;
@@ -8,8 +8,7 @@ interface PoolHooksInputProps {
 }
 
 export function PoolHooksInput({ hooks, onChange }: PoolHooksInputProps) {
-  const isZeroAddress =
-    hooks === "0x0000000000000000000000000000000000000000";
+  const isZeroAddress = hooks === "0x0000000000000000000000000000000000000000";
 
   return (
     <div className="space-y-2">
@@ -24,7 +23,7 @@ export function PoolHooksInput({ hooks, onChange }: PoolHooksInputProps) {
             onChange(
               value === ""
                 ? "0x0000000000000000000000000000000000000000"
-                : (value as Address)
+                : (value as Address),
             );
           }
         }}

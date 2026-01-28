@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import { Percent } from "@uniswap/sdk-core-next";
 import type { Position } from "@uniswap/v4-sdk-next";
+import { useMemo } from "react";
 
 interface UseMintAmountsParams {
   position: Position | undefined;

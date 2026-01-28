@@ -9557,157 +9557,157 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Fcli":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253De0e043%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Fcli":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Fcli"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253De0e043%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Fcli"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-ui%25252540workspace%2525253Asdks%2525252Fnew%2525252Fui":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253De0e043%252526locator%25253Duni-v4-ui%25252540workspace%2525253Asdks%2525252Fnew%2525252Fui":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-ui%25252540workspace%2525253Asdks%2525252Fnew%2525252Fui"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253De0e043%252526locator%25253Duni-v4-ui%25252540workspace%2525253Asdks%2525252Fnew%2525252Fui"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253D3d61ba%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D821e0d%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
 "@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40workspace%3Asdks%2Fnew%2Fv2-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40workspace%3Asdks%2Fnew%2Fv2-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv2-sdk-next%40workspace%3Asdks%2Fnew%2Fv2-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
 "@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
 "@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
 "@uniswap/sdk-core-next@file:../sdk-core::locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
 "@uniswap/sdk-core-next@file:../sdk-core::locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=2e9c09&locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  checksum: fc85550aa1f794af28dd9b7d3f27cc09302850ab6870c0ab1f6a2413daa978a2c306885b713777c685af3a6add73e797594d3eeed87790ab85d2bb7d89845c9f
   languageName: node
   linkType: hard
 
@@ -9923,47 +9923,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli":
+"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=821e0d&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Fcli"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
+  checksum: 32ed98ceea111ff4f9b1f0d244d9595682cb8be246b9cdd6c1a859d9b1f9e1fe5cb7d4fb56d59eb44b0c1e1a9bfb9a83adc92f403e048288af67d10880a8ab75
   languageName: node
   linkType: hard
 
-"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui":
+"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=821e0d&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253De0e043%2526locator%253Duni-v4-ui%252540workspace%25253Asdks%25252Fnew%25252Fui"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
+  checksum: 32ed98ceea111ff4f9b1f0d244d9595682cb8be246b9cdd6c1a859d9b1f9e1fe5cb7d4fb56d59eb44b0c1e1a9bfb9a83adc92f403e048288af67d10880a8ab75
   languageName: node
   linkType: hard
 
-"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
+"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=821e0d&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3D3d61ba%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
+  checksum: 32ed98ceea111ff4f9b1f0d244d9595682cb8be246b9cdd6c1a859d9b1f9e1fe5cb7d4fb56d59eb44b0c1e1a9bfb9a83adc92f403e048288af67d10880a8ab75
   languageName: node
   linkType: hard
 
 "@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=821e0d&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
+  checksum: 32ed98ceea111ff4f9b1f0d244d9595682cb8be246b9cdd6c1a859d9b1f9e1fe5cb7d4fb56d59eb44b0c1e1a9bfb9a83adc92f403e048288af67d10880a8ab75
   languageName: node
   linkType: hard
 
@@ -10049,9 +10049,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli":
+"@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli":
   version: 1.0.0
-  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=cd630b&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli"
+  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=3d61ba&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Fcli"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     "@uniswap/swap-router-contracts": ^1.3.1
@@ -10061,13 +10061,13 @@ __metadata:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: c1949558cf5650d60eeeb3a33739560474115b797ce2b612f1214eab9a5c6ae20258839393b16c5dc72f93717d71770276e1dc0a7b5c185e942897a3ae263174
+  checksum: b583e9df3d41cae338ed382deff35f7119e15896b266d5d834b2df729a6da3561ddf87621c0222447f9ddc19655c899e9e571fa7d3181dbcb615d7999b422357
   languageName: node
   linkType: hard
 
-"@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui":
+"@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui":
   version: 1.0.0
-  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=cd630b&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui"
+  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=3d61ba&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3De0e043%26locator%3Duni-v4-ui%2540workspace%253Asdks%252Fnew%252Fui"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     "@uniswap/swap-router-contracts": ^1.3.1
@@ -10077,13 +10077,13 @@ __metadata:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: c1949558cf5650d60eeeb3a33739560474115b797ce2b612f1214eab9a5c6ae20258839393b16c5dc72f93717d71770276e1dc0a7b5c185e942897a3ae263174
+  checksum: b583e9df3d41cae338ed382deff35f7119e15896b266d5d834b2df729a6da3561ddf87621c0222447f9ddc19655c899e9e571fa7d3181dbcb615d7999b422357
   languageName: node
   linkType: hard
 
 "@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=cd630b&locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk"
+  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=3d61ba&locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     "@uniswap/swap-router-contracts": ^1.3.1
@@ -10093,7 +10093,7 @@ __metadata:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
     zod: ^3.23.0
-  checksum: c1949558cf5650d60eeeb3a33739560474115b797ce2b612f1214eab9a5c6ae20258839393b16c5dc72f93717d71770276e1dc0a7b5c185e942897a3ae263174
+  checksum: b583e9df3d41cae338ed382deff35f7119e15896b266d5d834b2df729a6da3561ddf87621c0222447f9ddc19655c899e9e571fa7d3181dbcb615d7999b422357
   languageName: node
   linkType: hard
 
@@ -10186,25 +10186,25 @@ __metadata:
 
 "@uniswap/v4-sdk-next@file:../v4-sdk::locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli":
   version: 1.0.0
-  resolution: "@uniswap/v4-sdk-next@file:../v4-sdk#../v4-sdk::hash=f9c262&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli"
+  resolution: "@uniswap/v4-sdk-next@file:../v4-sdk#../v4-sdk::hash=e0e043&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Fcli"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     "@uniswap/v3-sdk-next": "file:../v3-sdk"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 4b05e1d0c1a0b3607a6f2520ea8d591ac1f620106b2e843bfdd67d7aa69fef5a852b5334e0fdff4716c698bd530fc303ce7096a018c760d534987a85578be0b0
+  checksum: 8c2da7ef2ad77a40bbc21b7512d2ed6113be598bed0a2dc96a9a1d927f6219df06bd04879aba4128eb7ada043a3e93c7fa4fa736385deb019ba96a7794fbd3ee
   languageName: node
   linkType: hard
 
 "@uniswap/v4-sdk-next@file:../v4-sdk::locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui":
   version: 1.0.0
-  resolution: "@uniswap/v4-sdk-next@file:../v4-sdk#../v4-sdk::hash=f9c262&locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui"
+  resolution: "@uniswap/v4-sdk-next@file:../v4-sdk#../v4-sdk::hash=e0e043&locator=uni-v4-ui%40workspace%3Asdks%2Fnew%2Fui"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     "@uniswap/v3-sdk-next": "file:../v3-sdk"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 4b05e1d0c1a0b3607a6f2520ea8d591ac1f620106b2e843bfdd67d7aa69fef5a852b5334e0fdff4716c698bd530fc303ce7096a018c760d534987a85578be0b0
+  checksum: 8c2da7ef2ad77a40bbc21b7512d2ed6113be598bed0a2dc96a9a1d927f6219df06bd04879aba4128eb7ada043a3e93c7fa4fa736385deb019ba96a7794fbd3ee
   languageName: node
   linkType: hard
 
@@ -26048,7 +26048,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.9.4":
+"react-router-dom@npm:^7.1.0":
+  version: 7.13.0
+  resolution: "react-router-dom@npm:7.13.0"
+  dependencies:
+    react-router: 7.13.0
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: ad5eb55a47672994a9e323401e6cf1790c80b6c16649073dce3450007871824076e18578e8b11857b2924fedb2286f0f7a5d3f5f021006ba6f7f4fa6e06eeed2
+  languageName: node
+  linkType: hard
+
+"react-router@npm:7.13.0, react-router@npm:^7.9.4":
   version: 7.13.0
   resolution: "react-router@npm:7.13.0"
   dependencies:
@@ -30333,6 +30345,7 @@ __metadata:
     postcss: ^8.4.38
     react: ^18.3.0
     react-dom: ^18.3.0
+    react-router-dom: ^7.1.0
     tailwind-merge: ^2.3.0
     tailwindcss: ^3.4.4
     tailwindcss-animate: ^1.0.7
