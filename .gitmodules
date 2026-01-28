@@ -1,0 +1,4 @@
+[submodule "external/uniswap-sdks"]
+	path = external/uniswap-sdks
+	url = https://github.com/Uniswap/sdks
+	branch = main
