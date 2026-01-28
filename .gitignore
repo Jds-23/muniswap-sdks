@@ -1,16 +1,19 @@
-# .yarn files
-.yarn/cache
-.yarn/versions
-.yarn/install-state.gz
-
-# Turbo
-.turbo
-
-# dependencies
+# Dependencies
 node_modules
 
-# Intellij IDEA artifacts
-.idea/
+# Build outputs
+dist
+.turbo
 
-# spec workflow mcp from Uniswap
-.spec-workflow/
+# IDE
+.idea/
+.vscode/
+
+# Misc
+.DS_Store
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local

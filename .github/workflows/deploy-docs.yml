@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'sdks/new/docs/**'
+      - 'apps/docs/**'
   workflow_dispatch:
 
 jobs:
@@ -17,22 +17,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build docs
-        run: yarn docs:build
+        run: pnpm docs:build
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: sdks/new/docs
+          workingDirectory: apps/docs
           command: deploy

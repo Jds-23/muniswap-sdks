@@ -1,52 +1,28 @@
 {
-  "pipeline": {
-    "lint": {
-      "inputs": [
-        "sdks/*/src/**.ts",
-        "sdks/*/src/**.tsx"
-      ]
-    },
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
     "build": {
-      "inputs": [
-        "yarn.lock",
-        "**/package.json",
-        "sdks/*/src/**.ts",
-        "sdks/*/src/**.tsx"
-      ],
-      "outputs": [
-        "sdks/*/dist/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts"],
+      "outputs": ["dist/**"]
     },
-    "test": {
-      "dependsOn": [
-        "build"
-      ],
-      "inputs": [
-        "sdks/*/dist/**"
-      ]
-    },
-    "release": {
-      "dependsOn": []
-    },
-    "typecheck": {
-      "dependsOn": []
-    },
-    "docs:dev": {
+    "dev": {
       "cache": false,
       "persistent": true
     },
-    "docs:build": {
-      "inputs": [
-        "sdks/new/docs/**"
-      ],
-      "outputs": [
-        "sdks/new/docs/dist/**"
-      ]
+    "lint": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**"]
     },
-    "docs:preview": {
-      "dependsOn": [
-        "docs:build"
-      ],
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**", "dist/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json"]
+    },
+    "clean": {
       "cache": false
     }
   }

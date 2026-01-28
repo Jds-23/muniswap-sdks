@@ -1,46 +1,23 @@
 {
-  "name": "sdks",
+  "name": "muniswap-sdks",
   "version": "0.0.0",
-  "dependencies": {
-    "@babel/runtime": "7.18.9",
-    "@manypkg/cli": "^0.19.2",
-    "@semantic-release/exec": "6.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "danger": "11.2.6",
-    "eslint": "^8.57.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "husky": "^8.0.3",
-    "semantic-release": "^25.0.1",
-    "semantic-release-monorepo": "8.0.2",
-    "syncpack": "^8.5.14",
-    "turbo": "1.10.16"
-  },
-  "engines": {
-    "node": ">=10",
-    "yarn": ">=3.2.3"
-  },
-  "packageManager": "yarn@3.2.3",
   "private": true,
-  "scripts": {
-    "g:check:deps:mismatch": "manypkg check",
-    "g:build": "turbo run build",
-    "g:lint": "turbo run lint",
-    "g:release": "turbo run release --concurrency=1 --continue",
-    "g:test": "turbo run test",
-    "g:typecheck": "turbo run typecheck",
-    "sdk": "yarn workspace",
-    "postinstall": "husky",
-    "docs:dev": "turbo run docs:dev --filter=@uniswap/sdk-docs",
-    "docs:build": "turbo run docs:build --filter=@uniswap/sdk-docs",
-    "docs:preview": "turbo run docs:preview --filter=@uniswap/sdk-docs"
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
   },
-  "workspaces": [
-    "sdks/*",
-    "sdks/new/*",
-    "sdks/uniswapx-sdk/integration"
-  ],
-  "resolutions": {
-    "@manypkg/cli@^0.19.2": "patch:@manypkg/cli@npm%3A0.19.2#./.yarn/patches/@manypkg-cli-npm-0.19.2-ea52ff91d4.patch",
-    "eslint-config-prettier": "^9.1.0"
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "docs:dev": "turbo run dev --filter=@muniswap/docs",
+    "docs:build": "turbo run build --filter=@muniswap/docs"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
   }
 }
