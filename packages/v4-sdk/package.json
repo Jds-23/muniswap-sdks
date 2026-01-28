@@ -2,7 +2,7 @@
   "name": "@muniswap/v4-sdk",
   "version": "1.0.0",
   "description": "Modern SDK for Uniswap V4 with native BigInt and ox",
-  "repository": "https://github.com/Uniswap/sdks.git",
+  "repository": "https://github.com/Jds-23/muniswap-sdks",
   "keywords": [
     "uniswap",
     "ethereum",
