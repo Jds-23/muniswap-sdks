@@ -2,6 +2,7 @@
 import { program } from "commander";
 import { walletCommand } from "./commands/wallet.js";
 import { mintCommand } from "./commands/mint.js";
+import { swapCommand } from "./commands/swap.js";
 
 program
 	.name("uni-v4-script")
@@ -26,5 +27,17 @@ program
 	.option("--amount0 <num>", "max token0 amount (required)")
 	.option("--amount1 <num>", "max token1 amount (required)")
 	.action(mintCommand);
+
+program
+	.command("swap")
+	.description("Swap tokens through a V4 pool")
+	.requiredOption("--token-in <address>", "Input token address")
+	.requiredOption("--token-out <address>", "Output token address")
+	.requiredOption("--amount-in <amount>", "Amount of input token")
+	.requiredOption("--min-amount-out <amount>", "Minimum output amount")
+	.option("--fee <fee>", "Pool fee")
+	.option("--tick-spacing <spacing>", "Tick spacing")
+	.option("--hook <address>", "Hook address")
+	.action(swapCommand);
 
 program.parse();
