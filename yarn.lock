@@ -1795,7 +1795,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@biomejs/biome@npm:^1.9.0":
+"@biomejs/biome@npm:^1.9.0, @biomejs/biome@npm:^1.9.4":
   version: 1.9.4
   resolution: "@biomejs/biome@npm:1.9.4"
   dependencies:
@@ -7384,7 +7384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^22.0.0":
+"@types/node@npm:^22.0.0, @types/node@npm:^22.12.0":
   version: 22.19.7
   resolution: "@types/node@npm:22.19.7"
   dependencies:
@@ -7939,6 +7939,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@uniswap/cli@workspace:sdks/new/cli":
+  version: 0.0.0-use.local
+  resolution: "@uniswap/cli@workspace:sdks/new/cli"
+  dependencies:
+    "@biomejs/biome": ^1.9.0
+    "@types/node": ^22.0.0
+    commander: ^12.1.0
+    tsup: ^8.3.0
+    tsx: ^4.19.0
+    typescript: ^5.6.0
+    viem: ^2.21.0
+    vitest: ^2.1.0
+  bin:
+    uniswap: ./dist/index.js
+  languageName: unknown
+  linkType: soft
+
 "@uniswap/flashtestations-sdk@workspace:sdks/flashtestations-sdk":
   version: 0.0.0-use.local
   resolution: "@uniswap/flashtestations-sdk@workspace:sdks/flashtestations-sdk"
@@ -8027,9 +8044,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D73f076%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Funi-v4-script":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D73f076%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540file%25253A..%25252Fv4-sdk%252523..%25252Fv4-sdk%25253A%25253Ahash%25253Df9c262%252526locator%25253Duni-v4-script%25252540workspace%2525253Asdks%2525252Fnew%2525252Funi-v4-script"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
@@ -8038,9 +8055,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D73f076%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk":
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk":
   version: 1.0.0
-  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3D73f076%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk"
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540file%253A..%252Fv3-sdk%2523..%252Fv3-sdk%253A%253Ahash%253Dcd630b%2526locator%253D%252540uniswap%25252Fv4-sdk-next%252540workspace%25253Asdks%25252Fnew%25252Fv4-sdk"
+  dependencies:
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+    zod: ^3.23.0
+  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  languageName: node
+  linkType: hard
+
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk":
+  version: 1.0.0
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40file%3A..%2Fv2-sdk%23..%2Fv2-sdk%3A%3Ahash%3Dde3550%26locator%3D%2540uniswap%252Fv3-sdk-next%2540workspace%253Asdks%252Fnew%252Fv3-sdk"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
@@ -8052,6 +8080,17 @@ __metadata:
 "@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv2-sdk-next%40workspace%3Asdks%2Fnew%2Fv2-sdk":
   version: 1.0.0
   resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv2-sdk-next%40workspace%3Asdks%2Fnew%2Fv2-sdk"
+  dependencies:
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+    zod: ^3.23.0
+  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  languageName: node
+  linkType: hard
+
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Funi-v4-script":
+  version: 1.0.0
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Funi-v4-script"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
@@ -8082,9 +8121,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Funi-v4-script":
+  version: 1.0.0
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Funi-v4-script"
+  dependencies:
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+    zod: ^3.23.0
+  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  languageName: node
+  linkType: hard
+
 "@uniswap/sdk-core-next@file:../sdk-core::locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk":
   version: 1.0.0
   resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=%40uniswap%2Fv4-sdk-next%40workspace%3Asdks%2Fnew%2Fv4-sdk"
+  dependencies:
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+    zod: ^3.23.0
+  checksum: 2c2f78ec545f32de7d26a904ed58613608448346d2c50a3d95d849af3df18e993a6accd0e94f455c93e6200e3ac8fea3a6f94e0610510d08bb0d049135e174cf
+  languageName: node
+  linkType: hard
+
+"@uniswap/sdk-core-next@file:../sdk-core::locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Funi-v4-script":
+  version: 1.0.0
+  resolution: "@uniswap/sdk-core-next@file:../sdk-core#../sdk-core::hash=e2ee54&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Funi-v4-script"
   dependencies:
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
@@ -8305,25 +8366,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
+"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Funi-v4-script":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=73f076&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540file%253A..%252Fv4-sdk%2523..%252Fv4-sdk%253A%253Ahash%253Df9c262%2526locator%253Duni-v4-script%252540workspace%25253Asdks%25252Fnew%25252Funi-v4-script"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 6deeb5084e586c77010c3fd791af1e7534f9af92e33f59cdb6d74ad0d837af5b6e9a792e9884d30183aa277dcfc159fdfed67191d19e872d57b7f1b4862577e6
+  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
+  languageName: node
+  linkType: hard
+
+"@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk":
+  version: 1.0.0
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40file%3A..%2Fv3-sdk%23..%2Fv3-sdk%3A%3Ahash%3Dcd630b%26locator%3D%2540uniswap%252Fv4-sdk-next%2540workspace%253Asdks%252Fnew%252Fv4-sdk"
+  dependencies:
+    "@uniswap/sdk-core-next": "file:../sdk-core"
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
   languageName: node
   linkType: hard
 
 "@uniswap/v2-sdk-next@file:../v2-sdk::locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk":
   version: 1.0.0
-  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=73f076&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
+  resolution: "@uniswap/v2-sdk-next@file:../v2-sdk#../v2-sdk::hash=de3550&locator=%40uniswap%2Fv3-sdk-next%40workspace%3Asdks%2Fnew%2Fv3-sdk"
   dependencies:
     "@uniswap/sdk-core-next": "file:../sdk-core"
     ox: ^0.6.0
     tiny-invariant: ^1.3.0
-  checksum: 6deeb5084e586c77010c3fd791af1e7534f9af92e33f59cdb6d74ad0d837af5b6e9a792e9884d30183aa277dcfc159fdfed67191d19e872d57b7f1b4862577e6
+  checksum: 0a538d911d507dfa7a39134b4cab22cb11b9ac860121ae4172a3abff2d5eeaf6d1f90753e80720cc1b6666176ee57273ac1bd860bd3539bb8e08da6039e0a9f5
   languageName: node
   linkType: hard
 
@@ -8406,6 +8478,22 @@ __metadata:
     "@uniswap/v3-core": ^1.0.0
     base64-sol: 1.0.1
   checksum: 48b57f1f648cb002935421ac1770666ab3c0263885a03c769985b06501b88d513a435c8edc439b41ac5aef7ad40a11038a3561f7e828cce5ae6ec2c77742f1af
+  languageName: node
+  linkType: hard
+
+"@uniswap/v3-sdk-next@file:../v3-sdk::locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Funi-v4-script":
+  version: 1.0.0
+  resolution: "@uniswap/v3-sdk-next@file:../v3-sdk#../v3-sdk::hash=cd630b&locator=%40uniswap%2Fv4-sdk-next%40file%3A..%2Fv4-sdk%23..%2Fv4-sdk%3A%3Ahash%3Df9c262%26locator%3Duni-v4-script%2540workspace%253Asdks%252Fnew%252Funi-v4-script"
+  dependencies:
+    "@uniswap/sdk-core-next": "file:../sdk-core"
+    "@uniswap/swap-router-contracts": ^1.3.1
+    "@uniswap/v2-sdk-next": "file:../v2-sdk"
+    "@uniswap/v3-periphery": ^1.4.4
+    "@uniswap/v3-staker": ^1.0.2
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+    zod: ^3.23.0
+  checksum: c1949558cf5650d60eeeb3a33739560474115b797ce2b612f1214eab9a5c6ae20258839393b16c5dc72f93717d71770276e1dc0a7b5c185e942897a3ae263174
   languageName: node
   linkType: hard
 
@@ -8509,6 +8597,18 @@ __metadata:
     "@uniswap/v3-core": 1.0.0
     "@uniswap/v3-periphery": ^1.0.1
   checksum: a348af33b0cdb1ba7626061e6302147c54e31ab85f3248003887d67dfaf22a93a0990d7098042cc1dbb91ef17adae74fb082e3a4cd58bc27f638d04c48390a8e
+  languageName: node
+  linkType: hard
+
+"@uniswap/v4-sdk-next@file:../v4-sdk::locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Funi-v4-script":
+  version: 1.0.0
+  resolution: "@uniswap/v4-sdk-next@file:../v4-sdk#../v4-sdk::hash=f9c262&locator=uni-v4-script%40workspace%3Asdks%2Fnew%2Funi-v4-script"
+  dependencies:
+    "@uniswap/sdk-core-next": "file:../sdk-core"
+    "@uniswap/v3-sdk-next": "file:../v3-sdk"
+    ox: ^0.6.0
+    tiny-invariant: ^1.3.0
+  checksum: 4b05e1d0c1a0b3607a6f2520ea8d591ac1f620106b2e843bfdd67d7aa69fef5a852b5334e0fdff4716c698bd530fc303ce7096a018c760d534987a85578be0b0
   languageName: node
   linkType: hard
 
@@ -8824,7 +8924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abitype@npm:^1.0.6":
+"abitype@npm:1.2.3, abitype@npm:^1.0.6, abitype@npm:^1.2.3":
   version: 1.2.3
   resolution: "abitype@npm:1.2.3"
   peerDependencies:
@@ -11171,6 +11271,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^12.1.0":
+  version: 12.1.0
+  resolution: "commander@npm:12.1.0"
+  checksum: 68e9818b00fc1ed9cdab9eb16905551c2b768a317ae69a5e3c43924c2b20ac9bb65b27e1cab36aeda7b6496376d4da908996ba2c0b5d79463e0fb1e77935d514
+  languageName: node
+  linkType: hard
+
+"commander@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "commander@npm:13.1.0"
+  checksum: 8ca2fcb33caf2aa06fba3722d7a9440921331d54019dabf906f3603313e7bf334b009b862257b44083ff65d5a3ab19e83ad73af282bd5319f01dc228bdf87ef0
+  languageName: node
+  linkType: hard
+
 "commander@npm:^14.0.2":
   version: 14.0.2
   resolution: "commander@npm:14.0.2"
@@ -12737,6 +12851,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:^17.2.3":
+  version: 17.2.3
+  resolution: "dotenv@npm:17.2.3"
+  checksum: fde23eb88649041ec7a0f6a47bbe59cac3c454fc2007cf2e40b9c984aaf0636347218c56cfbbf067034b0a73f530a2698a19b4058695787eb650ec69fe234624
+  languageName: node
+  linkType: hard
+
 "dunder-proto@npm:^1.0.0, dunder-proto@npm:^1.0.1":
   version: 1.0.1
   resolution: "dunder-proto@npm:1.0.1"
@@ -13212,7 +13333,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.27.0, esbuild@npm:esbuild@>=0.17.6 <0.28.0":
+"esbuild@npm:^0.27.0, esbuild@npm:esbuild@>=0.17.6 <0.28.0, esbuild@npm:~0.27.0":
   version: 0.27.2
   resolution: "esbuild@npm:0.27.2"
   dependencies:
@@ -15202,6 +15323,15 @@ __metadata:
     es-errors: ^1.3.0
     get-intrinsic: ^1.2.6
   checksum: 655ed04db48ee65ef2ddbe096540d4405e79ba0a7f54225775fef43a7e2afcb93a77d141c5f05fdef0afce2eb93bcbfb3597142189d562ac167ff183582683cd
+  languageName: node
+  linkType: hard
+
+"get-tsconfig@npm:^4.7.5":
+  version: 4.13.0
+  resolution: "get-tsconfig@npm:4.13.0"
+  dependencies:
+    resolve-pkg-maps: ^1.0.0
+  checksum: b3cfa1316dd8842e038f6a3dc02ae87d9f3a227f14b79ac4b1c81bf6fc75de4dfc3355c4117612e183f5147dad49c8132841c7fdd7a4508531d820a9b90acc51
   languageName: node
   linkType: hard
 
@@ -21301,6 +21431,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ox@npm:0.11.3":
+  version: 0.11.3
+  resolution: "ox@npm:0.11.3"
+  dependencies:
+    "@adraffy/ens-normalize": ^1.11.0
+    "@noble/ciphers": ^1.3.0
+    "@noble/curves": 1.9.1
+    "@noble/hashes": ^1.8.0
+    "@scure/bip32": ^1.7.0
+    "@scure/bip39": ^1.6.0
+    abitype: ^1.2.3
+    eventemitter3: 5.0.1
+  peerDependencies:
+    typescript: ">=5.4.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: a3245ecf26451fe681f094ad3d082b2b59f57f52ff02a8d74b2e8e21e95e612328785efb1f65222927fdc5a2670b4965ff2372fcef8daf90effd5744bcfa3262
+  languageName: node
+  linkType: hard
+
 "ox@npm:0.9.6":
   version: 0.9.6
   resolution: "ox@npm:0.9.6"
@@ -23412,6 +23563,13 @@ __metadata:
   version: 5.0.0
   resolution: "resolve-from@npm:5.0.0"
   checksum: 4ceeb9113e1b1372d0cd969f3468fa042daa1dd9527b1b6bb88acb6ab55d8b9cd65dbf18819f9f9ddf0db804990901dcdaade80a215e7b2c23daae38e64f5bdf
+  languageName: node
+  linkType: hard
+
+"resolve-pkg-maps@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "resolve-pkg-maps@npm:1.0.0"
+  checksum: 1012afc566b3fdb190a6309cc37ef3b2dcc35dff5fa6683a9d00cd25c3247edfbc4691b91078c97adc82a29b77a2660c30d791d65dab4fc78bfc473f60289977
   languageName: node
   linkType: hard
 
@@ -26108,7 +26266,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsup@npm:^8.3.0":
+"tsup@npm:^8.3.0, tsup@npm:^8.3.6":
   version: 8.5.1
   resolution: "tsup@npm:8.5.1"
   dependencies:
@@ -26158,6 +26316,22 @@ __metadata:
   peerDependencies:
     typescript: ">=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta"
   checksum: 1843f4c1b2e0f975e08c4c21caa4af4f7f65a12ac1b81b3b8489366826259323feb3fc7a243123453d2d1a02314205a7634e048d4a8009921da19f99755cdc48
+  languageName: node
+  linkType: hard
+
+"tsx@npm:^4.19.0":
+  version: 4.21.0
+  resolution: "tsx@npm:4.21.0"
+  dependencies:
+    esbuild: ~0.27.0
+    fsevents: ~2.3.3
+    get-tsconfig: ^4.7.5
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    tsx: dist/cli.mjs
+  checksum: 50c98e4b6e66d1c30f72925c8e5e7be1a02377574de7cd367d7e7a6d4af43ca8ff659f91c654e7628b25a5498015e32f090529b92c679b0342811e1cf682e8cf
   languageName: node
   linkType: hard
 
@@ -26544,7 +26718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.4.0, typescript@npm:^5.6.0, typescript@npm:typescript@^5.6.2":
+"typescript@npm:^5.4.0, typescript@npm:^5.6.0, typescript@npm:^5.7.3, typescript@npm:typescript@^5.6.2":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
   bin:
@@ -26574,7 +26748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^5.4.0#~builtin<compat/typescript>, typescript@patch:typescript@^5.6.0#~builtin<compat/typescript>, typescript@patch:typescript@npm%3Atypescript@^5.6.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@^5.4.0#~builtin<compat/typescript>, typescript@patch:typescript@^5.6.0#~builtin<compat/typescript>, typescript@patch:typescript@^5.7.3#~builtin<compat/typescript>, typescript@patch:typescript@npm%3Atypescript@^5.6.2#~builtin<compat/typescript>":
   version: 5.9.3
   resolution: "typescript@patch:typescript@npm%3A5.9.3#~builtin<compat/typescript>::version=5.9.3&hash=a1c5e5"
   bin:
@@ -26688,6 +26862,24 @@ __metadata:
   checksum: a25b5462c1b6ffb974f5ffc492ffd64146a9983aad0cbda6fde65e2b22f6f1acd43f09beacc66cc47624a113bd0c684ffc60366102b6a21b038fbfafb7d75195
   languageName: node
   linkType: hard
+
+"uni-v4-script@workspace:sdks/new/uni-v4-script":
+  version: 0.0.0-use.local
+  resolution: "uni-v4-script@workspace:sdks/new/uni-v4-script"
+  dependencies:
+    "@biomejs/biome": ^1.9.4
+    "@types/node": ^22.12.0
+    "@uniswap/sdk-core-next": "file:../sdk-core"
+    "@uniswap/v4-sdk-next": "file:../v4-sdk"
+    commander: ^13.1.0
+    dotenv: ^17.2.3
+    tsup: ^8.3.6
+    typescript: ^5.7.3
+    viem: ^2.45.0
+  bin:
+    uni-v4-script: ./dist/index.js
+  languageName: unknown
+  linkType: soft
 
 "unicode-canonical-property-names-ecmascript@npm:^2.0.0":
   version: 2.0.1
@@ -27244,6 +27436,27 @@ __metadata:
     "@types/unist": ^3.0.0
     vfile-message: ^4.0.0
   checksum: 152b6729be1af70df723efb65c1a1170fd483d41086557da3651eea69a1dd1f0c22ea4344834d56d30734b9185bcab63e22edc81d3f0e9bed8aa4660d61080af
+  languageName: node
+  linkType: hard
+
+"viem@npm:^2.21.0, viem@npm:^2.45.0":
+  version: 2.45.0
+  resolution: "viem@npm:2.45.0"
+  dependencies:
+    "@noble/curves": 1.9.1
+    "@noble/hashes": 1.8.0
+    "@scure/bip32": 1.7.0
+    "@scure/bip39": 1.6.0
+    abitype: 1.2.3
+    isows: 1.0.7
+    ox: 0.11.3
+    ws: 8.18.3
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 6e12b8f392fcfceb1a97bee467cd3539a0d5e602e8273e4cb58fef90ce6a50418c5a54c87ade98420a886ff56d8fec516ce3d32727464e68a32ada9cccb50f8d
   languageName: node
   linkType: hard
 
