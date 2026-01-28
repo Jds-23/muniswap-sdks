@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import { Token } from "@uniswap/sdk-core-next";
 import { Pool, Position } from "@uniswap/v4-sdk-next";
+import { useMemo } from "react";
 import type { Address } from "viem";
 
 interface UsePositionParams {
@@ -18,6 +18,7 @@ interface UsePositionParams {
   amount0: bigint;
   amount1: bigint;
   chainId: number | undefined;
+  activeInput?: "amount0" | "amount1" | "both";
 }
 
 export function usePosition({
@@ -35,6 +36,7 @@ export function usePosition({
   amount0,
   amount1,
   chainId,
+  activeInput = "both",
 }: UsePositionParams) {
   const position = useMemo(() => {
     if (
@@ -61,9 +63,27 @@ export function usePosition({
         hooks,
         sqrtPriceX96,
         0n, // liquidity doesn't matter for position calculations
-        currentTick
+        currentTick,
       );
 
+      // Choose calculation method based on which input the user is editing
+      if (activeInput === "amount0" && amount0 > 0n) {
+        return Position.fromAmount0({
+          pool,
+          tickLower,
+          tickUpper,
+          amount0,
+          useFullPrecision: true,
+        });
+      }
+      if (activeInput === "amount1" && amount1 > 0n) {
+        return Position.fromAmount1({
+          pool,
+          tickLower,
+          tickUpper,
+          amount1,
+        });
+      }
       return Position.fromAmounts({
         pool,
         tickLower,
@@ -91,6 +111,7 @@ export function usePosition({
     amount0,
     amount1,
     chainId,
+    activeInput,
   ]);
 
   return { position };

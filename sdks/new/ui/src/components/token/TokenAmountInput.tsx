@@ -1,19 +1,21 @@
-import { useAccount, useChainId } from "wagmi";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TokenSelector } from "./TokenSelector";
-import { TokenBalance } from "./TokenBalance";
+import { Input } from "@/components/ui/input";
+import type { TokenInfo } from "@/constants/tokens";
 import { useTokenBalance } from "@/hooks/token/useTokenBalance";
 import { formatTokenAmount } from "@/lib/format";
-import type { TokenInfo } from "@/constants/tokens";
+import { useAccount, useChainId } from "wagmi";
+import { TokenBalance } from "./TokenBalance";
+import { TokenSelector } from "./TokenSelector";
 
 interface TokenAmountInputProps {
   token: TokenInfo | null;
   amount: string;
   onTokenSelect: (token: TokenInfo) => void;
   onAmountChange: (amount: string) => void;
+  onFocus?: () => void;
   label?: string;
   disabled?: boolean;
+  isCalculated?: boolean;
 }
 
 export function TokenAmountInput({
@@ -21,8 +23,10 @@ export function TokenAmountInput({
   amount,
   onTokenSelect,
   onAmountChange,
+  onFocus,
   label,
   disabled,
+  isCalculated,
 }: TokenAmountInputProps) {
   const { address: userAddress } = useAccount();
   const chainId = useChainId();
@@ -35,7 +39,9 @@ export function TokenAmountInput({
 
   const handleMax = () => {
     if (balance && token) {
-      onAmountChange(formatTokenAmount(balance, token.decimals, token.decimals));
+      onAmountChange(
+        formatTokenAmount(balance, token.decimals, token.decimals),
+      );
     }
   };
 
@@ -69,8 +75,9 @@ export function TokenAmountInput({
               onAmountChange(value);
             }
           }}
+          onFocus={onFocus}
           disabled={disabled}
-          className="flex-1 text-lg font-medium bg-transparent border-0 focus-visible:ring-0 p-0 h-auto"
+          className={`flex-1 text-lg font-medium bg-transparent border-0 focus-visible:ring-0 p-0 h-auto ${isCalculated ? "text-muted-foreground" : ""}`}
         />
         <div className="flex items-center gap-2">
           {token && balance !== undefined && balance > 0n ? (
@@ -83,10 +90,7 @@ export function TokenAmountInput({
               MAX
             </Button>
           ) : null}
-          <TokenSelector
-            selectedToken={token}
-            onSelect={onTokenSelect}
-          />
+          <TokenSelector selectedToken={token} onSelect={onTokenSelect} />
         </div>
       </div>
     </div>

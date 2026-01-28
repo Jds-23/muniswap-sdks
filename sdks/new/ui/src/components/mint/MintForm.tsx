@@ -1,6 +1,12 @@
-import { useState, useCallback } from "react";
-import { useAccount, useChainId } from "wagmi";
-import { parseUnits, type Address } from "viem";
+import { ApprovalFlow } from "@/components/approval/ApprovalFlow";
+import { PoolFeeSelector } from "@/components/pool/PoolFeeSelector";
+import { PoolHooksInput } from "@/components/pool/PoolHooksInput";
+import { PoolStateDisplay } from "@/components/pool/PoolStateDisplay";
+import { PositionSummary } from "@/components/position/PositionSummary";
+import { TickRangeSelector } from "@/components/position/TickRangeSelector";
+import { TokenAmountInput } from "@/components/token/TokenAmountInput";
+import { MintButton } from "@/components/transaction/MintButton";
+import { TransactionStatus } from "@/components/transaction/TransactionStatus";
 import {
   Card,
   CardContent,
@@ -8,23 +14,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TokenAmountInput } from "@/components/token/TokenAmountInput";
-import { PoolFeeSelector } from "@/components/pool/PoolFeeSelector";
-import { PoolHooksInput } from "@/components/pool/PoolHooksInput";
-import { PoolStateDisplay } from "@/components/pool/PoolStateDisplay";
-import { TickRangeSelector } from "@/components/position/TickRangeSelector";
-import { PositionSummary } from "@/components/position/PositionSummary";
-import { ApprovalFlow } from "@/components/approval/ApprovalFlow";
-import { MintButton } from "@/components/transaction/MintButton";
-import { TransactionStatus } from "@/components/transaction/TransactionStatus";
+import {
+  DEFAULT_DEADLINE_MINUTES,
+  DEFAULT_POOL,
+  DEFAULT_SLIPPAGE_TOLERANCE,
+  TICK_RANGE_FULL,
+} from "@/constants/defaults";
+import type { TokenInfo } from "@/constants/tokens";
+import { useApprovalFlow } from "@/hooks/approval/useApprovalFlow";
 import { usePoolId } from "@/hooks/pool/usePoolId";
 import { usePoolState } from "@/hooks/pool/usePoolState";
-import { usePosition } from "@/hooks/position/usePosition";
 import { useMintAmounts } from "@/hooks/position/useMintAmounts";
+import { usePosition } from "@/hooks/position/usePosition";
 import { useMintPosition } from "@/hooks/transaction/useMintPosition";
-import { useApprovalFlow } from "@/hooks/approval/useApprovalFlow";
-import { DEFAULT_POOL, TICK_RANGE_FULL, DEFAULT_SLIPPAGE_TOLERANCE, DEFAULT_DEADLINE_MINUTES } from "@/constants/defaults";
-import type { TokenInfo } from "@/constants/tokens";
+import { formatTokenAmount } from "@/lib/format";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type Address, parseUnits } from "viem";
+import { useAccount, useChainId } from "wagmi";
 
 export function MintForm() {
   const { address: userAddress, isConnected } = useAccount();
@@ -44,6 +50,12 @@ export function MintForm() {
   // Position state
   const [tickLower, setTickLower] = useState(TICK_RANGE_FULL.tickLower);
   const [tickUpper, setTickUpper] = useState(TICK_RANGE_FULL.tickUpper);
+  const [activeInput, setActiveInput] = useState<
+    "amount0" | "amount1" | "both"
+  >("both");
+
+  // Track if we're programmatically updating amounts to prevent infinite loops
+  const isCalculatingRef = useRef(false);
 
   // Parse amounts
   const amount0Raw = token0 ? parseUnits(amount0 || "0", token0.decimals) : 0n;
@@ -82,12 +94,63 @@ export function MintForm() {
     amount0: amount0Raw,
     amount1: amount1Raw,
     chainId,
+    activeInput,
   });
 
   const { mintAmounts } = useMintAmounts({
     position,
     slippageTolerance: DEFAULT_SLIPPAGE_TOLERANCE,
   });
+
+  // Handlers for amount inputs that track active input
+  const handleAmount0Change = useCallback((value: string) => {
+    if (isCalculatingRef.current) return;
+    setActiveInput("amount0");
+    setAmount0(value);
+  }, []);
+
+  const handleAmount1Change = useCallback((value: string) => {
+    if (isCalculatingRef.current) return;
+    setActiveInput("amount1");
+    setAmount1(value);
+  }, []);
+
+  const handleAmount0Focus = useCallback(() => {
+    setActiveInput("amount0");
+  }, []);
+
+  const handleAmount1Focus = useCallback(() => {
+    setActiveInput("amount1");
+  }, []);
+
+  // Sync calculated amount back to the other input
+  useEffect(() => {
+    if (!mintAmounts || !token0 || !token1) return;
+    if (isCalculatingRef.current) return;
+
+    isCalculatingRef.current = true;
+
+    if (activeInput === "amount0" && amount0 !== "") {
+      const calculatedAmount1 = formatTokenAmount(
+        mintAmounts.amount1,
+        token1.decimals,
+        token1.decimals,
+      );
+      setAmount1(calculatedAmount1);
+    } else if (activeInput === "amount1" && amount1 !== "") {
+      const calculatedAmount0 = formatTokenAmount(
+        mintAmounts.amount0,
+        token0.decimals,
+        token0.decimals,
+      );
+      setAmount0(calculatedAmount0);
+    }
+
+    // Reset flag after a small delay to allow state to settle
+    requestAnimationFrame(() => {
+      isCalculatingRef.current = false;
+    });
+  }, [mintAmounts, activeInput, token0, token1, amount0, amount1]);
 
   // Approval flow
   const { isApproved } = useApprovalFlow({
@@ -138,9 +201,7 @@ export function MintForm() {
     <Card className="max-w-lg mx-auto">
       <CardHeader>
         <CardTitle>Mint V4 Position</CardTitle>
-        <CardDescription>
-          Add liquidity to a Uniswap V4 pool
-        </CardDescription>
+        <CardDescription>Add liquidity to a Uniswap V4 pool</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Token Selection and Amounts */}
@@ -149,15 +210,19 @@ export function MintForm() {
             token={token0}
             amount={amount0}
             onTokenSelect={setToken0}
-            onAmountChange={setAmount0}
+            onAmountChange={handleAmount0Change}
+            onFocus={handleAmount0Focus}
             label="Token 0"
+            isCalculated={activeInput === "amount1"}
           />
           <TokenAmountInput
             token={token1}
             amount={amount1}
             onTokenSelect={setToken1}
-            onAmountChange={setAmount1}
+            onAmountChange={handleAmount1Change}
+            onFocus={handleAmount1Focus}
             label="Token 1"
+            isCalculated={activeInput === "amount0"}
           />
         </div>
 
