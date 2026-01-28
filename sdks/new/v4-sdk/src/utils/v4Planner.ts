@@ -160,15 +160,108 @@ function currencyAddress(currency: Currency): string {
   return currency.isNative ? ADDRESS_ZERO : currency.wrapped.address
 }
 
+// ABI parameter definition type for ox
+type AbiParameter = {
+  type: string
+  name?: string
+  components?: AbiParameter[]
+}
+
+// Pool key components for tuple encoding
+const POOL_KEY_COMPONENTS: AbiParameter[] = [
+  { name: 'currency0', type: 'address' },
+  { name: 'currency1', type: 'address' },
+  { name: 'fee', type: 'uint24' },
+  { name: 'tickSpacing', type: 'int24' },
+  { name: 'hooks', type: 'address' },
+]
+
+// Path key components for tuple encoding
+const PATH_KEY_COMPONENTS: AbiParameter[] = [
+  { name: 'intermediateCurrency', type: 'address' },
+  { name: 'fee', type: 'uint256' },
+  { name: 'tickSpacing', type: 'int24' },
+  { name: 'hooks', type: 'address' },
+  { name: 'hookData', type: 'bytes' },
+]
+
+// Convert a ParamType to ox AbiParameter format
+function toAbiParameter(param: ParamType): AbiParameter {
+  // Handle pool key struct
+  if (param.type === POOL_KEY_STRUCT) {
+    return { name: param.name, type: 'tuple', components: POOL_KEY_COMPONENTS }
+  }
+
+  // Handle swap structs (exact in single)
+  if (param.type === SWAP_EXACT_IN_SINGLE_STRUCT) {
+    return {
+      name: param.name,
+      type: 'tuple',
+      components: [
+        { name: 'poolKey', type: 'tuple', components: POOL_KEY_COMPONENTS },
+        { name: 'zeroForOne', type: 'bool' },
+        { name: 'amountIn', type: 'uint128' },
+        { name: 'amountOutMinimum', type: 'uint128' },
+        { name: 'hookData', type: 'bytes' },
+      ],
+    }
+  }
+
+  // Handle swap structs (exact in)
+  if (param.type === SWAP_EXACT_IN_STRUCT) {
+    return {
+      name: param.name,
+      type: 'tuple',
+      components: [
+        { name: 'currencyIn', type: 'address' },
+        { name: 'path', type: 'tuple[]', components: PATH_KEY_COMPONENTS },
+        { name: 'amountIn', type: 'uint128' },
+        { name: 'amountOutMinimum', type: 'uint128' },
+      ],
+    }
+  }
+
+  // Handle swap structs (exact out single)
+  if (param.type === SWAP_EXACT_OUT_SINGLE_STRUCT) {
+    return {
+      name: param.name,
+      type: 'tuple',
+      components: [
+        { name: 'poolKey', type: 'tuple', components: POOL_KEY_COMPONENTS },
+        { name: 'zeroForOne', type: 'bool' },
+        { name: 'amountOut', type: 'uint128' },
+        { name: 'amountInMaximum', type: 'uint128' },
+        { name: 'hookData', type: 'bytes' },
+      ],
+    }
+  }
+
+  // Handle swap structs (exact out)
+  if (param.type === SWAP_EXACT_OUT_STRUCT) {
+    return {
+      name: param.name,
+      type: 'tuple',
+      components: [
+        { name: 'currencyOut', type: 'address' },
+        { name: 'path', type: 'tuple[]', components: PATH_KEY_COMPONENTS },
+        { name: 'amountOut', type: 'uint128' },
+        { name: 'amountInMaximum', type: 'uint128' },
+      ],
+    }
+  }
+
+  // Simple types pass through
+  return { name: param.name, type: param.type }
+}
+
 function createAction(action: Actions, parameters: unknown[]): RouterAction {
   const abiDef = V4_BASE_ACTIONS_ABI_DEFINITION[action]
-  const types = abiDef.map((v) => v.type)
+
+  // Convert to ox-compatible ABI parameters
+  const abiParams = abiDef.map(toAbiParameter)
 
   // Use ox AbiParameters.encode
-  const encodedInput = AbiParameters.encode(
-    types.map((t) => ({ type: t })),
-    parameters
-  )
+  const encodedInput = AbiParameters.encode(abiParams, parameters)
 
   return { action, encodedInput }
 }
