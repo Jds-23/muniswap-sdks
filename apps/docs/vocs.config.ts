@@ -9,6 +9,7 @@ export default defineConfig({
     { text: 'V2 SDK', link: '/v2-sdk' },
     { text: 'V3 SDK', link: '/v3-sdk' },
     { text: 'V4 SDK', link: '/v4-sdk' },
+    { text: 'Guides', link: '/guides' },
     { text: 'GitHub', link: 'https://github.com/Uniswap/sdks' },
   ],
   sidebar: {
@@ -180,6 +181,15 @@ export default defineConfig({
         text: 'Reference',
         items: [
           { text: 'Constants', link: '/v4-sdk/constants' },
+        ],
+      },
+    ],
+    '/guides': [
+      {
+        text: 'Guides',
+        items: [
+          { text: 'Overview', link: '/guides' },
+          { text: 'Building a Uniswap V4 UI', link: '/guides/building-a-uniswap-ui' },
         ],
       },
     ],

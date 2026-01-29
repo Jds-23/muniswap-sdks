@@ -1,0 +1,39 @@
+# Guides
+
+Practical tutorials for building applications with the Uniswap SDKs.
+
+## Available Guides
+
+### [Building a Uniswap V4 UI](/guides/building-a-uniswap-ui)
+
+A comprehensive, phase-based guide to building a complete Uniswap V4 liquidity management interface from scratch.
+
+**What you'll build:**
+- Wallet connection with RainbowKit
+- Token selection and balance display
+- Pool configuration (fee tiers, tick spacing, hooks)
+- Position management (mint liquidity)
+- Multi-step Permit2 approval flows
+- Transaction status tracking
+
+**Technologies covered:**
+- React 18 + TypeScript
+- Vite for build tooling
+- Tailwind CSS + shadcn/ui for styling
+- wagmi + viem for Web3 integration
+- @muniswap/sdk-core and @muniswap/v4-sdk
+
+**Time estimate:** This guide is organized into 6 phases that can be completed incrementally.
+
+---
+
+## Reference Implementation
+
+The `apps/ui/` directory in this repository contains a complete working implementation that demonstrates all the patterns covered in these guides. Use it as a reference when building your own UI.
+
+```bash
+# Run the reference UI locally
+cd apps/ui
+pnpm install
+pnpm dev
+```
