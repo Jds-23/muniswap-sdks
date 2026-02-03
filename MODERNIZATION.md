@@ -7,6 +7,43 @@ A phase-based guide for SDK maintainers migrating legacy web3 TypeScript SDKs to
 
 ---
 
+## Monorepo Structure
+
+### Directory Layout
+
+| Directory | Purpose |
+|-----------|---------|
+| `external/uniswap-sdks/sdks/` | Legacy reference SDKs (read-only submodule) |
+| `packages/` | Modern SDKs (your work goes here) |
+
+### Internal Dependency Mapping
+
+When modernizing, replace `@uniswap/*` dependencies with workspace `@muniswap/*` packages:
+
+| Legacy Dependency | Modern Replacement |
+|-------------------|-------------------|
+| `@uniswap/sdk-core` | `@muniswap/sdk-core` (workspace:*) |
+| `@uniswap/v2-sdk` | `@muniswap/v2-sdk` (workspace:*) |
+| `@uniswap/v3-sdk` | `@muniswap/v3-sdk` (workspace:*) |
+
+Example from v4-sdk `package.json`:
+
+```json
+// Legacy (external/uniswap-sdks/sdks/v4-sdk)
+"dependencies": {
+  "@uniswap/sdk-core": "^7.10.1",
+  "@uniswap/v3-sdk": "3.27.0"
+}
+
+// Modern (packages/v4-sdk)
+"dependencies": {
+  "@muniswap/sdk-core": "workspace:*",
+  "@muniswap/v3-sdk": "workspace:*"
+}
+```
+
+---
+
 ## Phase 1: Audit & Plan
 
 Inventory your current stack before making changes.
