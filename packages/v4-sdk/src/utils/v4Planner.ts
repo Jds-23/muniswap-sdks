@@ -186,7 +186,7 @@ const PATH_KEY_COMPONENTS: AbiParameter[] = [
 ]
 
 // Convert a ParamType to ox AbiParameter format
-function toAbiParameter(param: ParamType): AbiParameter {
+export function toAbiParameter(param: ParamType): AbiParameter {
   // Handle pool key struct
   if (param.type === POOL_KEY_STRUCT) {
     return { name: param.name, type: 'tuple', components: POOL_KEY_COMPONENTS }

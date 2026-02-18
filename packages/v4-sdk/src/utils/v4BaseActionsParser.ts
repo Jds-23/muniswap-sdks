@@ -1,7 +1,17 @@
 import { AbiParameters } from 'ox'
 import type { PoolKey } from '../entities/pool'
 import type { PathKey } from './encodeRouteToPath'
-import { Actions, Subparser, V4_BASE_ACTIONS_ABI_DEFINITION } from './v4Planner'
+import { Actions, Subparser, V4_BASE_ACTIONS_ABI_DEFINITION, toAbiParameter } from './v4Planner'
+
+type AbiParam = { type: string; name?: string; components?: AbiParam[] }
+
+// Strip names from ABI params so ox decodes tuples as arrays (not objects)
+function stripNames(param: AbiParam): AbiParam {
+  if (param.components) {
+    return { type: param.type, components: param.components.map(stripNames) }
+  }
+  return { type: param.type }
+}
 
 export type Param = {
   readonly name: string
@@ -158,8 +168,9 @@ export abstract class V4BaseActionsParser {
     return {
       actions: actionTypes.map((actionType: Actions, i: number) => {
         const abiDef = V4_BASE_ACTIONS_ABI_DEFINITION[actionType]
-        const types = abiDef.map((command) => ({ type: command.type }))
-        const rawParams = AbiParameters.decode(types, inputs[i] as `0x${string}`)
+        const types = abiDef.map((command) => stripNames(toAbiParameter(command)))
+        // biome-ignore lint/suspicious/noExplicitAny: ox ABI parameter types are complex
+        const rawParams = AbiParameters.decode(types as any, inputs[i] as `0x${string}`)
 
         const params = rawParams.map((param, j) => {
           switch (abiDef[j]?.subparser) {
