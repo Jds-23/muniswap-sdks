@@ -44,6 +44,44 @@ describe('Token', () => {
         'NON-NEGATIVE FOT FEES'
       )
     })
+
+    it('fails with negative decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, -1)).toThrow('DECIMALS')
+    })
+
+    it('fails with 256 decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, 256)).toThrow('DECIMALS')
+    })
+
+    it('fails with non-integer decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, 1.5)).toThrow('DECIMALS')
+    })
+  })
+
+  describe('constructor with bypassChecksum', () => {
+    const bypassChecksum = true
+
+    it('creates the token with a valid address', () => {
+      expect(new Token(3, ADDRESS_TWO, 18, undefined, undefined, bypassChecksum).address).toBe(ADDRESS_TWO)
+    })
+
+    it('fails with invalid address', () => {
+      expect(
+        () => new Token(3, '0xhello00000000000000000000000000000000002', 18, undefined, undefined, bypassChecksum)
+      ).toThrow('is not a valid address')
+    })
+
+    it('fails with negative decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, -1, undefined, undefined, bypassChecksum)).toThrow('DECIMALS')
+    })
+
+    it('fails with 256 decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, 256, undefined, undefined, bypassChecksum)).toThrow('DECIMALS')
+    })
+
+    it('fails with non-integer decimals', () => {
+      expect(() => new Token(3, ADDRESS_ONE, 1.5, undefined, undefined, bypassChecksum)).toThrow('DECIMALS')
+    })
   })
 
   describe('equals', () => {
@@ -69,6 +107,21 @@ describe('Token', () => {
       const token1 = new Token(1, ADDRESS_ONE.toUpperCase(), 18, undefined, undefined, true)
       const token2 = new Token(1, ADDRESS_ONE.toLowerCase(), 18, undefined, undefined, true)
       expect(token1.equals(token2)).toBe(true)
+    })
+
+    it('true if only decimals differs', () => {
+      expect(new Token(1, ADDRESS_ONE, 9).equals(new Token(1, ADDRESS_ONE, 18))).toBe(true)
+    })
+
+    it('true on reference equality', () => {
+      const token = new Token(1, ADDRESS_ONE, 18)
+      expect(token.equals(token)).toBe(true)
+    })
+
+    it('true even if name/symbol/decimals differ', () => {
+      const tokenA = new Token(1, ADDRESS_ONE, 9, 'abc', 'def')
+      const tokenB = new Token(1, ADDRESS_ONE, 18, 'ghi', 'jkl')
+      expect(tokenA.equals(tokenB)).toBe(true)
     })
   })
 
