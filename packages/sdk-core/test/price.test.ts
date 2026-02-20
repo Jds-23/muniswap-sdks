@@ -86,6 +86,31 @@ describe('Price', () => {
       const price = new Price(token0, token1, 1n, 2n)
       expect(price.toSignificant(4)).toBe('2')
     })
+
+    it('no decimals', () => {
+      const p = new Price(token0, token1, 123n, 456n)
+      expect(p.toSignificant(4)).toBe('3.707')
+    })
+
+    it('no decimals flip ratio', () => {
+      const p = new Price(token0, token1, 456n, 123n)
+      expect(p.toSignificant(4)).toBe('0.2697')
+    })
+
+    it('with decimal difference', () => {
+      const p = new Price(token0_6, token1_18, 123n, 456n)
+      expect(p.toSignificant(4)).toBe('0.000000000003707')
+    })
+
+    it('with decimal difference flipped', () => {
+      const p = new Price(token0_6, token1_18, 456n, 123n)
+      expect(p.toSignificant(4)).toBe('0.0000000000002697')
+    })
+
+    it('with decimal difference flipped base quote flipped', () => {
+      const p = new Price(token1_18, token0_6, 456n, 123n)
+      expect(p.toSignificant(4)).toBe('269700000000')
+    })
   })
 
   describe('toFixed', () => {

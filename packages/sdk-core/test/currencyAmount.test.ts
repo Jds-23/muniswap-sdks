@@ -109,6 +109,30 @@ describe('CurrencyAmount', () => {
     })
   })
 
+  it('token amount can be max uint256', () => {
+    const MaxUint256 = 2n ** 256n - 1n
+    const amount = CurrencyAmount.fromRawAmount(new Token(1, ADDRESS_ONE, 18), MaxUint256)
+    expect(amount.quotient).toBe(MaxUint256)
+  })
+
+  it('token amount cannot exceed max uint256', () => {
+    const MaxUint256 = 2n ** 256n - 1n
+    expect(() => CurrencyAmount.fromRawAmount(new Token(1, ADDRESS_ONE, 18), MaxUint256 + 1n)).toThrow('AMOUNT')
+  })
+
+  it('token amount quotient cannot exceed max uint256', () => {
+    const MaxUint256 = 2n ** 256n - 1n
+    expect(() => CurrencyAmount.fromFractionalAmount(new Token(1, ADDRESS_ONE, 18), MaxUint256 * 2n + 2n, 2n)).toThrow(
+      'AMOUNT'
+    )
+  })
+
+  it('token amount numerator can be gt. uint256 if denominator is gt. 1', () => {
+    const MaxUint256 = 2n ** 256n - 1n
+    const amount = CurrencyAmount.fromFractionalAmount(new Token(1, ADDRESS_ONE, 18), MaxUint256 + 2n, 2)
+    expect(amount.numerator).toBe(MaxUint256 + 2n)
+  })
+
   describe('wrapped', () => {
     it('returns wrapped token for native currency', () => {
       const ether = Ether.onChain(1)

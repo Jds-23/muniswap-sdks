@@ -48,6 +48,10 @@ describe('Percent', () => {
       expect(result.isPercent).toBe(true)
       expect(result.toFixed(0)).toBe('3')
     })
+
+    it('different denominators', () => {
+      expect(new Percent(1n, 25n).add(new Percent(2n, 100n))).toEqual(new Percent(150n, 2500n))
+    })
   })
 
   describe('subtract', () => {
@@ -58,6 +62,10 @@ describe('Percent', () => {
       expect(result.isPercent).toBe(true)
       expect(result.toFixed(0)).toBe('3')
     })
+
+    it('different denominators', () => {
+      expect(new Percent(1n, 25n).subtract(new Percent(2n, 100n))).toEqual(new Percent(50n, 2500n))
+    })
   })
 
   describe('multiply', () => {
@@ -67,6 +75,10 @@ describe('Percent', () => {
       expect(result.isPercent).toBe(true)
       expect(result.toFixed(0)).toBe('20')
     })
+
+    it('different denominators', () => {
+      expect(new Percent(1n, 25n).multiply(new Percent(2n, 100n))).toEqual(new Percent(2n, 2500n))
+    })
   })
 
   describe('divide', () => {
@@ -75,6 +87,10 @@ describe('Percent', () => {
       const result = percent.divide(2n)
       expect(result.isPercent).toBe(true)
       expect(result.toFixed(0)).toBe('5')
+    })
+
+    it('different denominators', () => {
+      expect(new Percent(1n, 25n).divide(new Percent(2n, 100n))).toEqual(new Percent(100n, 50n))
     })
   })
 })

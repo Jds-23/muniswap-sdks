@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   CurrencyAmount,
+  Ether,
+  MaxUint256,
   Percent,
   Price,
   Token,
+  checkValidAddress,
   computePriceImpact,
   sortedInsert,
   sqrt,
@@ -17,12 +20,38 @@ describe('validateAndParseAddress', () => {
     )
   })
 
+  it('returns same address if already checksummed', () => {
+    expect(validateAndParseAddress('0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f')).toBe(
+      '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+    )
+  })
+
   it('throws for invalid address', () => {
     expect(() => validateAndParseAddress('invalid')).toThrow('is not a valid address')
   })
 
   it('throws for short address', () => {
     expect(() => validateAndParseAddress('0x1234')).toThrow('is not a valid address')
+  })
+})
+
+describe('checkValidAddress', () => {
+  it('returns same address if valid', () => {
+    expect(checkValidAddress('0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f')).toBe(
+      '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+    )
+  })
+
+  it('throws if length < 42', () => {
+    expect(() => checkValidAddress('0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6')).toThrow('is not a valid address')
+  })
+
+  it('throws if length > 42', () => {
+    expect(() => checkValidAddress('0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6fA')).toThrow('is not a valid address')
+  })
+
+  it('throws if it does not start with 0x', () => {
+    expect(() => checkValidAddress('5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f')).toThrow('is not a valid address')
   })
 })
 
@@ -48,11 +77,31 @@ describe('sqrt', () => {
     expect(sqrt(8n)).toBe(2n)
   })
 
+  it('correct for 0-1000', () => {
+    for (let i = 0; i < 1000; i++) {
+      expect(sqrt(BigInt(i))).toBe(BigInt(Math.floor(Math.sqrt(i))))
+    }
+  })
+
+  describe('correct for all even powers of 2', () => {
+    for (let i = 0; i < 256; i++) {
+      it(`2^${i * 2}`, () => {
+        const root = 2n ** BigInt(i)
+        const rootSquared = root * root
+        expect(sqrt(rootSquared)).toBe(root)
+      })
+    }
+  })
+
   it('computes sqrt of large numbers', () => {
     const large = 2n ** 128n
     const sqrtLarge = sqrt(large)
     expect(sqrtLarge * sqrtLarge).toBeLessThanOrEqual(large)
     expect((sqrtLarge + 1n) * (sqrtLarge + 1n)).toBeGreaterThan(large)
+  })
+
+  it('correct for MaxUint256', () => {
+    expect(sqrt(MaxUint256)).toBe(340282366920938463463374607431768211455n)
   })
 
   it('throws for negative numbers', () => {
@@ -137,5 +186,35 @@ describe('computePriceImpact', () => {
 
     const impact = computePriceImpact(midPrice, inputAmount, outputAmount)
     expect(impact.toFixed(2)).toBe('0.00')
+  })
+
+  it('is correct for zero with ether', () => {
+    expect(
+      computePriceImpact(
+        new Price(Ether.onChain(1), token0, 10n, 100n),
+        CurrencyAmount.fromRawAmount(Ether.onChain(1), 10n),
+        CurrencyAmount.fromRawAmount(token0, 100n)
+      )
+    ).toEqual(new Percent(0n, 10000n))
+  })
+
+  it('is correct for half output', () => {
+    expect(
+      computePriceImpact(
+        new Price(token0, token1, 10n, 100n),
+        CurrencyAmount.fromRawAmount(token0, 10n),
+        CurrencyAmount.fromRawAmount(token1, 50n)
+      )
+    ).toEqual(new Percent(5000n, 10000n))
+  })
+
+  it('is negative for more output', () => {
+    expect(
+      computePriceImpact(
+        new Price(token0, token1, 10n, 100n),
+        CurrencyAmount.fromRawAmount(token0, 10n),
+        CurrencyAmount.fromRawAmount(token1, 200n)
+      )
+    ).toEqual(new Percent(-10000n, 10000n))
   })
 })
